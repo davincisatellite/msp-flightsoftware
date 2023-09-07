@@ -1,11 +1,11 @@
-src/ADCSDriver* @LiamC-00
+src/ADCSDriver* @davincisatellite/adcs
 
-src/Bitflip*    @Dennisman219 @zhenicha
+src/Bitflip*    @davincisatellite/bitflip
 
-src/DicePayload*    @mavaneerden @adduta
+src/DicePayload*    @davincisatellite/dice
 
-src/EPS*    @CasparGLynch @alexbolfa
+src/EPS*    @davincisatellite/eps
 
-src/antenna*        @bgrochowski
-src/receiver*       @bgrochowski
-src/transmitter*    @bgrochowski
+src/antenna*        @davincisatellite/antenna
+src/receiver*       @davincisatellite/antenna
+src/transmitter*    @davincisatellite/antenna
