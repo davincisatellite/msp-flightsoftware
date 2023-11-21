@@ -172,7 +172,7 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
     wire.beginTransmission(i2c_address);
     wire.write(0x00);
     wire.write(0x06);
-    wire.write(0x14);
+    wire.write(0x12);
     wire.write(0x00);
 
     uint8_t bytes[2];
