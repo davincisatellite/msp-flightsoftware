@@ -164,3 +164,44 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
     return reply;
 }
 
+EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id) {
+    config_reply reply;
+
+    /* Write command to EPS */
+    wire.beginTransmission(i2c_address);
+    wire.write(0x00);
+    wire.write(0x06);
+    wire.write(0x86);
+    wire.write(0x00);
+
+    wire.write(par_id & 0xFF);  // least significant byte
+    wire.write(par_id >> 8);  // most significant byte
+
+    // delay
+    delay_ms(25);
+
+    // request 5 bytes of data (i.e) the length of the response
+    uint8_t response = wire.requestFrom(i2c_address, 5);
+
+    // if response if 5 bytes long populate reply struct else mark error
+    if (response == 5) {
+        reply.stid = wire.read();
+        reply.ivid = wire.read();
+        reply.rc = wire.read();
+        reply.bid = wire.read();
+        reply.stat = wire.read();
+
+        // read (reserved) and discard
+        wire.read();
+
+        reply.par_id = wire.read() + (wire.read() << 1);
+
+        // TODO Read PAR_VAL
+
+        reply.error = false;
+    } else {
+        reply.error = true;
+    }
+
+    return reply;
+}
