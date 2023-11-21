@@ -46,11 +46,24 @@ public:
         uint8_t error;
     };
 
+    struct config_reply {
+        uint8_t stid;
+        uint8_t ivid;
+        uint8_t rc;
+        uint8_t bid;
+        uint8_t stat;
+        uint8_t error;
+
+        uint16_t par_id;
+        // TODO add PAR_VAL
+    };
+
     static standard_reply reset_watchdog(DWire &wire, uint8_t i2c_address);
     static standard_reply no_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply system_reset(DWire &wire, uint8_t i2c_address);
     static standard_reply cancel_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply watchdog(DWire &wire, uint8_t i2c_address);
+    static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id);
 };
 
 #endif //EPS_CONVERSION_EPS_H
