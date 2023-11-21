@@ -164,3 +164,46 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
     return reply;
 }
 
+EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address) {
+    pdu_overcurrent_reply reply;
+
+    /* Write command to EPS */
+    wire.beginTransmission(i2c_address);
+    wire.write(0x00);
+    wire.write(0x06);
+    wire.write(0x42);
+    wire.write(0x00);
+
+    // delay
+    delay_ms(25);
+
+    // request 5 bytes of data (i.e) the length of the response
+    uint8_t response = wire.requestFrom(i2c_address, 5);
+
+    // if response if 5 bytes long populate reply struct else mark error
+    if (response == 5) {
+        reply.stid = wire.read();
+        reply.ivid = wire.read();
+        reply.rc = wire.read();
+        reply.bid = wire.read();
+        reply.stat = wire.read();
+
+        // read (reserved) and discard
+        wire.read();
+
+        // reads in little endian order
+        reply.stat_ob_on = wire.read() + (wire.read() << 1);
+        reply.stat_ob_ocf = wire.read() + (wire.read() << 1);
+
+        for (int i = 0; i < 16; ++i) {
+            reply.ocf_cnt_ch[i] = wire.read() + (wire.read() << 1);
+        }
+
+        reply.error = false;
+    } else {
+        reply.error = true;
+    }
+
+    return reply;
+}
+
