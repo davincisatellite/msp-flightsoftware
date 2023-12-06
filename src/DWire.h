@@ -33,7 +33,8 @@
 #include <driverlib.h>
 
 /* Device specific includes */
-#include <inc/pins.h>
+//#include <inc/pins.h>
+#include "DWire_msp432p401r.h"
 
 class DWire 
 {
