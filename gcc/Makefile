@@ -9,11 +9,12 @@ SOURCES += $(wildcard ../src/*.cpp)
 OBJECTS := $(patsubst %.c, %.obj, $(patsubst %.cpp, %.obj, $(notdir $(SOURCES))))
 OBJECTS += gcc_startup_msp432p401r_gcc.obj
 
-NAME = blinkled_msp432p401r
+NAME = msp-flightsoftware
 
 CFLAGS = -I../src \
 	"-I$(SIMPLELINK_MSP432_SDK_INSTALL_DIR)/source" \
 	"-I$(SIMPLELINK_MSP432_SDK_INSTALL_DIR)/source/third_party/CMSIS/Include" \
+	"-I$(SIMPLELINK_MSP432_SDK_INSTALL_DIR)/source/ti/devices/msp432p4xx/driverlib" \
 	-D__MSP432P401R__ \
 	-DDeviceFamily_MSP432P401x \
 	-mcpu=cortex-m4 \
