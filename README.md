@@ -95,7 +95,7 @@ make: *** No rule to make target '/imports.mak'.  Stop.
 Fix:
 Set `SIMPLELINK_MSP432_SDK_INSTALL_DIR` environment variable
 
-Problem: When `make`ing
+~~Problem: When `make`ing~~ This is fixed by PR #24
 ```bash
 In file included from ../src/file.cpp:X:X:
 ../src/file.h:XX:XX: fatal error: driverlib.h: No such file or directory
@@ -104,4 +104,4 @@ In file included from ../src/file.cpp:X:X:
 compilation terminated.
 ```
 Fix:
-Replace `<driverlib.h>` with `<ti/devices/msp432p4xx/driverlib/driverlib.h>`
+~~Replace `<driverlib.h>` with `<ti/devices/msp432p4xx/driverlib/driverlib.h>`~~
