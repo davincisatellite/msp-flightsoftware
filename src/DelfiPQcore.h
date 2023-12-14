@@ -9,7 +9,7 @@
 #define DELFIPQCORE_H_
 
 #include <driverlib.h>
-#include "msp.h"
+//#include "msp.h"
 
 #define FCLOCK 48000000
 #define SCLOCK 32768

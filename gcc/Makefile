@@ -7,6 +7,7 @@ SOURCES := $(wildcard ../src/*.c)
 SOURCES += $(wildcard ../src/*.cpp)
 
 OBJECTS := $(patsubst %.c, %.obj, $(patsubst %.cpp, %.obj, $(notdir $(SOURCES))))
+OBJECTS := $(filter-out RS485.obj, $(OBJECTS))
 OBJECTS += gcc_startup_msp432p401r_gcc.obj
 
 NAME = msp-flightsoftware

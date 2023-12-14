@@ -1,5 +1,8 @@
 /Debug/
 
+/.idea/
+/.vscode/
+
 gcc/*
 !gcc/Makefile
 !gcc/msp432p401r.lds
