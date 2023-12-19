@@ -189,7 +189,7 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire,
         reply.stat = wire.read();
 
         // read (reserved) and discard
-        wire.read();
+        (void) wire.read();
 
         reply.volt_brdsup = wire.read() + (wire.read() << 1);
         reply.temp = wire.read() + (wire.read() << 1);
