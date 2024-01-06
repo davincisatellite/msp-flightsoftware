@@ -54,141 +54,71 @@ static uint16_t TXByteIndex = 0;
 /* Number of iterations in the receiving interrupt. */
 static uint16_t TXIter = 0;
 
-unsigned char errorMsg2[] = "Serial port not connected\r\n";
-
-bool isEnabled()
-{
-    uint8_t status = MAP_GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN2);
-    if(status == GPIO_INPUT_PIN_HIGH){
-        return true;
-    }else{
-        return true;
-    }
-}
+/* Test echo command. */
+unsigned char echoMsg[] = 'echo "Lets gooo"\r\n';
 
 int main(void)
 {
     /* UART baud rate. */
     constexpr unsigned int baudrate = 115200;
 
-
     DelfiPQcore::initMCU();
 
+    /* Initialize UART 0 and 2 baud rate. */
+    Console::init(baudrate);
+
     delay_init();
-
-    /* Copy from Console::init*/
-    MAP_UART_disableModule( EUSCI_A0_BASE );   //disable UART operation for configuration settings
-    MAP_UART_disableModule( EUSCI_A2_BASE );   //disable UART 2 operation for configuration settings
-
-    // Selecting P1.2 and P1.3 in UART mode
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1,
-                                                   GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
-    // Selecting P3.2 and P3.3 in UART mode
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P3,
-                                                   GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
-
-    eUSCI_UART_ConfigV1 Config;
-
-    //Default Configuration, macro found in uart.h
-    Config.selectClockSource    = EUSCI_A_UART_CLOCKSOURCE_SMCLK;
-    Config.parity               = EUSCI_A_UART_NO_PARITY;
-    Config.msborLsbFirst        = EUSCI_A_UART_LSB_FIRST;
-    Config.numberofStopBits     = EUSCI_A_UART_ONE_STOP_BIT;
-    Config.uartMode             = EUSCI_A_UART_MODE;
-
-    unsigned int n = MAP_CS_getSMCLK() / baudrate;
-
-    if (n > 16)
-    {
-        Config.overSampling = EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION; // Over-sampling
-        Config.clockPrescalar = n >> 4;                                      // BRDIV = n / 16
-        Config.firstModReg = n - (Config.clockPrescalar << 4);               // UCxBRF = int((n / 16) - int(n / 16)) * 16
-    }
-    else
-    {
-        Config.overSampling = EUSCI_A_UART_LOW_FREQUENCY_BAUDRATE_GENERATION; // Low-frequency mode
-        Config.clockPrescalar = n;                                            // BRDIV = n
-        Config.firstModReg = 0;                                               // UCxBRF not used
-    }
-
-    Config.secondModReg = 0;    // UCxBRS = 0
-
-    MAP_UART_initModule( EUSCI_A0_BASE, &Config );
-    MAP_UART_initModule( EUSCI_A2_BASE, &Config );
-
-
-    /* Enable UART module */
-    MAP_UART_enableModule( EUSCI_A0_BASE );
-    MAP_UART_enableModule( EUSCI_A2_BASE );
-
-    // in case the serial port is not detected, print an error message:
-    // if there was a connection problem, the message will help debugging,
-    // if there is no serial port attached, the message will not be seen
-    if (!isEnabled())
-    {
-        for(int k = 0; errorMsg2[k] != 0; k++)
-        {
-            MAP_UART_transmitData( EUSCI_A0_BASE, errorMsg2[k] );
-        }
-    }
-
-    delay_ms(1000);
-
-//    /* Enabling interrupts for UART. */
-//    MAP_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
-//    MAP_Interrupt_enableInterrupt(INT_EUSCIA0);
-//    MAP_Interrupt_enableMaster();
-
 
     /* Busy loop. */
     while (1u)
     {
-        MAP_UART_transmitData(EUSCI_A0_BASE, 'testt');
-        MAP_UART_transmitData(EUSCI_A2_BASE, 'testk');
-
+        for(int k = 0; errorMsg[k] != 0; k++)
+        {
+            MAP_UART_transmitData(EUSCI_A2_BASE, echoMsg[k]);
+        }
 
         delay_ms(1000);
     }
 }
-
-/**
- * UART receive interrupt.
- *
- * Each message received starts with a two-byte length followed by that many
- * image bytes.
- */
-extern "C" void EUSCIA0_IRQHandler(void)
-{
-    uint_fast8_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
-
-    /* Clear interrupt flags so it can be triggered again. */
-    MAP_UART_clearInterruptFlag(EUSCI_A0_BASE, status);
-
-    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
-    {
-        /* Get first length byte. */
-        if (TXIter == 0)
-        {
-            TXLength = MAP_UART_receiveData(EUSCI_A0_BASE);
-        }
-            /* Get second length byte. */
-        else if (TXIter == 1)
-        {
-            TXLength |= MAP_UART_receiveData(EUSCI_A0_BASE) << 8;
-        }
-            /* Get all image bytes. */
-        else
-        {
-            TXData[TXByteCtr++] = MAP_UART_receiveData(EUSCI_A0_BASE);
-        }
-
-        /* Initiate I2C transfer if all bytes have been received. */
-        if (TXIter > 1 && TXByteCtr == TXLength)
-        {
-            TXByteIndex = 1;
-            MAP_I2C_masterSendMultiByteStart(EUSCI_B0_BASE, TXData[0]);
-        }
-
-        TXIter++;
-    }
-}
+//
+//**
+// * UART receive interrupt.
+// *
+// * Each message received starts with a two-byte length followed by that many
+// * image bytes.
+// */
+//extern "C" void EUSCIA0_IRQHandler(void)
+//{
+//    uint_fast8_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
+//
+//    /* Clear interrupt flags so it can be triggered again. */
+//    MAP_UART_clearInterruptFlag(EUSCI_A0_BASE, status);
+//
+//    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+//    {
+//        /* Get first length byte. */
+//        if (TXIter == 0)
+//        {
+//            TXLength = MAP_UART_receiveData(EUSCI_A0_BASE);
+//        }
+//            /* Get second length byte. */
+//        else if (TXIter == 1)
+//        {
+//            TXLength |= MAP_UART_receiveData(EUSCI_A0_BASE) << 8;
+//        }
+//            /* Get all image bytes. */
+//        else
+//        {
+//            TXData[TXByteCtr++] = MAP_UART_receiveData(EUSCI_A0_BASE);
+//        }
+//
+//        /* Initiate I2C transfer if all bytes have been received. */
+//        if (TXIter > 1 && TXByteCtr == TXLength)
+//        {
+//            TXByteIndex = 1;
+//            MAP_I2C_masterSendMultiByteStart(EUSCI_B0_BASE, TXData[0]);
+//        }
+//
+//        TXIter++;
+//    }
+//}

@@ -25,10 +25,14 @@ void Console::init( unsigned int baudrate )
     Console::baudrate = baudrate;
 
     MAP_UART_disableModule( EUSCI_A0_BASE );   //disable UART operation for configuration settings
+    MAP_UART_disableModule( EUSCI_A2_BASE );   //disable UART 2 operation for configuration settings
 
     // Selecting P1.2 and P1.3 in UART mode
     MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1,
            GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
+    // Selecting P3.2 and P3.3 in UART mode
+    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P3,
+                                                   GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
 
     eUSCI_UART_ConfigV1 Config;
 
@@ -57,9 +61,11 @@ void Console::init( unsigned int baudrate )
     Config.secondModReg = 0;    // UCxBRS = 0
 
     MAP_UART_initModule( EUSCI_A0_BASE, &Config );
+    MAP_UART_initModule( EUSCI_A2_BASE, &Config );
 
-    /* Enable UART module */
+    /* Enable UART modules */
     MAP_UART_enableModule( EUSCI_A0_BASE );
+    MAP_UART_enableModule( EUSCI_A2_BASE );
 
     // in case the serial port is not detected, print an error message:
     // if there was a connection problem, the message will help debugging,
