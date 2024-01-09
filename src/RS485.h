@@ -13,7 +13,8 @@
 #include "PQ9Frame.h"
 
 // Device specific includes
-#include "inc/msp432p401r.h"
+//#include "inc/msp432p401r.h"
+#include "RS485_msp432p401r.h"
 
 #define POLY 0x1021
 
