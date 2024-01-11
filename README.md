@@ -29,7 +29,7 @@ TODO
 
 ## Setup
 1. Download and install:
-    * [GNU Arm Embedded Toolchain 7-2017-q4-major](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads/7-2017-q4-major-1-1)
+    * [GNU Arm Embedded Toolchain 7-2017-q4-major](https://developer.arm.com/downloads/-/gnu-rm#panel10a)
     * [SimpleLink MSP432P4 SDK 3.40.01.02](https://www.ti.com/tool/download/SIMPLELINK-MSP432-SDK/3.40.01.02)
     * [Uniflash 8.2.0](https://www.ti.com/tool/download/UNIFLASH/8.2.0)
 
