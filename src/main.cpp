@@ -55,7 +55,7 @@ static uint16_t TXByteIndex = 0;
 static uint16_t TXIter = 0;
 
 /* Test echo command. */
-unsigned char echoMsg[] = 'echo "Lets gooo"\r\n';
+unsigned char echoMsg[] = "echo 'Lets gooo'\r\n";
 
 int main(void)
 {
@@ -72,7 +72,7 @@ int main(void)
     /* Busy loop. */
     while (1u)
     {
-        for(int k = 0; errorMsg[k] != 0; k++)
+        for(int k = 0; echoMsg[k] != 0; k++)
         {
             MAP_UART_transmitData(EUSCI_A2_BASE, echoMsg[k]);
         }

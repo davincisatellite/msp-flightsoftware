@@ -33,35 +33,22 @@ void Console::init( unsigned int baudrate )
     // Selecting P3.2 and P3.3 in UART mode
     MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P3,
                                                    GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
+    //    Values equal to 115200 baudrate
+    const eUSCI_UART_ConfigV1 uartConfig =
+            {
+                    EUSCI_A_UART_CLOCKSOURCE_SMCLK,          // SMCLK Clock Source
+                    6,                                     // BRDIV = 78
+                    8,                                       // UCxBRF = 2
+                    32,                                       // UCxBRS = 0
+                    EUSCI_A_UART_NO_PARITY,                  // No Parity
+                    EUSCI_A_UART_LSB_FIRST,                  // MSB First
+                    EUSCI_A_UART_ONE_STOP_BIT,               // One stop bit
+                    EUSCI_A_UART_MODE,                       // UART mode
+                    EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION  // Oversampling
+            };
 
-    eUSCI_UART_ConfigV1 Config;
-
-    //Default Configuration, macro found in uart.h
-    Config.selectClockSource    = EUSCI_A_UART_CLOCKSOURCE_SMCLK;
-    Config.parity               = EUSCI_A_UART_NO_PARITY;
-    Config.msborLsbFirst        = EUSCI_A_UART_LSB_FIRST;
-    Config.numberofStopBits     = EUSCI_A_UART_ONE_STOP_BIT;
-    Config.uartMode             = EUSCI_A_UART_MODE;
-
-    unsigned int n = MAP_CS_getSMCLK() / baudrate;
-
-    if (n > 16)
-    {
-        Config.overSampling = EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION; // Over-sampling
-        Config.clockPrescalar = n >> 4;                                      // BRDIV = n / 16
-        Config.firstModReg = n - (Config.clockPrescalar << 4);               // UCxBRF = int((n / 16) - int(n / 16)) * 16
-    }
-    else
-    {
-        Config.overSampling = EUSCI_A_UART_LOW_FREQUENCY_BAUDRATE_GENERATION; // Low-frequency mode
-        Config.clockPrescalar = n;                                            // BRDIV = n
-        Config.firstModReg = 0;                                               // UCxBRF not used
-    }
-
-    Config.secondModReg = 0;    // UCxBRS = 0
-
-    MAP_UART_initModule( EUSCI_A0_BASE, &Config );
-    MAP_UART_initModule( EUSCI_A2_BASE, &Config );
+    MAP_UART_initModule( EUSCI_A0_BASE, &uartConfig );
+    MAP_UART_initModule( EUSCI_A2_BASE, &uartConfig );
 
     /* Enable UART modules */
     MAP_UART_enableModule( EUSCI_A0_BASE );
