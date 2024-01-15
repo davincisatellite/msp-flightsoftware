@@ -57,6 +57,8 @@ static uint16_t TXIter = 0;
 /* Test echo command. */
 unsigned char echoMsg[] = "echo 'Lets gooo'\r\n";
 
+unsigned char initCamera[] = "./camera.sh \r";
+
 int main(void)
 {
     /* UART baud rate. */
@@ -69,56 +71,58 @@ int main(void)
 
     delay_init();
 
+    /* Transmit camera command to OBC*/
+    for(int k = 0; initCamera[k] != 0; k++)
+    {
+        MAP_UART_transmitData(EUSCI_A2_BASE, initCamera[k]);
+    }
+
     /* Busy loop. */
     while (1u)
     {
-        for(int k = 0; echoMsg[k] != 0; k++)
-        {
-            MAP_UART_transmitData(EUSCI_A2_BASE, echoMsg[k]);
-        }
-
         delay_ms(1000);
     }
 }
-//
-//**
-// * UART receive interrupt.
-// *
-// * Each message received starts with a two-byte length followed by that many
-// * image bytes.
-// */
-//extern "C" void EUSCIA0_IRQHandler(void)
-//{
-//    uint_fast8_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
-//
-//    /* Clear interrupt flags so it can be triggered again. */
-//    MAP_UART_clearInterruptFlag(EUSCI_A0_BASE, status);
-//
-//    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
-//    {
-//        /* Get first length byte. */
-//        if (TXIter == 0)
-//        {
-//            TXLength = MAP_UART_receiveData(EUSCI_A0_BASE);
-//        }
-//            /* Get second length byte. */
-//        else if (TXIter == 1)
-//        {
-//            TXLength |= MAP_UART_receiveData(EUSCI_A0_BASE) << 8;
-//        }
-//            /* Get all image bytes. */
-//        else
-//        {
-//            TXData[TXByteCtr++] = MAP_UART_receiveData(EUSCI_A0_BASE);
-//        }
-//
-//        /* Initiate I2C transfer if all bytes have been received. */
-//        if (TXIter > 1 && TXByteCtr == TXLength)
-//        {
-//            TXByteIndex = 1;
-//            MAP_I2C_masterSendMultiByteStart(EUSCI_B0_BASE, TXData[0]);
-//        }
-//
-//        TXIter++;
-//    }
-//}
+
+**
+ * UART receive interrupt.
+ *
+ * Each message received starts with a two-byte length followed by that many
+ * image bytes.
+ */
+extern "C" void EUSCIA2_IRQHandler(void)
+{
+    uint_fast8_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A2_BASE);
+
+    /* Clear interrupt flags so it can be triggered again. */
+    MAP_UART_clearInterruptFlag(EUSCI_A2_BASE, status);
+
+    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+    {
+        /* Get first length byte. */
+        if (TXIter == 0)
+        {
+            TXLength = MAP_UART_receiveData(EUSCI_A2_BASE);
+        }
+            /* Get second length byte. */
+        else if (TXIter == 1)
+        {
+            TXLength |= MAP_UART_receiveData(EUSCI_A2_BASE) << 8;
+        }
+            /* Get all image bytes. */
+        else
+        {
+            TXData[TXByteCtr++] = MAP_UART_receiveData(EUSCI_A2_BASE);
+        }
+
+        /* Initiate UART 0 transfer back to PC */
+        if (TXIter > 1 && TXByteCtr == TXLength)
+        {
+            TXByteIndex = 1;
+
+            MAP_UART_transmitData(EUSCI_A0_BASE, TXData[0]));
+        }
+
+        TXIter++;
+    }
+}
