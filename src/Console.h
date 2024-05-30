@@ -8,7 +8,7 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#include <driverlib.h>
+#include  <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <stdarg.h>
 
 extern "C" {
