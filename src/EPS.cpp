@@ -164,13 +164,18 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
     return reply;
 }
 
+<<<<<<< HEAD
 EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
+=======
+EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx) {
+>>>>>>> origin/add-output-bus-channel-on
     standard_reply reply;
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
     wire.write(0x00);
     wire.write(0x06);
+<<<<<<< HEAD
     wire.write(0x32);
     wire.write(0x00);
 
@@ -422,6 +427,9 @@ EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address
     wire.write(0x00);
     wire.write(0x06);
     wire.write(0x18);
+=======
+    wire.write(0x16);
+>>>>>>> origin/add-output-bus-channel-on
     wire.write(0x00);
     wire.write(ch_idx);
 
