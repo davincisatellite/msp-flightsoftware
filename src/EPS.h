@@ -113,6 +113,7 @@ public:
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pdu_overcurrent_reply get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
+    static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
 };
 
 #endif //EPS_CONVERSION_EPS_H
