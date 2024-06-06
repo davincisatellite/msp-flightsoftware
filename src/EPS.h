@@ -44,6 +44,19 @@ public:
         uint8_t error;
     };
 
+    struct pdu_overcurrent_reply{
+        uint16_t ocf_cnt_ch[16];
+        uint16_t stat_ob_on;
+        uint16_t stat_ob_ocf;
+
+        uint8_t stid;
+        uint8_t ivid;
+        uint8_t rc;
+        uint8_t bid;
+        uint8_t stat;
+        uint8_t error;
+    };
+
     struct pcu_housekeeping_data_reply {
         uint8_t stid;
         uint8_t ivid;
@@ -98,6 +111,7 @@ public:
     static pbu_housekeeping_data_reply watchdog(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
+    static pdu_overcurrent_reply get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
 };
 
 #endif //EPS_CONVERSION_EPS_H
