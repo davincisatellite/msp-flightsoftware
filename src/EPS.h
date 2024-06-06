@@ -44,6 +44,21 @@ public:
         uint8_t error;
     };
 
+    struct pcu_housekeeping_data_reply {
+        uint8_t stid;
+        uint8_t ivid;
+        uint8_t rc;
+        uint8_t bid;
+        uint8_t stat;
+
+        uint16_t volt_brdsup;
+        uint16_t temp;
+        uint8_t vip_output[6];
+        uint8_t cc[4][14];      // Response CC_1 stored in cc[1]. Bytes are kept in the order that they are read
+
+        uint8_t error;
+    };
+
     struct pbu_housekeeping_data_reply {
         uint8_t stid;
         uint8_t ivid;
@@ -66,6 +81,7 @@ public:
     static standard_reply cancel_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply watchdog(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply watchdog(DWire &wire, uint8_t i2c_address);
+    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
 };
 
 #endif //EPS_CONVERSION_EPS_H
