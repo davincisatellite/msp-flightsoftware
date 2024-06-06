@@ -29,8 +29,6 @@
 #define PCU_3_ADDR 0x2E
 #define PCU_4_ADDR 0x2F
 
-#define
-
 #include "DWire.h"
 #include "delay.h"
 
