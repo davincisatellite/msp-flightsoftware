@@ -164,8 +164,10 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
     return reply;
 }
 
+// Removed this function decleration without body. Must be reimplemented with ICD page 36
+//EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx) {
+
 EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
-EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx) {
     standard_reply reply;
 
     /* Write command to EPS */

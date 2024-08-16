@@ -115,7 +115,7 @@ public:
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
-    static standard_reply output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
+    // static standard_reply output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx); // redo with page 36
     static standard_reply output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
 };
