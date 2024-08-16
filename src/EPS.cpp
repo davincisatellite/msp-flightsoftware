@@ -456,17 +456,17 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x14);
-    wire.write(0x00);
+    wire.write(0x00); // STID - system type identifier
+    wire.write(0x06); // IVID - interface version identifier
+    wire.write(0x14); // CC - command code
+    wire.write(0x00); // BID - board identifier
 
-    uint8_t bytes[2];
-    bytes[0] = (uint8_t)(x >> 8);   // most significant byte
-    bytes[1] = (uint8_t)(x & 0xFF); // least significant byte
+    uint8_t ch_bf[2]; // channel bitfield as two bytes
+    ch_bf[0] = (uint8_t) (bitflag >> 8);  // most significant byte
+    ch_bf[1] = (uint8_t) (bitflag & 0xFF); // least significant byte
 
-    wire.write(bytes[1])
-    wire.write(bytes[0])
+    wire.write(ch_bf[1]);
+    wire.write(ch_bf[0]);
 
     // delay
     delay_ms(25);
@@ -500,12 +500,12 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
     wire.write(0x12);
     wire.write(0x00);
 
-    uint8_t bytes[2];
-    bytes[0] = (uint8_t)(x >> 8);   // most significant byte
-    bytes[1] = (uint8_t)(x & 0xFF); // least significant byte
+    uint8_t ch_bf[2]; // channel bitfield as two bytes
+    ch_bf[0] = (uint8_t) (bitflag >> 8);  // most significant byte
+    ch_bf[1] = (uint8_t) (bitflag & 0xFF); // least significant byte
 
-    wire.write(bytes[1])
-    wire.write(bytes[0])
+    wire.write(ch_bf[1]);
+    wire.write(ch_bf[0]);
 
     // delay
     delay_ms(25);
