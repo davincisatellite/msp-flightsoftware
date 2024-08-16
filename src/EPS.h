@@ -105,6 +105,7 @@ public:
     static standard_reply output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
+    static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
 };
 
 #endif //EPS_CONVERSION_EPS_H
