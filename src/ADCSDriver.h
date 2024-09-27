@@ -56,15 +56,15 @@ typedef enum ADCSCommand {
 
 // Mode definitions
 typedef enum ADCSMode {
-    M_SLEEP             = 01,
-    M_IDLE              = 02,
-    M_SAFE              = 03,
-    M_SWITCH            = 04,
-    M_MEAS              = 05,
-    M_DUMP              = 06,
-    M_DETUMBLE          = 07,
-    M_CALIBRATE         = 08,
-    M_SUN_NADIR         = 09,
+    M_SLEEP             = 1,
+    M_IDLE              = 2,
+    M_SAFE              = 3,
+    M_SWITCH            = 4,
+    M_MEAS              = 5,
+    M_DUMP              = 6,
+    M_DETUMBLE          = 7,
+    M_CALIBRATE         = 8,
+    M_SUN_NADIR         = 9,
     M_EARTH_TRACK       = 10,
     M_INERTIAL          = 11
 } ADCSMode;
