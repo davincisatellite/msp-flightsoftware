@@ -30,7 +30,7 @@
 
 #define TIMEOUTLIMIT 0xFFFF
 
-#include <driverlib.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
 /* Device specific includes */
 //#include <inc/pins.h>

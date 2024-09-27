@@ -9,7 +9,7 @@
 #define RS485_H_
 
 #include "DataBus.h"
-#include <driverlib.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include "PQ9Frame.h"
 
 // Device specific includes

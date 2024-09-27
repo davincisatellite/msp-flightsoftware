@@ -8,7 +8,7 @@
 #ifndef DICEPAYLOADDRIVER_H_
 #define DICEPAYLOADDRIVER_H_
 
-#include <DicePayloadCommon.h>
+#include "DicePayloadCommon.h"
 #include "DicePayloadCommandHandler.h"
 
 using namespace DicePayload;

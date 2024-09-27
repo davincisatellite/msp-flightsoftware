@@ -5,7 +5,7 @@
  *      Author: Stefan van der Linden
  */
 
-#include <gpio.h>
+#include <ti/devices/msp432p4xx/driverlib/gpio.h>
 
 #ifndef INCLUDE_DWIRE_MSP432P401R_H_
 #define INCLUDE_DWIRE_MSP432P401R_H_

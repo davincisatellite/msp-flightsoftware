@@ -55,7 +55,7 @@ public:
         uint8_t bid;
         uint8_t stat;
         uint8_t error;
-    }
+    };
 
     struct config_reply {
         uint8_t stid;

@@ -5,7 +5,7 @@
  *      Author: Marco van Eerden
  */
 
-#include <DicePayloadDriver.h>
+#include "DicePayloadDriver.h"
 
 // TODO: remove before flight
 #include "Console.h"

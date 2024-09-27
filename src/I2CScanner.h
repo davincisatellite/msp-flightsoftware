@@ -14,7 +14,7 @@
 #ifndef __I2CSCANNER_H__
 #define __I2CSCANNER_H__
 
-#include <DWire.h>
+#include "DWire.h"
 
 class I2CScanner
 {

@@ -9,7 +9,7 @@
 #define DELAY_H_
 
 #include <stdint.h>
-#include <driverlib.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
 void delay_init();
 

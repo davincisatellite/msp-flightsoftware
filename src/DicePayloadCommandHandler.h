@@ -11,7 +11,7 @@
 #ifndef DICEPAYLOADCOMMANDHANDLER_H_
 #define DICEPAYLOADCOMMANDHANDLER_H_
 
-#include <DicePayloadCommon.h>
+#include "DicePayloadCommon.h"
 #include "DWire.h"
 
 using namespace DicePayload;
