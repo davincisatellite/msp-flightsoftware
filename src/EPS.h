@@ -55,7 +55,8 @@ public:
         uint8_t error;
 
         uint16_t par_id;
-        // TODO add PAR_VAL
+        uint8_t par_val[8]; // maximum length of PAR_VAL
+        uint8_t par_val_length; // actual length of PAR_VAL
     };
 
     static standard_reply reset_watchdog(DWire &wire, uint8_t i2c_address);
