@@ -55,6 +55,19 @@ public:
         uint8_t bid;
         uint8_t stat;
         uint8_t error;
+    }
+
+    struct config_reply {
+        uint8_t stid;
+        uint8_t ivid;
+        uint8_t rc;
+        uint8_t bid;
+        uint8_t stat;
+        uint8_t error;
+
+        uint16_t par_id;
+        uint8_t par_val[8]; // maximum length of PAR_VAL
+        uint8_t par_val_length; // actual length of PAR_VAL
     };
 
     struct pcu_housekeeping_data_reply {
@@ -86,6 +99,7 @@ public:
         uint8_t bp[3][22];      // Response BP_1 stored in bp[1]. Bytes are kept in the order that they are read
 
         uint8_t error;
+
     };
 
     static standard_reply reset_watchdog(DWire &wire, uint8_t i2c_address);
@@ -106,6 +120,7 @@ public:
     static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
+    static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id);
 };
 
 #endif //EPS_CONVERSION_EPS_H
