@@ -7,8 +7,8 @@
 
 #include "transmitter.h"
 
-Transmitter::Transmitter(DWire &dwire, uint8_t i2c_address) : wire(dwire) {
-    i2c_address = i2c_address;
+Transmitter::Transmitter(DWire &dwire, uint8_t i2c_address_def) : wire(dwire) {
+    i2c_address = i2c_address_def;
 }
 
 unsigned char Transmitter::report_state() {
@@ -78,7 +78,7 @@ unsigned char Transmitter::set_bitrate(uint16_t bitrate) {
             param = 0b00001000;
             break;
         default:
-            return 0;
+            return 1;
     }
     wire.beginTransmission(i2c_address);
     wire.write(0x28);

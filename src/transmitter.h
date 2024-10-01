@@ -18,7 +18,7 @@ protected:
     DWire &wire;
     uint8_t i2c_address;
 public:
-    Transmitter(DWire &dwire, uint8_t i2c_address);
+    Transmitter(DWire &dwire, uint8_t i2c_address_def);
 
     struct transmitter_state {
         bool on_idle; //true = tx remains on while idle

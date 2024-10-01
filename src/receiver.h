@@ -18,7 +18,7 @@ protected:
     DWire &wire;
     uint8_t i2c_address;
 public:
-    Receiver(DWire &dwire, uint8_t i2c_address);
+    Receiver(DWire &dwire, uint8_t i2c_address_def);
 
     struct frames_in_buffer {
         uint16_t number;

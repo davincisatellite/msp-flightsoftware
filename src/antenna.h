@@ -50,6 +50,7 @@ public:
     struct ant_temperature {
         uint16_t Vout;
 //        int16_t temp;
+        float temp;
         bool error;
     };
 
