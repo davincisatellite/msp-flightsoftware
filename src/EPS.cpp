@@ -3,8 +3,85 @@
 //
 #include "EPS.h"
 
+bool is_valid_param_id(uint16_t par_id) {
+    // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
+    const uint16_t valid_param_ids[] = {
+        0x1000,  // int8
+        0x2000,  // uint8
+        0x3000,  // int16
+        0x4000,  // uint16
+        0x5000,  // int32
+        0x6000,  // uint32
+        0x7000,  // float
+        0x8000,  // int64
+        0x9000,  // uint64
+        0xA000   // double
+    };
+
+    // Get the number of valid Param-IDs
+    const size_t num_valid_params = 10;
+
+    // Check if the given par_id is in the list of valid Param-IDs
+    for (size_t i = 0; i < num_valid_params; ++i) {
+        if (par_id == valid_param_ids[i]) {
+            return true; // Return true if par_id is valid
+        }
+    }
+
+    return false; // Return false if par_id is not in the list of valid param IDs
+}
+
+uint8_t get_param_length(uint16_t par_id) {
+    switch (par_id) {
+        case 0x1000: // int8
+            return 1;
+        case 0x2000: // int8
+            return 1;
+        case 0x3000: // int16
+            return 2;
+        case 0x4000: // uint16
+            return 2;
+        case 0x5000: // int32
+            return 4;
+        case 0x6000: // uint32
+            return 4;
+        case 0x7000: // float
+            return 4;
+        case 0x8000: // int64
+            return 8;
+        case 0x9000: // uint64
+            return 8;
+        case 0xA000: // double
+            return 8;
+        default:
+            return 0; // Invalid par_id
+    }
+}
+
 EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id) {
-    config_reply reply;
+    // Initialise reply with default value to avoid uninitialised fields
+    config_reply reply = {};
+    reply.error = 1;
+
+
+    // Validate the Param-ID based on the configuration list
+    if (!is_valid_param_id(par_id)) {
+        // Invalid par_id; return the reply with default values and error set to 1
+        return reply;
+    }
+
+    // Get the expected length of PAR_VAL for the given param ID
+    uint8_t par_val_length = get_param_length(par_id);
+    if (par_val_length == 0) { // Invalid param_id
+        // Return reply with error still set to 1 (already initialised)
+        return reply;
+    }
+
+    // Boundary check to ensure par_val_length does not exceed the size of reply.par_val array
+    if (par_val_length > sizeof(reply.par_val)) {
+        // Return immediately to avoid buffer overflow, error is already set to 1
+        return reply;
+    }
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
@@ -13,6 +90,7 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
     wire.write(0x86); // Command code (Reset Configuration Parameter)
     wire.write(0x00); // BID
 
+    // Write Param-ID in little-endian format
     wire.write(par_id & 0xFF);  // least significant byte of par_id
     wire.write(par_id >> 8);    // most significant byte of par_id
 
@@ -23,7 +101,7 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
     delay_ms(25);
 
     // Request 8 bytes + n bytes of PAR_VAL data, assuming max length of PAR_VAL (8 bytes)
-    uint8_t response_length = 10; // 8 bytes fixed part + 2 bytes PAR_ID (reserved byte already included)
+    uint8_t response_length = 8 + par_val_length; // 8 bytes fixed part + 2 bytes PAR_ID (reserved byte already included)
     uint8_t response = wire.requestFrom(i2c_address, response_length);
 
     // If the response is the expected length, parse the data
@@ -41,15 +119,14 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
         reply.par_id = wire.read() + (wire.read() << 8);
 
         // Read the PAR_VAL (up to 8 bytes)
-        uint8_t par_val_length = response - 8; // remaining bytes are for PAR_VAL
         for (uint8_t i = 0; i < par_val_length; ++i) {
             reply.par_val[i] = wire.read();
         }
         reply.par_val_length = par_val_length;
 
-        reply.error = false;
+        reply.error = 0;  // No error
     } else {
-        reply.error = true;
+        reply.error = 1;  // Error
     }
 
     return reply;
