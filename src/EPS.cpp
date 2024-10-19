@@ -3,6 +3,7 @@
 //
 #include "EPS.h"
 
+
 bool is_valid_param_id(uint16_t par_id) {
     // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
     const uint16_t valid_param_ids[] = {
@@ -31,6 +32,7 @@ bool is_valid_param_id(uint16_t par_id) {
     return false; // Return false if par_id is not in the list of valid param IDs
 }
 
+// The data type determines how many bytes need to be supplied as the PAR_VAL! (page 77 ICD)
 uint8_t get_param_length(uint16_t par_id) {
     switch (par_id) {
         case 0x1000: // int8
@@ -56,6 +58,88 @@ uint8_t get_param_length(uint16_t par_id) {
         default:
             return 0; // Invalid par_id
     }
+}
+
+EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8_t par_id, uint8_t *par_val) {
+    // Initialise reply structure
+    config_reply reply = {};
+    reply.error = 1;  // Set default error code
+
+    // Validate the PAR_ID based on the configuration list
+    if (!is_valid_param_id(par_id)) {
+        // Invalid PAR_ID; return the reply with default values and error set to 1
+        return reply;
+    }
+
+    // Get the expected length of PAR_VAL for the given PAR_ID
+    uint8_t par_val_length = get_param_length(par_id);
+    if (par_val_length == 0) { // Invalid param_id
+        return reply;
+    }
+
+    // Boundary check to ensure par_val_length does not exceed the size of reply.par_val array
+    if (par_val_length > sizeof(reply.par_val)) {
+        return reply;  // Return immediately to avoid buffer overflow
+    }
+
+    // Begin I2C transmission to the given I2C address
+    wire.beginTransmission(i2c_address);
+
+    // Command structure based on page 63
+    wire.write(0x00); // STID
+    wire.write(0x06); // IVID
+    wire.write(0x84); // Command code (Reset Configuration Parameter)
+    wire.write(0x00); // BID
+
+    wire.write(par_id & 0xFF);  // least significant byte of PAR_ID
+    wire.write(par_id >> 8);    // most significant byte of PAR_ID
+
+    // Write the PAR_VAL data
+    for (uint8_t i = 0; i < par_val_length; ++i) {
+        wire.write(par_val[i]);
+    }
+
+    // End transmission
+    wire.endTransmission();
+
+    // delay for the operation to complete
+    delay_ms(25);
+
+    // Get the expected length of PAR_VAL for the given PAR_ID
+    uint8_t par_val_length = get_param_length(par_id);
+
+    // Request 8 bytes + PAR_VAL length of data
+    uint8_t response_length = 8 + par_val_length;
+    uint8_t response = wire.requestForm(i2c_address, response_length);
+
+    // If the response is the expected length, process the reply
+    if (response == response_length) {
+        reply.stid = wire.read();  // STID
+        reply.ivid = wire.read();  // IVID
+        reply.rc = wire.read();    // Response code
+        reply.bid = wire.read();   // BID
+        reply.stat = wire.read();  // Status byte
+
+        // Reserved byte (skip)
+        wire.read();
+
+        // Param-ID (read in little-endian)
+        reply.par_id = wire.read() + (wire.read() << 8);
+
+        // Read the PAR_VAL
+        for (uint8_t i = 0; i < par_val_length; ++i) {
+            reply.par_val[i] = wire.read();
+        }
+        reply.par_val_length = par_val_length;
+
+        // Set error code to 0 (success)
+        reply.error = 0;
+    } else {
+        // Set error code to 1 (failure)
+        reply.error = 1;
+    }
+
+    return reply;
 }
 
 EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id) {
