@@ -121,6 +121,7 @@ public:
     static standard_reply output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
     static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id);
+    static config_reply set_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id, uint8_t *par_val);
 };
 
 #endif //EPS_CONVERSION_EPS_H
