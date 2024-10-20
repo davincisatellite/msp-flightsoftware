@@ -4,9 +4,9 @@
 #include "EPS.h"
 
 // Constants for command codes and other identifiers
-const uint8_t STID = 0x00;
-const uint8_t IVID = 0x06;
-const uint8_t BID = 0x00;
+const uint8_t STID = 0x00;                                      // reference: page 17 of 87 (ICD)
+const uint8_t IVID = 0x06;                                      // reference: page 19 of 87 (ICD)
+const uint8_t BID = 0x00;                                       // reference: page 20 of 87 (ICD)
 const uint8_t CMD_CODE_SET_PARAM = 0x84;                        // reference: page 64 of 87 (ICD)
 const uint8_t CMD_CODE_RESET_PARAM = 0x86;                      // reference: page 65 of 87 (ICD)
 const uint8_t CMD_CODE_WATCHDOG = 0x06;                         // reference: page 32 of 87 (ICD)
@@ -110,10 +110,10 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
     wire.beginTransmission(i2c_address);
 
     // Command structure based on page 63
-    wire.write(STID); // STID
-    wire.write(IVID); // IVID
-    wire.write(CMD_CODE_SET_PARAM); // Command code (Reset Configuration Parameter)
-    wire.write(BID); // BID
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_SET_PARAM);
+    wire.write(BID);
 
     wire.write(par_id & 0xFF);  // least significant byte of PAR_ID
     wire.write(par_id >> 8);    // most significant byte of PAR_ID
@@ -138,11 +138,11 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
 
     // If the response is the expected length, process the reply
     if (response == response_length) {
-        reply.stid = wire.read();  // STID
-        reply.ivid = wire.read();  // IVID
-        reply.rc = wire.read();    // Response code
-        reply.bid = wire.read();   // BID
-        reply.stat = wire.read();  // Status byte
+        reply.stid = wire.read();
+        reply.ivid = wire.read();
+        reply.rc = wire.read();
+        reply.bid = wire.read();
+        reply.stat = wire.read();
 
         // Reserved byte (skip)
         wire.read();
@@ -193,10 +193,10 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(STID); // STID
-    wire.write(IVID); // IVID
-    wire.write(CMD_CODE_RESET_PARAM); // Command code (Reset Configuration Parameter)
-    wire.write(BID); // BID
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_RESET_PARAM);
+    wire.write(BID);
 
     // Write Param-ID in little-endian format
     wire.write(par_id & 0xFF);  // least significant byte of par_id
@@ -693,10 +693,10 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(STID); // STID - system type identifier
-    wire.write(IVID); // IVID - interface version identifier
-    wire.write(CMD_CODE_OUTPUT_BUS_GROUP_STATE); // CC - command code
-    wire.write(BID); // BID - board identifier
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_OUTPUT_BUS_GROUP_STATE);
+    wire.write(BID);
 
     uint8_t ch_bf[2]; // channel bitfield as two bytes
     ch_bf[0] = (uint8_t) (bitflag >> 8);  // most significant byte
