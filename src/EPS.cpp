@@ -3,6 +3,29 @@
 //
 #include "EPS.h"
 
+// Constants for command codes and other identifiers
+const uint8_t STID = 0x00;
+const uint8_t IVID = 0x06;
+const uint8_t BID = 0x00;
+const uint8_t CMD_CODE_SET_PARAM = 0x84;                        // reference: page 64 of 87 (ICD)
+const uint8_t CMD_CODE_RESET_PARAM = 0x86;                      // reference: page 65 of 87 (ICD)
+const uint8_t CMD_CODE_WATCHDOG = 0x06;                         // reference: page 32 of 87 (ICD)
+const uint8_t CMD_CODE_NO_OPERATION = 0x02;                     // reference: page 30 of 87 (ICD)
+const uint8_t CMD_CODE_SYSTEM_RESET = 0xAA;                     // reference: page 29 of 87 (ICD)
+const uint8_t RESET_KEY_SYSTEM_RESET = 0xA6;                    // reference: page 29 of 87 (ICD)
+const uint8_t CMD_CODE_CANCEL_OPERATION = 0x04;                 // reference: page 31 of 87 (ICD)
+const uint8_t CMD_CODE_SWITCH_TO_SAFETY_MODE = 0x32;            // reference: page 39 of 87 (ICD)
+const uint8_t CMD_CODE_GET_PDU_OVERCURRENT_FAULT_STATE = 0x42;  // reference: page 43 of 87 (ICD)
+const uint8_t CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60;    // reference: page 53 of 87 (ICD)
+const uint8_t CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72;    // reference: page 60 of 87 (ICD)
+const uint8_t CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70;    // reference: page 58 of 87 (ICD)
+const uint8_t CMD_CODE_SWITCH_NOMINAL_MODE = 0x30;              // reference: page 38 of 87 (ICD)
+const uint8_t CMD_CODE_OUTPUT_BUS_CHANNEL_OFF = 0x18;           // reference: page 37 of 87 (ICD)
+const uint8_t CMD_CODE_OUTPUT_BUS_GROUP_STATE = 0x14;           // reference: page 35 of 87 (ICD)
+const uint8_t CMD_CODE_OUTPUT_BUS_GROUP_OFF = 0x12;             // reference: page 34 of 87 (ICD)
+const uint8_t CMD_CODE_OUTPUT_BUS_GROUP_ON = 0x10;              // reference: page 33 of 87 (ICD)
+const uint8_t CMD_CODE_RESET_CONFIGURATION = 0x90;              // reference: page 66 of 87 (ICD)
+const uint8_t CONF_KEY_RESET_CONFIGURATION = 0xA7;              // reference: page 66 of 87 (ICD)
 
 bool is_valid_param_id(uint16_t par_id) {
     // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
@@ -60,6 +83,7 @@ uint8_t get_param_length(uint16_t par_id) {
     }
 }
 
+
 EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8_t par_id, uint8_t *par_val) {
     // Initialise reply structure
     config_reply reply = {};
@@ -86,10 +110,10 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
     wire.beginTransmission(i2c_address);
 
     // Command structure based on page 63
-    wire.write(0x00); // STID
-    wire.write(0x06); // IVID
-    wire.write(0x84); // Command code (Reset Configuration Parameter)
-    wire.write(0x00); // BID
+    wire.write(STID); // STID
+    wire.write(IVID); // IVID
+    wire.write(CMD_CODE_SET_PARAM); // Command code (Reset Configuration Parameter)
+    wire.write(BID); // BID
 
     wire.write(par_id & 0xFF);  // least significant byte of PAR_ID
     wire.write(par_id >> 8);    // most significant byte of PAR_ID
@@ -169,10 +193,10 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00); // STID
-    wire.write(0x06); // IVID
-    wire.write(0x86); // Command code (Reset Configuration Parameter)
-    wire.write(0x00); // BID
+    wire.write(STID); // STID
+    wire.write(IVID); // IVID
+    wire.write(CMD_CODE_RESET_PARAM); // Command code (Reset Configuration Parameter)
+    wire.write(BID); // BID
 
     // Write Param-ID in little-endian format
     wire.write(par_id & 0xFF);  // least significant byte of par_id
@@ -223,10 +247,10 @@ EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x06);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_WATCHDOG);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -255,10 +279,10 @@ EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x02);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_NO_OPERATION);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -287,11 +311,11 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0xAA);
-    wire.write(0x00);
-    wire.write(0xA6);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_SYSTEM_RESET);
+    wire.write(BID);
+    wire.write(RESET_KEY_SYSTEM_RESET);
 
     // delay
     delay_ms(25);
@@ -320,10 +344,10 @@ EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x04);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_CANCEL_OPERATION);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -352,10 +376,10 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x06);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_WATCHDOG);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -386,10 +410,10 @@ EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x32);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_SWITCH_TO_SAFETY_MODE);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -417,10 +441,10 @@ EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uin
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x42);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_GET_PDU_OVERCURRENT_FAULT_STATE);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -460,10 +484,10 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire,
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x62);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_RAW);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -509,10 +533,10 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire,
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x72);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_ENG);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -556,10 +580,10 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_raw(DWire &wire,
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x70);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_RAW);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -605,10 +629,10 @@ EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x30);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_SWITCH_NOMINAL_MODE);
+    wire.write(BID);
 
     // delay
     delay_ms(25);
@@ -636,11 +660,10 @@ EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x18);
-    wire.write(0x16);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_OUTPUT_BUS_CHANNEL_OFF);
+    wire.write(BID);
     wire.write(ch_idx);
 
     // delay
@@ -670,10 +693,10 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00); // STID - system type identifier
-    wire.write(0x06); // IVID - interface version identifier
-    wire.write(0x14); // CC - command code
-    wire.write(0x00); // BID - board identifier
+    wire.write(STID); // STID - system type identifier
+    wire.write(IVID); // IVID - interface version identifier
+    wire.write(CMD_CODE_OUTPUT_BUS_GROUP_STATE); // CC - command code
+    wire.write(BID); // BID - board identifier
 
     uint8_t ch_bf[2]; // channel bitfield as two bytes
     ch_bf[0] = (uint8_t) (bitflag >> 8);  // most significant byte
@@ -709,10 +732,10 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x12);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_OUTPUT_BUS_GROUP_OFF);
+    wire.write(BID);
 
     uint8_t ch_bf[2]; // channel bitfield as two bytes
     ch_bf[0] = (uint8_t) (bitflag >> 8);  // most significant byte
@@ -748,10 +771,10 @@ EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, u
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x10);
-    wire.write(0x00);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_OUTPUT_BUS_GROUP_ON);
+    wire.write(BID);
 
     uint8_t bytes[2];
     bytes[0] = (uint8_t)(bitflag >> 8);   // most significant byte
@@ -787,11 +810,11 @@ EPS::standard_reply EPS::reset_configuration(DWire &wire, uint8_t i2c_address) {
 
     /* Write command to EPS */
     wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x02);
-    wire.write(0x90);
-    wire.write(0x00);
-    wire.write(0xA7);
+    wire.write(STID);
+    wire.write(IVID);
+    wire.write(CMD_CODE_RESET_CONFIGURATION);
+    wire.write(BID);
+    wire.write(CONF_KEY_RESET_CONFIGURATION);
 
     // delay
     delay_ms(25);
