@@ -4,28 +4,37 @@
 #include "EPS.h"
 
 // Constants for command codes and other identifiers
-const uint8_t STID = 0x00;                                      // reference: page 17 of 87 (ICD)
-const uint8_t IVID = 0x06;                                      // reference: page 19 of 87 (ICD)
-const uint8_t BID = 0x00;                                       // reference: page 20 of 87 (ICD)
-const uint8_t CMD_CODE_SET_PARAM = 0x84;                        // reference: page 64 of 87 (ICD)
-const uint8_t CMD_CODE_RESET_PARAM = 0x86;                      // reference: page 65 of 87 (ICD)
-const uint8_t CMD_CODE_WATCHDOG = 0x06;                         // reference: page 32 of 87 (ICD)
-const uint8_t CMD_CODE_NO_OPERATION = 0x02;                     // reference: page 30 of 87 (ICD)
-const uint8_t CMD_CODE_SYSTEM_RESET = 0xAA;                     // reference: page 29 of 87 (ICD)
-const uint8_t RESET_KEY_SYSTEM_RESET = 0xA6;                    // reference: page 29 of 87 (ICD)
-const uint8_t CMD_CODE_CANCEL_OPERATION = 0x04;                 // reference: page 31 of 87 (ICD)
-const uint8_t CMD_CODE_SWITCH_TO_SAFETY_MODE = 0x32;            // reference: page 39 of 87 (ICD)
-const uint8_t CMD_CODE_GET_PDU_OVERCURRENT_FAULT_STATE = 0x42;  // reference: page 43 of 87 (ICD)
-const uint8_t CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60;    // reference: page 53 of 87 (ICD)
-const uint8_t CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72;    // reference: page 60 of 87 (ICD)
-const uint8_t CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70;    // reference: page 58 of 87 (ICD)
-const uint8_t CMD_CODE_SWITCH_NOMINAL_MODE = 0x30;              // reference: page 38 of 87 (ICD)
-const uint8_t CMD_CODE_OUTPUT_BUS_CHANNEL_OFF = 0x18;           // reference: page 37 of 87 (ICD)
-const uint8_t CMD_CODE_OUTPUT_BUS_GROUP_STATE = 0x14;           // reference: page 35 of 87 (ICD)
-const uint8_t CMD_CODE_OUTPUT_BUS_GROUP_OFF = 0x12;             // reference: page 34 of 87 (ICD)
-const uint8_t CMD_CODE_OUTPUT_BUS_GROUP_ON = 0x10;              // reference: page 33 of 87 (ICD)
-const uint8_t CMD_CODE_RESET_CONFIGURATION = 0x90;              // reference: page 66 of 87 (ICD)
-const uint8_t CONF_KEY_RESET_CONFIGURATION = 0xA7;              // reference: page 66 of 87 (ICD)
+enum Identifiers {
+    STID = 0x00,                                      // reference: page 17 of 87 (ICD)
+    IVID = 0x06,                                      // reference: page 19 of 87 (ICD)
+    BID = 0x00                                        // reference: page 20 of 87 (ICD)
+};
+
+enum CommandCode {
+    CMD_CODE_SET_PARAM = 0x84,                        // reference: page 64 of 87 (ICD)
+    CMD_CODE_RESET_PARAM = 0x86,                      // reference: page 65 of 87 (ICD)
+    CMD_CODE_WATCHDOG = 0x06,                         // reference: page 32 of 87 (ICD)
+    CMD_CODE_NO_OPERATION = 0x02,                     // reference: page 30 of 87 (ICD)
+    CMD_CODE_SYSTEM_RESET = 0xAA,                     // reference: page 29 of 87 (ICD)
+    CMD_CODE_CANCEL_OPERATION = 0x04,                 // reference: page 31 of 87 (ICD)
+    CMD_CODE_SWITCH_TO_SAFETY_MODE = 0x32,            // reference: page 39 of 87 (ICD)
+    CMD_CODE_GET_PDU_OVERCURRENT_FAULT_STATE = 0x42,  // reference: page 43 of 87 (ICD)
+    CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60,    // reference: page 53 of 87 (ICD)
+    CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72,    // reference: page 60 of 87 (ICD)
+    CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70,    // reference: page 58 of 87 (ICD)
+    CMD_CODE_SWITCH_NOMINAL_MODE = 0x30,              // reference: page 38 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_CHANNEL_OFF = 0x18,           // reference: page 37 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_GROUP_STATE = 0x14,           // reference: page 35 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_GROUP_OFF = 0x12,             // reference: page 34 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_GROUP_ON = 0x10,              // reference: page 33 of 87 (ICD)
+    CMD_CODE_RESET_CONFIGURATION = 0x90               // reference: page 66 of 87 (ICD)
+};
+
+// Enum for reset keys or confirmation keys
+enum ResetKey {
+    RESET_KEY_SYSTEM_RESET = 0xA6,                    // reference: page 29 of 87 (ICD)
+    CONF_KEY_RESET_CONFIGURATION = 0xA7               // reference: page 66 of 87 (ICD)
+};
 
 bool is_valid_param_id(uint16_t par_id) {
     // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
@@ -83,7 +92,7 @@ uint8_t get_param_length(uint16_t par_id) {
     }
 }
 
-void writeCommand(Dwire &wire, uint8_t i2c_address, uint8_t stid, uint8_t ivid, uint8_t commandCode, uint8_t bid) {
+void writeCommand(Dwire &wire, uint8_t i2c_address, Identifiers stid, Identifiers ivid, CommandCode commandCode, Identifiers bid) {
     wire.beginTransmission(i2c_address);
     wire.write(stid);
     wire.write(ivid);
