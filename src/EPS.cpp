@@ -147,11 +147,11 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
 
     // If the response is the expected length, process the reply
     if (response == response_length) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // Reserved byte (skip)
         wire.read();
@@ -218,11 +218,11 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
 
     // If the response is the expected length, parse the data
     if (response == response_length) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // Read and discard the reserved byte
         wire.read();
@@ -258,11 +258,11 @@ EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -285,11 +285,11 @@ EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -314,11 +314,11 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -341,11 +341,11 @@ EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -368,11 +368,11 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -397,11 +397,11 @@ EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -423,11 +423,11 @@ EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uin
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         wire.read();
@@ -461,11 +461,11 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire,
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         wire.read();
@@ -505,11 +505,11 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire,
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         (void) wire.read();
@@ -547,11 +547,11 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_raw(DWire &wire,
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         wire.read();
@@ -590,11 +590,11 @@ EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -617,11 +617,11 @@ EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -650,11 +650,11 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -683,11 +683,11 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -717,11 +717,11 @@ EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, u
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -745,11 +745,11 @@ EPS::standard_reply EPS::reset_configuration(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
