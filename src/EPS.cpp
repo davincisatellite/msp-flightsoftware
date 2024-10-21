@@ -20,6 +20,7 @@ enum CommandCode {
     CMD_CODE_SWITCH_TO_SAFETY_MODE = 0x32,            // reference: page 39 of 87 (ICD)
     CMD_CODE_GET_PDU_OVERCURRENT_FAULT_STATE = 0x42,  // reference: page 43 of 87 (ICD)
     CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60,    // reference: page 53 of 87 (ICD)
+    CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_AVG = 0x64,    // reference: page 56 of 87 (ICD)
     CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72,    // reference: page 60 of 87 (ICD)
     CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_AVG = 0x74,    // reference: page 61 of 87 (ICD)
     CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70,    // reference: page 58 of 87 (ICD)
@@ -493,6 +494,52 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire,
 
     return reply;
 }
+
+EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+    pbu_housekeeping_data_reply reply;
+
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_AVG, BID);
+
+    // delay
+    delay_ms(25);
+
+    // request 5 bytes of data (i.e) the length of the response
+    uint8_t response = wire.requestFrom(i2c_address, 5);
+
+    // if response if 5 bytes long populate reply struct else mark error
+    if (response == 5) {
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
+
+        // read (reserved) and discard
+        (void) wire.read();
+
+        reply.volt_brdsup = wire.read() + (wire.read() << 1);
+        reply.temp = wire.read() + (wire.read() << 1);
+
+        for (int i = 0; i < 6; ++i) {
+            reply.vip_input[i] = wire.read();
+        }
+
+        reply.stat_bu = wire.read() + (wire.read() << 1);
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 22; ++j) {
+                reply.bp[i][j] = wire.read();
+            }
+        }
+
+        reply.error = false;
+    } else {
+        reply.error = true;
+    }
+
+    return reply;
+}
+
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
     pcu_housekeeping_data_reply reply;
 
