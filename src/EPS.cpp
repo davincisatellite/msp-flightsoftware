@@ -3,6 +3,38 @@
 //
 #include "EPS.h"
 
+// Constants for command codes and other identifiers
+enum Identifiers {
+    STID = 0x00,                                      // reference: page 17 of 87 (ICD)
+    IVID = 0x06,                                      // reference: page 19 of 87 (ICD)
+    BID = 0x00                                        // reference: page 20 of 87 (ICD)
+};
+
+enum CommandCode {
+    CMD_CODE_SET_PARAM = 0x84,                        // reference: page 64 of 87 (ICD)
+    CMD_CODE_RESET_PARAM = 0x86,                      // reference: page 65 of 87 (ICD)
+    CMD_CODE_WATCHDOG = 0x06,                         // reference: page 32 of 87 (ICD)
+    CMD_CODE_NO_OPERATION = 0x02,                     // reference: page 30 of 87 (ICD)
+    CMD_CODE_SYSTEM_RESET = 0xAA,                     // reference: page 29 of 87 (ICD)
+    CMD_CODE_CANCEL_OPERATION = 0x04,                 // reference: page 31 of 87 (ICD)
+    CMD_CODE_SWITCH_TO_SAFETY_MODE = 0x32,            // reference: page 39 of 87 (ICD)
+    CMD_CODE_GET_PDU_OVERCURRENT_FAULT_STATE = 0x42,  // reference: page 43 of 87 (ICD)
+    CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60,    // reference: page 53 of 87 (ICD)
+    CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72,    // reference: page 60 of 87 (ICD)
+    CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70,    // reference: page 58 of 87 (ICD)
+    CMD_CODE_SWITCH_NOMINAL_MODE = 0x30,              // reference: page 38 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_CHANNEL_OFF = 0x18,           // reference: page 37 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_GROUP_STATE = 0x14,           // reference: page 35 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_GROUP_OFF = 0x12,             // reference: page 34 of 87 (ICD)
+    CMD_CODE_OUTPUT_BUS_GROUP_ON = 0x10,              // reference: page 33 of 87 (ICD)
+    CMD_CODE_RESET_CONFIGURATION = 0x90               // reference: page 66 of 87 (ICD)
+};
+
+// Enum for reset keys or confirmation keys
+enum ResetKey {
+    RESET_KEY_SYSTEM_RESET = 0xA6,                    // reference: page 29 of 87 (ICD)
+    CONF_KEY_RESET_CONFIGURATION = 0xA7               // reference: page 66 of 87 (ICD)
+};
 
 bool is_valid_param_id(uint16_t par_id) {
     // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
@@ -60,6 +92,14 @@ uint8_t get_param_length(uint16_t par_id) {
     }
 }
 
+void writeCommand(Dwire &wire, uint8_t i2c_address, Identifiers stid, Identifiers ivid, CommandCode commandCode, Identifiers bid) {
+    wire.beginTransmission(i2c_address);
+    wire.write(stid);
+    wire.write(ivid);
+    wire.write(commandCode);
+    wire.write(bid);
+}
+
 EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8_t par_id, uint8_t *par_val) {
     // Initialise reply structure
     config_reply reply = {};
@@ -82,14 +122,7 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
         return reply;  // Return immediately to avoid buffer overflow
     }
 
-    // Begin I2C transmission to the given I2C address
-    wire.beginTransmission(i2c_address);
-
-    // Command structure based on page 63
-    wire.write(0x00); // STID
-    wire.write(0x06); // IVID
-    wire.write(0x84); // Command code (Reset Configuration Parameter)
-    wire.write(0x00); // BID
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_SET_PARAM, BID);
 
     wire.write(par_id & 0xFF);  // least significant byte of PAR_ID
     wire.write(par_id >> 8);    // most significant byte of PAR_ID
@@ -114,11 +147,11 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
 
     // If the response is the expected length, process the reply
     if (response == response_length) {
-        reply.stid = wire.read();  // STID
-        reply.ivid = wire.read();  // IVID
-        reply.rc = wire.read();    // Response code
-        reply.bid = wire.read();   // BID
-        reply.stat = wire.read();  // Status byte
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // Reserved byte (skip)
         wire.read();
@@ -167,12 +200,7 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
         return reply;
     }
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00); // STID
-    wire.write(0x06); // IVID
-    wire.write(0x86); // Command code (Reset Configuration Parameter)
-    wire.write(0x00); // BID
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_RESET_PARAM, BID);
 
     // Write Param-ID in little-endian format
     wire.write(par_id & 0xFF);  // least significant byte of par_id
@@ -190,11 +218,11 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
 
     // If the response is the expected length, parse the data
     if (response == response_length) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // Read and discard the reserved byte
         wire.read();
@@ -220,13 +248,7 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
 EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
-
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x06);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_WATCHDOG, BID);
 
     // delay
     delay_ms(25);
@@ -236,11 +258,11 @@ EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -253,12 +275,7 @@ EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
 EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x02);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_NO_OPERATION, BID);
 
     // delay
     delay_ms(25);
@@ -268,11 +285,11 @@ EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -286,12 +303,8 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
     /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0xAA);
-    wire.write(0x00);
-    wire.write(0xA6);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_SYSTEM_RESET, BID);
+    wire.write(RESET_KEY_SYSTEM_RESET);
 
     // delay
     delay_ms(25);
@@ -301,11 +314,11 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -318,12 +331,7 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
 EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x04);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_CANCEL_OPERATION, BID);
 
     // delay
     delay_ms(25);
@@ -333,11 +341,11 @@ EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -350,12 +358,7 @@ EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
 EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x06);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_WATCHDOG, BID);
 
     // delay
     delay_ms(25);
@@ -365,11 +368,11 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -384,12 +387,7 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
 EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x32);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_SWITCH_TO_SAFETY_MODE, BID);
 
     // delay
     delay_ms(25);
@@ -399,11 +397,11 @@ EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -415,12 +413,7 @@ EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
 EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address) {
     pdu_overcurrent_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x42);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_GET_PDU_OVERCURRENT_FAULT_STATE, BID);
 
     // delay
     delay_ms(25);
@@ -430,11 +423,11 @@ EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uin
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         wire.read();
@@ -458,12 +451,7 @@ EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uin
 EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
     pbu_housekeeping_data_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x62);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_GET_PBU_HOUSEKEEPING_DATA_RAW, BID);
 
     // delay
     delay_ms(25);
@@ -473,11 +461,11 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire,
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         wire.read();
@@ -507,12 +495,7 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire,
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
     pcu_housekeeping_data_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x72);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_ENG, BID);
 
     // delay
     delay_ms(25);
@@ -522,11 +505,11 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire,
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         (void) wire.read();
@@ -554,12 +537,7 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire,
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
     pcu_housekeeping_data_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x70);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_GET_PCU_HOUSEKEEPING_DATA_RAW, BID);
 
     // delay
     delay_ms(25);
@@ -569,11 +547,11 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_raw(DWire &wire,
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
 
         // read (reserved) and discard
         wire.read();
@@ -602,13 +580,7 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_raw(DWire &wire,
 EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
-
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x30);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_SWITCH_NOMINAL_MODE, BID);
 
     // delay
     delay_ms(25);
@@ -618,11 +590,11 @@ EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -634,13 +606,7 @@ EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
 EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx) {
     standard_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x18);
-    wire.write(0x16);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_OUTPUT_BUS_CHANNEL_OFF, BID);
     wire.write(ch_idx);
 
     // delay
@@ -651,11 +617,11 @@ EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -667,13 +633,7 @@ EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address
 EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag) {
     standard_reply reply;
 
-
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00); // STID - system type identifier
-    wire.write(0x06); // IVID - interface version identifier
-    wire.write(0x14); // CC - command code
-    wire.write(0x00); // BID - board identifier
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_OUTPUT_BUS_GROUP_STATE, BID);
 
     uint8_t ch_bf[2]; // channel bitfield as two bytes
     ch_bf[0] = (uint8_t) (bitflag >> 8);  // most significant byte
@@ -690,11 +650,11 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -706,13 +666,7 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
 EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag) {
     standard_reply reply;
 
-
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x12);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_OUTPUT_BUS_GROUP_OFF, BID);
 
     uint8_t ch_bf[2]; // channel bitfield as two bytes
     ch_bf[0] = (uint8_t) (bitflag >> 8);  // most significant byte
@@ -729,11 +683,11 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -746,12 +700,7 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
 EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag) {
     standard_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x06);
-    wire.write(0x10);
-    wire.write(0x00);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_OUTPUT_BUS_GROUP_ON, BID);
 
     uint8_t bytes[2];
     bytes[0] = (uint8_t)(bitflag >> 8);   // most significant byte
@@ -768,11 +717,11 @@ EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, u
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
@@ -785,13 +734,8 @@ EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, u
 EPS::standard_reply EPS::reset_configuration(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
-    /* Write command to EPS */
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00);
-    wire.write(0x02);
-    wire.write(0x90);
-    wire.write(0x00);
-    wire.write(0xA7);
+    writeCommand(wire, i2c_address, STID, IVID, CMD_CODE_RESET_CONFIGURATION, BID);
+    wire.write(CONF_KEY_RESET_CONFIGURATION);
 
     // delay
     delay_ms(25);
@@ -801,11 +745,11 @@ EPS::standard_reply EPS::reset_configuration(DWire &wire, uint8_t i2c_address) {
 
     // if response if 5 bytes long populate reply struct else mark error
     if (response == 5) {
-        reply.stid = wire.read();
-        reply.ivid = wire.read();
-        reply.rc = wire.read();
-        reply.bid = wire.read();
-        reply.stat = wire.read();
+        reply.stid = wire.read();   // STID
+        reply.ivid = wire.read();   // IVID
+        reply.rc = wire.read();     // Response code
+        reply.bid = wire.read();    // BID
+        reply.stat = wire.read();   // Status byte
         reply.error = false;
     } else {
         reply.error = true;
