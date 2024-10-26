@@ -95,15 +95,15 @@ uint8_t get_param_length(uint16_t par_id) {
     }
 }
 
-void writeCommand(Dwire &wire, uint8_t i2c_address, CommandCode commandCode) {
+void writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
     wire.beginTransmission(i2c_address);
     wire.write(STID);
     wire.write(IVID);
-    wire.write(commandCode);
+    wire.write(static_cast<uint8_t>(commandCode));
     wire.write(BID);
 }
 
-void readCommand(DWire &wire, ReplyBase &reply) {
+void readCommand(DWire &wire, EPS::ReplyBase &reply) {
     reply.stid = wire.read();   // STID
     reply.ivid = wire.read();   // IVID
     reply.rc = wire.read();     // Response code
@@ -111,7 +111,7 @@ void readCommand(DWire &wire, ReplyBase &reply) {
     reply.stat = wire.read();   // Status byte
 }
 
-EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8_t par_id, uint8_t *par_val) {
+EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id, uint8_t *par_val) {
     // Initialise reply structure
     config_reply reply = {};
     reply.error = 1;  // Set default error code
@@ -123,7 +123,7 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
     }
 
     // Get the expected length of PAR_VAL for the given PAR_ID
-    uint8_t par_val_length = get_param_length(par_id);
+    uint16_t par_val_length = get_param_length(par_id);
     if (par_val_length == 0) { // Invalid param_id
         return reply;
     }
@@ -150,11 +150,11 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint8
     delay_ms(25);
 
     // Get the expected length of PAR_VAL for the given PAR_ID
-    uint8_t par_val_length = get_param_length(par_id);
+    //uint16_t par_val_length = get_param_length(par_id);
 
     // Request 8 bytes + PAR_VAL length of data
-    uint8_t response_length = 8 + par_val_length;
-    uint8_t response = wire.requestForm(i2c_address, response_length);
+    uint16_t response_length = 8 + par_val_length;
+    uint16_t response = wire.requestFrom(i2c_address, response_length);
 
     // If the response is the expected length, process the reply
     if (response == response_length) {
