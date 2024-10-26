@@ -34,72 +34,50 @@
 
 class EPS {
 public:
-    // standard reply
-    struct standard_reply {
+
+    // command codes all replies have
+    class ReplyBase {
+    public:
         uint8_t stid;
         uint8_t ivid;
         uint8_t rc;
         uint8_t bid;
         uint8_t stat;
         uint8_t error;
+
+        virtual ~ReplyBase() = default; // Virtual destructor for proper cleanup
     };
 
-    struct pdu_overcurrent_reply{
+    // standard reply
+    struct standard_reply : public ReplyBase {
+
+    };
+
+    struct pdu_overcurrent_reply : public ReplyBase { 
         uint16_t ocf_cnt_ch[16];
         uint16_t stat_ob_on;
         uint16_t stat_ob_ocf;
-
-        uint8_t stid;
-        uint8_t ivid;
-        uint8_t rc;
-        uint8_t bid;
-        uint8_t stat;
-        uint8_t error;
     };
 
-    struct config_reply {
-        uint8_t stid;
-        uint8_t ivid;
-        uint8_t rc;
-        uint8_t bid;
-        uint8_t stat;
-        uint8_t error;
-
+    struct config_reply : public ReplyBase {
         uint16_t par_id;
         uint8_t par_val[8]; // maximum length of PAR_VAL
         uint8_t par_val_length; // actual length of PAR_VAL
     };
 
-    struct pcu_housekeeping_data_reply {
-        uint8_t stid;
-        uint8_t ivid;
-        uint8_t rc;
-        uint8_t bid;
-        uint8_t stat;
-
+    struct pcu_housekeeping_data_reply : public ReplyBase {
         uint16_t volt_brdsup;
         uint16_t temp;
         uint8_t vip_output[6];
         uint8_t cc[4][14];      // Response CC_1 stored in cc[1]. Bytes are kept in the order that they are read
-
-        uint8_t error;
     };
 
-    struct pbu_housekeeping_data_reply {
-        uint8_t stid;
-        uint8_t ivid;
-        uint8_t rc;
-        uint8_t bid;
-        uint8_t stat;
-
+    struct pbu_housekeeping_data_reply : public ReplyBase {
         uint16_t volt_brdsup;
         uint16_t temp;
         uint8_t vip_input[6];
         uint16_t stat_bu;
         uint8_t bp[3][22];      // Response BP_1 stored in bp[1]. Bytes are kept in the order that they are read
-
-        uint8_t error;
-
     };
 
     static standard_reply reset_watchdog(DWire &wire, uint8_t i2c_address);
@@ -110,8 +88,10 @@ public:
     // static pbu_housekeeping_data_reply watchdog(DWire &wire, uint8_t i2c_address); // removed because previous watchdog cannot be overloaded. merge error?
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
+    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address)
     static pdu_overcurrent_reply get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
+    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address)
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
@@ -122,6 +102,7 @@ public:
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
     static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id);
     static config_reply set_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id, uint8_t *par_val);
+    
 };
 
 #endif //EPS_CONVERSION_EPS_H
