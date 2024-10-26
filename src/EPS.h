@@ -88,10 +88,10 @@ public:
     // static pbu_housekeeping_data_reply watchdog(DWire &wire, uint8_t i2c_address); // removed because previous watchdog cannot be overloaded. merge error?
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
-    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address)
+    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
     static pdu_overcurrent_reply get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
-    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address)
+    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);

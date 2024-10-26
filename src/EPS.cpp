@@ -2,6 +2,7 @@
 // Created by caspar on 6/9/23.
 //
 #include "EPS.h"
+#include <cstddef> //for size_t
 
 // Constants for command codes and other identifiers
 enum Identifiers {
