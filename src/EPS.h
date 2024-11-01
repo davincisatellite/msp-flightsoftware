@@ -32,6 +32,20 @@
 #include "DWire.h"
 #include "delay.h"
 
+enum ParameterID { 
+    // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
+    Int8 = 0x1000,
+    UInt8 = 0x2000,
+    Int16 = 0x3000,
+    UInt16 = 0x4000,
+    Int32 = 0x5000,
+    UInt32 = 0x6000,
+    Float = 0x7000,
+    Int64 = 0x8000,
+    UInt64 = 0x9000,
+    Double = 0xA000
+    };
+
 class EPS {
 public:
 
@@ -100,9 +114,10 @@ public:
     static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
-    static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id);
-    static config_reply set_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id, uint8_t *par_val);
+    static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id);
+    static config_reply set_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id, uint8_t *par_val);
     
 };
 
 #endif //EPS_CONVERSION_EPS_H
+

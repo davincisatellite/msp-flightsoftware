@@ -39,56 +39,28 @@ enum ResetKey {
     CONF_KEY_RESET_CONFIGURATION = 0xA7               // reference: page 66 of 87 (ICD)
 };
 
-bool is_valid_param_id(uint16_t par_id) {
-    // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
-    const uint16_t valid_param_ids[] = {
-        0x1000,  // int8
-        0x2000,  // uint8
-        0x3000,  // int16
-        0x4000,  // uint16
-        0x5000,  // int32
-        0x6000,  // uint32
-        0x7000,  // float
-        0x8000,  // int64
-        0x9000,  // uint64
-        0xA000   // double
-    };
-
-    // Get the number of valid Param-IDs
-    const size_t num_valid_params = 10;
-
-    // Check if the given par_id is in the list of valid Param-IDs
-    for (size_t i = 0; i < num_valid_params; ++i) {
-        if (par_id == valid_param_ids[i]) {
-            return true; // Return true if par_id is valid
-        }
-    }
-
-    return false; // Return false if par_id is not in the list of valid param IDs
-}
-
 // The data type determines how many bytes need to be supplied as the PAR_VAL! (page 77 ICD)
-uint8_t get_param_length(uint16_t par_id) {
+uint8_t get_param_length(ParameterID par_id) {
     switch (par_id) {
-        case 0x1000: // int8
+        case Int8: 
             return 1;
-        case 0x2000: // int8
+        case UInt8: 
             return 1;
-        case 0x3000: // int16
+        case Int16: 
             return 2;
-        case 0x4000: // uint16
+        case UInt16: 
             return 2;
-        case 0x5000: // int32
+        case Int32: 
             return 4;
-        case 0x6000: // uint32
+        case UInt32: 
             return 4;
-        case 0x7000: // float
+        case Float: 
             return 4;
-        case 0x8000: // int64
+        case Int64: 
             return 8;
-        case 0x9000: // uint64
+        case UInt64: 
             return 8;
-        case 0xA000: // double
+        case Double: 
             return 8;
         default:
             return 0; // Invalid par_id
@@ -111,16 +83,10 @@ void readCommand(DWire &wire, EPS::ReplyBase &reply) {
     reply.stat = wire.read();   // Status byte
 }
 
-EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id, uint8_t *par_val) {
+EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id, uint8_t *par_val) {
     // Initialise reply structure
     config_reply reply = {};
     reply.error = 1;  // Set default error code
-
-    // Validate the PAR_ID based on the configuration list
-    if (!is_valid_param_id(par_id)) {
-        // Invalid PAR_ID; return the reply with default values and error set to 1
-        return reply;
-    }
 
     // Get the expected length of PAR_VAL for the given PAR_ID
     uint8_t par_val_length = get_param_length(par_id);
@@ -182,17 +148,10 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint1
     return reply;
 }
 
-EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uint16_t par_id) {
+EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id) {
     // Initialise reply with default value to avoid uninitialised fields
     config_reply reply = {};
-    reply.error = 1;
-
-
-    // Validate the Param-ID based on the configuration list
-    if (!is_valid_param_id(par_id)) {
-        // Invalid par_id; return the reply with default values and error set to 1
-        return reply;
-    }
+    reply.error = 1;  // Set default error code
 
     // Get the expected length of PAR_VAL for the given param ID
     uint8_t par_val_length = get_param_length(par_id);
