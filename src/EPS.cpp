@@ -99,6 +99,10 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, Param
         return reply;  // Return immediately to avoid buffer overflow
     }
 
+    if (par_val == nullptr) {
+        return reply;  // Return immediately if par_val is null
+    }
+
     writeCommand(wire, i2c_address, CommandCode::SET_PARAM);
 
     wire.write(par_id & 0xFF);  // least significant byte of PAR_ID
