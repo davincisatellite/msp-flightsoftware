@@ -123,7 +123,7 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint1
     }
 
     // Get the expected length of PAR_VAL for the given PAR_ID
-    uint16_t par_val_length = get_param_length(par_id);
+    uint8_t par_val_length = get_param_length(par_id);
     if (par_val_length == 0) { // Invalid param_id
         return reply;
     }
@@ -153,15 +153,15 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, uint1
     //uint16_t par_val_length = get_param_length(par_id);
 
     // Request 8 bytes + PAR_VAL length of data
-    uint16_t response_length = 8 + par_val_length;
-    uint16_t response = wire.requestFrom(i2c_address, response_length);
+    uint8_t response_length = 8 + par_val_length;
+    uint8_t response = wire.requestFrom(i2c_address, response_length);
 
     // If the response is the expected length, process the reply
     if (response == response_length) {
         readCommand(wire, reply);
 
         // Reserved byte (skip)
-        wire.read();
+        (void) wire.read();
 
         // Param-ID (read in little-endian)
         reply.par_id = wire.read() + (wire.read() << 8);
@@ -228,7 +228,7 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, uin
         readCommand(wire, reply);
 
         // Read and discard the reserved byte
-        wire.read();
+        (void) wire.read();
 
         // Read PAR_ID
         reply.par_id = wire.read() + (wire.read() << 8);
