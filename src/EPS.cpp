@@ -20,7 +20,12 @@ enum class CommandCode {
     CANCEL_OPERATION = 0x04,                 // reference: page 31 of 87 (ICD)
     SWITCH_TO_SAFETY_MODE = 0x32,            // reference: page 39 of 87 (ICD)
     GET_PDU_OVERCURRENT_FAULT_STATE = 0x42,  // reference: page 43 of 87 (ICD)
+    GET_PDU_ABF_PLACED_STATE = 0x44,         // reference: page 44 of 87 (ICD)
+    GET_PDU_HOUSEKEEPING_DATA_RAW = 0x50,    // reference: page 46 of 87 (ICD)
+    GET_PDU_HOUSEKEEPING_DATA_ENG = 0x52,    // reference: page 49 of 87 (ICD)
+    GET_PDU_HOUSEKEEPING_DATA_AVG = 0x54,    // reference: page 51 of 87 (ICD)
     GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60,    // reference: page 53 of 87 (ICD)
+    GET_PBU_HOUSEKEEPING_DATA_ENG = 0x62,    // reference: page 54 of 87 (ICD)
     GET_PBU_HOUSEKEEPING_DATA_AVG = 0x64,    // reference: page 56 of 87 (ICD)
     GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72,    // reference: page 60 of 87 (ICD)
     GET_PCU_HOUSEKEEPING_DATA_AVG = 0x74,    // reference: page 61 of 87 (ICD)
@@ -386,10 +391,99 @@ EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uin
     return reply;
 }
 
-EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
-    pbu_housekeeping_data_reply reply;
+EPS::pdu_abf_placed_state get_pdu_abf_placed_state(DWire &wire, uint8_t i2c_address) {
+    EPS::pdu_abf_placed_state reply;
 
-    writeCommand(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_RAW);
+    writeCommand(wire, i2c_address, CommandCode::GET_PDU_ABF_PLACED_STATE);
+
+    // delay
+    delay_ms(25);
+
+    // request 5 bytes of data (i.e) the length of the response
+    uint8_t response = wire.requestFrom(i2c_address, 5);
+
+    // if response if 5 bytes long populate reply struct else mark error
+    if (response == 5) {
+        readCommand(wire, reply);
+
+        // read (reserved) and discard
+        (void) wire.read();
+
+        reply.abf_placed_0 = wire.read();
+        reply.abf_placed_1 = wire.read();
+
+        reply.error = false;
+    } else {
+        reply.error = true;
+    }
+
+    return reply;
+}
+
+EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+    EPS::pdu_housekeeping_data_reply reply;
+
+    writeCommand(wire, i2c_address, commandCode);
+
+    // delay
+    delay_ms(25);
+
+    // request 5 bytes of data (i.e) the length of the response
+    uint8_t response = wire.requestFrom(i2c_address, 5);
+
+    // if response if 5 bytes long populate reply struct else mark error
+    if (response == 5) {
+        readCommand(wire, reply);
+
+        // read (reserved) and discard
+        (void) wire.read();
+
+        reply.volt_brdsup = wire.read() + (wire.read() << 8);
+        reply.temp = wire.read() + (wire.read() << 8);
+
+        for (int i = 0; i < 6; ++i) {
+            reply.vip_input[i] = wire.read();
+        }
+
+        reply.stat_ch_on = wire.read() + (wire.read() << 8);
+        reply.stat_ch_ocf = wire.read() + (wire.read() << 8);
+
+        for (int i = 0; i < 7; ++i) {
+            for (int j = 0; j < 6; ++j) {
+                reply.vip_vd[i][j] = wire.read();
+            }
+        }
+
+        for (int i = 0; i < 16; ++i) {
+            for (int j = 0; j < 6; ++j) {
+                reply.vip_ch[i][j] = wire.read();
+            }
+        }
+
+        reply.error = false;
+    } else {
+        reply.error = true;
+    }
+
+    return reply;
+}
+
+EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+    return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_ENG);
+}
+
+EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
+    return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_RAW);
+}
+
+EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+    return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_AVG);
+}
+
+EPS::pbu_housekeeping_data_reply get_pbu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+    EPS::pbu_housekeeping_data_reply reply;
+
+    writeCommand(wire, i2c_address, commandCode);
 
     // delay
     delay_ms(25);
@@ -427,10 +521,22 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire,
     return reply;
 }
 
-EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
-    pbu_housekeeping_data_reply reply;
+EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
+    return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_ENG);
+}
 
-    writeCommand(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_AVG);
+EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
+    return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_RAW);
+}
+
+EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+    return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_AVG);
+}
+
+EPS::pcu_housekeeping_data_reply get_pcu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+    EPS::pcu_housekeeping_data_reply reply;
+
+    writeCommand(wire, i2c_address, commandCode);
 
     // delay
     delay_ms(25);
@@ -449,14 +555,12 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(
         reply.temp = wire.read() + (wire.read() << 8);
 
         for (int i = 0; i < 6; ++i) {
-            reply.vip_input[i] = wire.read();
+            reply.vip_output[i] = wire.read();
         }
 
-        reply.stat_bu = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 22; ++j) {
-                reply.bp[i][j] = wire.read();
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 14; ++j) {
+                reply.cc[i][j] = wire.read();
             }
         }
 
@@ -469,119 +573,15 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(
 }
 
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
-    pcu_housekeeping_data_reply reply;
-
-    writeCommand(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_ENG);
-
-    // delay
-    delay_ms(25);
-
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
-
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        readCommand(wire, reply);
-
-        // read (reserved) and discard
-        (void) wire.read();
-
-        reply.volt_brdsup = wire.read() + (wire.read() << 8);
-        reply.temp = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 6; ++i) {
-            reply.vip_output[i] = wire.read();
-        }
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 14; ++j) {
-                reply.cc[i][j] = wire.read();
-            }
-        }
-
-        reply.error = false;
-    } else {
-        reply.error = true;
-    }
-
-    return reply;
+    return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_ENG);
 }
+
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
-    pcu_housekeeping_data_reply reply;
-
-    writeCommand(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_RAW);
-
-    // delay
-    delay_ms(25);
-
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
-
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        readCommand(wire, reply);
-
-        // read (reserved) and discard
-        (void) wire.read();
-
-        reply.volt_brdsup = wire.read() + (wire.read() << 8);
-        reply.temp = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 6; ++i) {
-            reply.vip_output[i] = wire.read();
-        }
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 14; ++j) {
-                reply.cc[i][j] = wire.read();
-            }
-        }
-
-        reply.error = false;
-    } else {
-        reply.error = true;
-    }
-
-    return reply;
+    return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_RAW);
 }
 
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
-    pcu_housekeeping_data_reply reply;
-
-    writeCommand(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_AVG);
-
-     // delay
-    delay_ms(25);
-
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
-
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        readCommand(wire, reply);
-
-        // read (reserved) and discard
-        (void) wire.read();
-
-        reply.volt_brdsup = wire.read() + (wire.read() << 8);
-        reply.temp = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 6; ++i) {
-            reply.vip_output[i] = wire.read();
-        }
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 14; ++j) {
-                reply.cc[i][j] = wire.read();
-            }
-        }
-
-        reply.error = false;
-    } else {
-        reply.error = true;
-    }
-
-    return reply;
+    return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_AVG);
 }
 
 EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
