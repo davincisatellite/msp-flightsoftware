@@ -54,7 +54,7 @@ public:
     public:
         uint8_t stid;
         uint8_t ivid;
-        uint8_t rc;
+        uint8_t rc; //TODO according to ICD, GetPBUHousekeepingData(ENG) returns the cc instead? I believe it is the only one
         uint8_t bid;
         uint8_t stat;
         uint8_t error;
@@ -71,6 +71,11 @@ public:
         uint16_t ocf_cnt_ch[16];
         uint16_t stat_ob_on;
         uint16_t stat_ob_ocf;
+    };
+
+    struct pdu_abf_placed_state : public ReplyBase {
+        uint8_t abf_placed_0;
+        uint8_t abf_placed_1;
     };
 
     struct config_reply : public ReplyBase {
@@ -94,6 +99,16 @@ public:
         uint8_t bp[3][22];      // Response BP_1 stored in bp[1]. Bytes are kept in the order that they are read
     };
 
+    struct pdu_housekeeping_data_reply : public ReplyBase {
+        uint16_t volt_brdsup;
+        uint16_t temp;
+        uint8_t vip_input[6];
+        uint16_t stat_ch_on;
+        uint16_t stat_ch_ocf;
+        uint8_t vip_vd[7][6];
+        uint8_t vip_ch[16][6];
+    };
+
     static standard_reply reset_watchdog(DWire &wire, uint8_t i2c_address);
     static standard_reply no_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply system_reset(DWire &wire, uint8_t i2c_address);
@@ -104,6 +119,11 @@ public:
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
     static pdu_overcurrent_reply get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
+    static pdu_abf_placed_state get_pdu_abf_placed_state(DWire &wire, uint8_t i2c_address);
+    static pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
+    static pdu_housekeeping_data_reply get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
+    static pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
@@ -120,4 +140,3 @@ public:
 };
 
 #endif //EPS_CONVERSION_EPS_H
-
