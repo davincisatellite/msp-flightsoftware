@@ -122,7 +122,7 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, Param
     wire.endTransmission();
 
     // delay for the operation to complete
-    delay_ms(25);
+    delay_ms(25); //TODO investigate this delay. is it too much? Maybe poll instead (scheme 2 from ICD 3.3.4)
 
     // Get the expected length of PAR_VAL for the given PAR_ID
     //uint16_t par_val_length = get_param_length(par_id);
