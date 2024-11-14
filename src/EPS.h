@@ -32,19 +32,158 @@
 #include "DWire.h"
 #include "delay.h"
 
-enum ParameterID { 
-    // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
-    Int8 = 0x1000,
-    UInt8 = 0x2000,
-    Int16 = 0x3000,
-    UInt16 = 0x4000,
-    Int32 = 0x5000,
-    UInt32 = 0x6000,
-    Float = 0x7000,
-    Int64 = 0x8000,
-    UInt64 = 0x9000,
-    Double = 0xA000
-    };
+//TODO enforce read only behaviour too? Could be done with a seperate dictionary maybe. Or we could ensure that the second digit is not 8; 0x?8??
+//Note that first number signifies type, and second number read or read/write (except for SAFETY_VOLT_LOTHR and SAFETY_VOLT_HITHR for some whatever reason :cry: )
+//Note that for the values from 0x3000 to 0x300B, the ICD groups them in groups of 3 and just gives them one name. However, if I understand it correctly, they are in fact three different battery channels.
+//Note that for the values from 0x4008 to 0x4027, the ICD groups them in groups of 16 and just gives them one name. However, if I understand it correctly, they are in fact sixteen enable channels.
+//Note that int32, uint32, float, int64, uint64, and double are mentioned as possible data types in the ICD, but are not used as return type for any parameter value.
+enum class ConfigParameter { //ICD table 3-25 page 78/87
+    BOOT_RESUME_ENA         = 0x1000, //int8     //read/write
+    OBUS_VD1_ALWAYS_ENA     = 0x1001, //int8     //read/write
+    OBUS_VD2_ALWAYS_ENA     = 0x1002, //int8     //read/write
+    OBUS_VD1_ALWAYS_DISA    = 0x1003, //int8     //read/write
+    OBUS_VD2_ALWAYS_DISA    = 0x1004, //int8     //read/write
+    AUTO_HEAT_ENA_BP1       = 0x1005, //int8     //read/write
+    AUTO_HEAT_ENA_BP2       = 0x1006, //int8     //read/write
+    AUTO_HEAT_ENA_BP3       = 0x1007, //int8     //read/write
+    AUTO_BAL_ENA_BP1        = 0x1008, //int8     //read/write
+    AUTO_BAL_ENA_BP2        = 0x1009, //int8     //read/write
+    AUTO_BAL_ENA_BP3        = 0x100A, //int8     //read/write
+    CONF_PARAM_CHANGED      = 0x1800, //int8     //read only         
+    BOARD_IDENTIFIER        = 0x2000, //uint8    //read/write
+    BOARD_IDENTIFIER_KEY    = 0x2001, //uint8    //read/write
+    RAVG_STRENGTH_P2        = 0x2002, //uint8    //read/write
+    STID                    = 0x2800, //uint8    //read only
+    IVID                    = 0x2801, //uint8    //read only
+    BID_USED                = 0x2802, //uint8    //read only
+    BOOT_RESUME_SHORT       = 0x2803, //uint8    //read only
+    LOTHR_BAT_HEATER_01     = 0x3000, //int16    //read/write    //Note that in the ICD there are just three values (0x3000, 0x3001, 0x3002) that are all just called LOTHR_BAT_HEATER
+    LOTHR_BAT_HEATER_02     = 0x3001, //int16    //read/write
+    LOTHR_BAT_HEATER_03     = 0x3002, //int16    //read/write
+    HITHR_BAT_HEATER_01     = 0x3003, //int16    //read/write    //Note that in the ICD there are just three values (0x3003, 0x3004, 0x3005) that are all just called HITHR_BAT_HEATER
+    HITHR_BAT_HEATER_02     = 0x3004, //int16    //read/write
+    HITHR_BAT_HEATER_03     = 0x3005, //int16    //read/write
+    LOTHR_BMON_UNBAL_01     = 0x3006, //int16    //read/write    //Note that in the ICD there are just three values (0x3006, 0x3007, 0x3008) that are all just called LOTHR_BMON_UNBAL
+    LOTHR_BMON_UNBAL_02     = 0x3007, //int16    //read/write
+    LOTHR_BMON_UNBAL_03     = 0x3008, //int16    //read/write
+    HITHR_BMON_UNBAL_01     = 0x3009, //int16    //read/write    //Note that in the ICD there are just three values (0x3009, 0x300A, 0x300B) that are all just called HITHR_BMON_UNBAL
+    HITHR_BMON_UNBAL_02     = 0x300A, //int16    //read/write
+    HITHR_BMON_UNBAL_03     = 0x300B, //int16    //read/write
+    MCU_TEMP_BIAS           = 0x300C, //int16    //read/write
+    MCU_TEMP_PREMUL         = 0x300D, //int16    //read/write
+    MCU_TEMP_POSDIV         = 0x300E, //int16    //read/write
+    BP1_TEMP1_BIAS          = 0x300F, //int16    //read/write
+    BP1_TEMP2_BIAS          = 0x3010, //int16    //read/write
+    BP1_TEMP3_BIAS          = 0x3011, //int16    //read/write
+    BP2_TEMP1_BIAS          = 0x3012, //int16    //read/write
+    BP2_TEMP2_BIAS          = 0x3013, //int16    //read/write
+    BP2_TEMP3_BIAS          = 0x3014, //int16    //read/write
+    BP3_TEMP1_BIAS          = 0x3015, //int16    //read/write
+    BP3_TEMP2_BIAS          = 0x3016, //int16    //read/write
+    BP3_TEMP3_BIAS          = 0x3017, //int16    //read/write
+    BP1_TEMP1_PREMUL        = 0x3018, //int16    //read/write
+    BP1_TEMP2_PREMUL        = 0x3019, //int16    //read/write
+    BP1_TEMP3_PREMUL        = 0x301A, //int16    //read/write
+    BP2_TEMP1_PREMUL        = 0x301B, //int16    //read/write
+    BP2_TEMP2_PREMUL        = 0x301C, //int16    //read/write
+    BP2_TEMP3_PREMUL        = 0x301D, //int16    //read/write
+    BP3_TEMP1_PREMUL        = 0x301E, //int16    //read/write
+    BP3_TEMP2_PREMUL        = 0x301F, //int16    //read/write
+    BP3_TEMP3_PREMUL        = 0x3020, //int16    //read/write
+    BP1_TEMP1_POSDIV        = 0x3021, //int16    //read/write
+    BP1_TEMP2_POSDIV        = 0x3022, //int16    //read/write
+    BP1_TEMP3_POSDIV        = 0x3023, //int16    //read/write
+    BP2_TEMP1_POSDIV        = 0x3024, //int16    //read/write
+    BP2_TEMP2_POSDIV        = 0x3025, //int16    //read/write
+    BP2_TEMP3_POSDIV        = 0x3026, //int16    //read/write
+    BP3_TEMP1_POSDIV        = 0x3027, //int16    //read/write
+    BP3_TEMP2_POSDIV        = 0x3028, //int16    //read/write
+    BP3_TEMP3_POSDIV        = 0x3029, //int16    //read/write
+    ADC_MCU_TEMP_V25T30     = 0x3800, //int16    //read only
+    ADC_MCU_TEMP_V25T85     = 0x3801, //int16    //read only
+    TTC_WDG_TIMEOUT         = 0x4000, //uint16   //read/write
+    TTC_WDG_TIMEOUT_KEY     = 0x4001, //uint16   //read/write
+    OBUS_STARTUP_ENA_BF     = 0x4004, //uint16   //read/write
+    OBUS_STARTUP_KEY        = 0x4005, //uint16   //read/write
+    OBUS_LATCHOFF_ENA_BF    = 0x4006, //uint16   //read/write
+    OBUS_LATCHOFF_KEY       = 0x4007, //uint16   //read/write
+    OBUS_STARTUP_DELAY_01   = 0x4008, //uint16   //read/write    //Note that in the ICD there are just 16 values (0x4008-0x4017) that are all just called OBUS_STARTUP_DELAY
+    OBUS_STARTUP_DELAY_02   = 0x4009, //uint16   //read/write
+    OBUS_STARTUP_DELAY_03   = 0x400A, //uint16   //read/write
+    OBUS_STARTUP_DELAY_04   = 0x400B, //uint16   //read/write
+    OBUS_STARTUP_DELAY_05   = 0x400C, //uint16   //read/write
+    OBUS_STARTUP_DELAY_06   = 0x400D, //uint16   //read/write
+    OBUS_STARTUP_DELAY_07   = 0x400E, //uint16   //read/write
+    OBUS_STARTUP_DELAY_08   = 0x400F, //uint16   //read/write
+    OBUS_STARTUP_DELAY_09   = 0x4010, //uint16   //read/write
+    OBUS_STARTUP_DELAY_10   = 0x4011, //uint16   //read/write
+    OBUS_STARTUP_DELAY_11   = 0x4012, //uint16   //read/write
+    OBUS_STARTUP_DELAY_12   = 0x4013, //uint16   //read/write
+    OBUS_STARTUP_DELAY_13   = 0x4014, //uint16   //read/write
+    OBUS_STARTUP_DELAY_14   = 0x4015, //uint16   //read/write
+    OBUS_STARTUP_DELAY_15   = 0x4016, //uint16   //read/write
+    OBUS_STARTUP_DELAY_16   = 0x4017, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_01  = 0x4018, //uint16   //read/write    //Note that in the ICD there are just 16 values (0x4018-0x4027) that are all just called OBUS_LATCHOFF_DELAY
+    OBUS_LATCHOFF_DELAY_02  = 0x4019, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_03  = 0x401A, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_04  = 0x401B, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_05  = 0x401C, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_06  = 0x401D, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_07  = 0x401E, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_08  = 0x401F, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_09  = 0x4020, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_10  = 0x4021, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_11  = 0x4022, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_12  = 0x4023, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_13  = 0x4024, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_14  = 0x4025, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_15  = 0x4026, //uint16   //read/write
+    OBUS_LATCHOFF_DELAY_16  = 0x4027, //uint16   //read/write
+    SAFETY_VOLT_LOTHR       = 0x480D, //uint16   //read/write    //Note that its second digit is 8, but it is read/write
+    SAFETY_VOLT_HITHR       = 0x480E, //uint16   //read/write    //Note that its second digit is 8, but it is read/write
+    TTC_I2C_SLAVE_ADDR      = 0x4800, //uint16   //read only
+    CONF_NVM_SAVE_CNTR      = 0x4801, //uint16   //read only
+    CONF_NVM_SAVE_CHKS      = 0x4802, //uint16   //read only
+    RST_CAUSE               = 0x4803, //uint16   //read only
+    RST_CNTR_PWRON          = 0x4804, //uint16   //read only
+    RST_CNTR_WDG            = 0x4805, //uint16   //read only
+    RST_CNTR_CMD            = 0x4806, //uint16   //read only
+    RST_CNTR_MCU            = 0x4807, //uint16   //read only
+    RST_CNTR_EMLOPO         = 0x4808, //uint16   //read only
+    RST_CODE_MCU_RAW        = 0x4809, //uint16   //read only
+    EMLOPO_VOLT_LOTHR       = 0x480A, //uint16   //read only
+    EMLOPO_VOLT_HITHR       = 0x480B, //uint16   //read only
+    EMLOPO_PERIOD           = 0x480C, //uint16   //read only
+    SAFETY_VOLT_LOTHR_USED  = 0x480D, //uint16   //read only
+    SAFETY_VOLT_HITHR_USED  = 0x480E, //uint16   //read only
+    SAFETY_LINGER           = 0x480F, //uint16   //read only
+    TTC_WDG_TIMOUT_USED     = 0x4812, //uint16   //read only
+    TTC_PREVCMD_ELAPSED     = 0x4813, //uint16   //read only
+    OB_FORCE_ENA_USE_BF     = 0x4815, //uint16   //read only
+    OB_STARTUP_ENA_USE_BF   = 0x4816, //uint16   //read only
+    OB_LATCHOFF_ENA_USE_BF  = 0x4817, //uint16   //read only
+    VD0_CH_BF               = 0x4818, //uint16   //read only
+    VD1_CH_BF               = 0x4819, //uint16   //read only
+    VD2_CH_BF               = 0x481A, //uint16   //read only
+    VD3_CH_BF               = 0x481B, //uint16   //read only
+    VD4_CH_BF               = 0x481C, //uint16   //read only
+    VD5_CH_BF               = 0x481D, //uint16   //read only
+    VD6_CH_BF               = 0x481E //uint16   //read only
+};
+
+union returnType {
+    int8_t i8;
+    uint8_t ui8;
+    int16_t i16;
+    uint16_t ui16;
+    int32_t i32;
+    uint32_t ui32;
+    float f;
+    int64_t i64;
+    uint64_t ui64;
+    double d;
+};
+
 
 class EPS {
 public:
@@ -79,9 +218,8 @@ public:
     };
 
     struct config_reply : public ReplyBase {
-        uint16_t par_id;
-        uint8_t par_val[8]; // maximum length of PAR_VAL
-        uint8_t par_val_length; // actual length of PAR_VAL
+        ConfigParameter par_id;
+        returnType conf_par; // maximum length of PAR_VAL
     };
 
     struct pcu_housekeeping_data_reply : public ReplyBase {
@@ -134,9 +272,9 @@ public:
     static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
-    static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id);
-    static config_reply set_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id, uint8_t *par_val);
-    
+    static config_reply get_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
+    static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
+    static config_reply set_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id, returnType conf_par_value);
 };
 
 #endif //EPS_CONVERSION_EPS_H

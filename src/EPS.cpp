@@ -3,6 +3,7 @@
 //
 #include "EPS.h"
 #include <cstddef> //for size_t
+#include <cstring> //for memcpy
 
 // Constants for command codes and other identifiers
 enum Identifiers {
@@ -12,6 +13,7 @@ enum Identifiers {
 };
 
 enum class CommandCode {
+    GET_PARAM = 0x82,                        // reference: page 62 of 87 (ICD)
     SET_PARAM = 0x84,                        // reference: page 64 of 87 (ICD)
     RESET_PARAM = 0x86,                      // reference: page 65 of 87 (ICD)
     WATCHDOG = 0x06,                         // reference: page 32 of 87 (ICD)
@@ -44,27 +46,85 @@ enum ResetKey {
     CONF_KEY_RESET_CONFIGURATION = 0xA7               // reference: page 66 of 87 (ICD)
 };
 
+enum ParameterType { 
+    // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
+    Int8 = 0x1000,
+    UInt8 = 0x2000,
+    Int16 = 0x3000,
+    UInt16 = 0x4000,
+    Int32 = 0x5000, //note, not used
+    UInt32 = 0x6000, //note, not used
+    Float = 0x7000, //note, not used
+    Int64 = 0x8000, //note, not used
+    UInt64 = 0x9000, //note, not used
+    Double = 0xA000, //note, not used
+    Invalid
+    };
+
+enum AccessType {
+    ReadOnly,
+    ReadWrite
+};
+
+ParameterType getConfigParameterType(ConfigParameter conf_par) {
+    uint16_t value = static_cast<uint16_t>(conf_par);
+    uint16_t firstDigit = value >> 12;  // Shift right by 12 bits to isolate the top hex digit
+    switch (firstDigit) {
+        case 0x1:
+            return Int8;
+        case 0x2:
+            return UInt8;
+        case 0x3:
+            return Int16;
+        case 0x4:
+            return UInt16;
+        case 0x5:
+            return Int32;
+        case 0x6:
+            return UInt32;
+        case 0x7:
+            return Float;
+        case 0x8:
+            return Int64;
+        case 0x9:
+            return UInt64;
+        case 0xA:
+            return Double;
+        default:
+            return Invalid;
+    }
+}
+
+AccessType getAccessType(ConfigParameter conf_par) {
+    //For some whatever reason these two do not follow the same pattern as the rest (0x?8??)
+    if (conf_par ==ConfigParameter::SAFETY_VOLT_LOTHR || 
+        conf_par == ConfigParameter::SAFETY_VOLT_HITHR) {
+        return ReadWrite;
+    }
+
+    // Cast to underlying integer type and shift to get the second hex digit
+    uint16_t value = static_cast<uint16_t>(conf_par);
+    uint16_t secondDigit = (value >> 8) & 0xF;  // Shift right by 8 bits and mask with 0xF
+
+    if (secondDigit == 0x8) { return ReadOnly; }
+    return ReadWrite;
+}
+
 // The data type determines how many bytes need to be supplied as the PAR_VAL! (page 77 ICD)
-uint8_t get_param_length(ParameterID par_id) {
-    switch (par_id) {
+uint8_t get_param_length(ParameterType par_type) {
+    switch (par_type) {
         case Int8: 
-            return 1;
         case UInt8: 
             return 1;
         case Int16: 
-            return 2;
         case UInt16: 
             return 2;
         case Int32: 
-            return 4;
         case UInt32: 
-            return 4;
         case Float: 
             return 4;
         case Int64: 
-            return 8;
         case UInt64: 
-            return 8;
         case Double: 
             return 8;
         default:
@@ -88,46 +148,37 @@ void readCommand(DWire &wire, EPS::ReplyBase &reply) {
     reply.stat = wire.read();   // Status byte
 }
 
-EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id, uint8_t *par_val) {
-    // Initialise reply structure
-    config_reply reply = {};
-    reply.error = 1;  // Set default error code
+bool write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode) {
+    ParameterType param_type = getConfigParameterType(par_id);
+
+    if (param_type == Invalid) { // Invalid config parameter
+        return false; 
+    }
+
+    if (getAccessType(par_id) == ReadOnly) { // Read-only parameter
+        return false;
+    }
 
     // Get the expected length of PAR_VAL for the given PAR_ID
-    uint8_t par_val_length = get_param_length(par_id);
+    uint8_t par_val_length = get_param_length(param_type);
     if (par_val_length == 0) { // Invalid param_id
-        return reply;
+        return false;
     }
 
-    // Boundary check to ensure par_val_length does not exceed the size of reply.par_val array
-    if (par_val_length > sizeof(reply.par_val)) {
-        return reply;  // Return immediately to avoid buffer overflow
-    }
+    writeCommand(wire, i2c_address, commandCode);
 
-    if (par_val == nullptr) {
-        return reply;  // Return immediately if par_val is null
-    }
+    // Write Param-ID in little-endian format
+    uint16_t par_id_as_uint16 = static_cast<uint16_t>(par_id);
+    wire.write(par_id_as_uint16 & 0xFF);  // least significant byte of par_id
+    wire.write(par_id_as_uint16 >> 8);    // most significant byte of par_id
 
-    writeCommand(wire, i2c_address, CommandCode::SET_PARAM);
+    return true;
+}
 
-    wire.write(par_id & 0xFF);  // least significant byte of PAR_ID
-    wire.write(par_id >> 8);    // most significant byte of PAR_ID
-
-    // Write the PAR_VAL data
-    for (uint8_t i = 0; i < par_val_length; ++i) {
-        wire.write(par_val[i]);
-    }
-
-    // End transmission
-    wire.endTransmission();
-
-    // delay for the operation to complete
-    delay_ms(25); //TODO investigate this delay. is it too much? Maybe poll instead (scheme 2 from ICD 3.3.4)
-
-    // Get the expected length of PAR_VAL for the given PAR_ID
-    //uint16_t par_val_length = get_param_length(par_id);
+EPS::config_reply read_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, EPS::config_reply &reply) {
 
     // Request 8 bytes + PAR_VAL length of data
+    uint8_t par_val_length = get_param_length(getConfigParameterType(par_id));
     uint8_t response_length = 8 + par_val_length;
     uint8_t response = wire.requestFrom(i2c_address, response_length);
 
@@ -139,13 +190,20 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, Param
         (void) wire.read();
 
         // Param-ID (read in little-endian)
-        reply.par_id = wire.read() + (wire.read() << 8);
+        reply.par_id = static_cast<ConfigParameter>(wire.read() + (wire.read() << 8));
 
-        // Read the PAR_VAL
-        for (uint8_t i = 0; i < par_val_length; ++i) {
-            reply.par_val[i] = wire.read();
+        if (reply.par_id != par_id) {
+            // Return immediately if the Param-ID does not match the expected value
+            return reply;
         }
-        reply.par_val_length = par_val_length;
+
+        uint8_t buffer[8]; // Buffer to accumulate incoming bytes, max size is 8 (for double, int64, uint64)
+        for (size_t i = 0; i < par_val_length; ++i) { // Read the bytes one by one
+            buffer[i] = wire.read(); //TODO check whether this is in little endian order
+        }
+
+        // Copy the buffer into the reply. TODO check whether this actualy works
+        std::memcpy(&reply.conf_par, buffer, par_val_length);
 
         // Set error code to 0 (success)
         reply.error = false;
@@ -157,64 +215,68 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, Param
     return reply;
 }
 
-EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, ParameterID par_id) {
+EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, returnType par_val) { 
     // Initialise reply with default value to avoid uninitialised fields
-    config_reply reply = {};
+    EPS::config_reply reply = {};
     reply.error = 1;  // Set default error code
-
-    // Get the expected length of PAR_VAL for the given param ID
-    uint8_t par_val_length = get_param_length(par_id);
-    if (par_val_length == 0) { // Invalid param_id
-        // Return reply with error still set to 1 (already initialised)
+    
+    if(!write_config_params(wire, i2c_address, par_id, CommandCode::SET_PARAM)) {
         return reply;
     }
+    
+    // Reinterpret the union as a pointer to bytes
+    const uint8_t* bytePtr = reinterpret_cast<const uint8_t*>(&par_val); //TODO check whether this actually works
 
-    // Boundary check to ensure par_val_length does not exceed the size of reply.par_val array
-    if (par_val_length > sizeof(reply.par_val)) {
-        // Return immediately to avoid buffer overflow, error is already set to 1
-        return reply;
+    // Send each byte
+    uint8_t par_val_length = get_param_length(getConfigParameterType(par_id));
+    for (size_t i = 0; i < par_val_length; ++i) { //TODO check whether this is in little endian order
+        wire.write(bytePtr[i]);
     }
-
-    writeCommand(wire, i2c_address, CommandCode::RESET_PARAM);
-
-    // Write Param-ID in little-endian format
-    wire.write(par_id & 0xFF);  // least significant byte of par_id
-    wire.write(par_id >> 8);    // most significant byte of par_id
 
     // End transmission
     wire.endTransmission();
 
     // delay for the operation to complete
-    delay_ms(25);
+    delay_ms(25); //TODO investigate this delay. is it too much? Maybe poll instead (scheme 2 from ICD 3.3.4)
 
-    // Request 8 bytes + n bytes of PAR_VAL data, assuming max length of PAR_VAL (8 bytes)
-    uint8_t response_length = 8 + par_val_length; // 8 bytes fixed part + 2 bytes PAR_ID (reserved byte already included)
-    uint8_t response = wire.requestFrom(i2c_address, response_length);
-
-    // If the response is the expected length, parse the data
-    if (response == response_length) {
-        readCommand(wire, reply);
-
-        // Read and discard the reserved byte
-        (void) wire.read();
-
-        // Read PAR_ID
-        reply.par_id = wire.read() + (wire.read() << 8);
-
-        // Read the PAR_VAL (up to 8 bytes)
-        for (uint8_t i = 0; i < par_val_length; ++i) {
-            reply.par_val[i] = wire.read();
-        }
-        reply.par_val_length = par_val_length;
-
-        reply.error = false;  // No error
-    } else {
-        reply.error = true;  // Error
-    }
-
-    return reply;
+    return read_config_params(wire, i2c_address, par_id, reply);
 }
 
+EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
+    // Initialise reply with default value to avoid uninitialised fields
+    EPS::config_reply reply = {};
+    reply.error = 1;  // Set default error code
+    
+    if(!write_config_params(wire, i2c_address, par_id, CommandCode::RESET_PARAM)) {
+        return reply;
+    }
+
+    // End transmission
+    wire.endTransmission();
+
+    // delay for the operation to complete
+    delay_ms(25); //TODO investigate this delay. is it too much? Maybe poll instead (scheme 2 from ICD 3.3.4)
+
+    return read_config_params(wire, i2c_address, par_id, reply);
+}
+
+EPS::config_reply EPS::get_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
+    // Initialise reply with default value to avoid uninitialised fields
+    EPS::config_reply reply = {};
+    reply.error = 1;  // Set default error code
+    
+    if(!write_config_params(wire, i2c_address, par_id, CommandCode::GET_PARAM)) {
+        return reply;
+    }
+
+    // End transmission
+    wire.endTransmission();
+
+    // delay for the operation to complete
+    delay_ms(25); //TODO investigate this delay. is it too much? Maybe poll instead (scheme 2 from ICD 3.3.4)
+
+    return read_config_params(wire, i2c_address, par_id, reply);
+}
 
 EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
