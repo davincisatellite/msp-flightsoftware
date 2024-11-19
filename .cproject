@@ -92,7 +92,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="gcc/startup_msp432p401r_gcc.c|gcc/msp432p401r.lds|gcc/Makefile" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="gcc|gcc/startup_msp432p401r_gcc.c|gcc/msp432p401r.lds|gcc/Makefile" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -104,4 +104,5 @@
 		<project id="application-template-msp432p401r.com.ti.ccstudio.buildDefinitions.MSP432.ProjectType.517213141" name="MSP432" projectType="com.ti.ccstudio.buildDefinitions.MSP432.ProjectType"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
