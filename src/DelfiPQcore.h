@@ -8,8 +8,8 @@
 #ifndef DELFIPQCORE_H_
 #define DELFIPQCORE_H_
 
-#include <driverlib.h>
-#include "msp.h"
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+// #include "msp.h"
 
 #define FCLOCK 48000000
 #define SCLOCK 32768
