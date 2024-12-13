@@ -1,5 +1,7 @@
 /Debug/
 
+src/hashes.h
+
 gcc/*
 !gcc/scripts
 !gcc/Makefile
