@@ -16,8 +16,10 @@ unsigned char Transmitter::report_state() {
     /* Write command to Transmitter. */
     wire.beginTransmission(i2c_address);
     wire.write(0x41);
+    wire.endTransmission();
 
     /* Wait for transmitter to process command. */
+    delay_ms(30);
 
     /* Read data from Transmitter. */
     uint8_t res = wire.requestFrom(i2c_address, 1);
@@ -29,7 +31,24 @@ unsigned char Transmitter::report_state() {
         state.on_idle = (resp & 0b00000001) != 0;
         state.beacon_active = (resp & 0b00000010) != 0;
         uint8_t tx_bitrate_resp = (resp & (0b00001100)) >> 2;
-        state.tx_bitrate = 1200 * 2^tx_bitrate_resp;
+        switch(tx_bitrate_resp) {
+            case 0:
+                state.tx_bitrate = 1200;
+                break;
+            case 1:
+                state.tx_bitrate = 2400;
+                break;
+            case 2:
+                state.tx_bitrate = 4800;
+                break;
+            case 3:
+                state.tx_bitrate = 9600;
+                break;
+            default:
+                state.tx_bitrate = 0;
+                state.error = true;
+                return 1;
+        }
         state.error = false;
         return 0;
     }
@@ -44,18 +63,21 @@ unsigned char Transmitter::report_uptime() {
     /* Write command to Transmitter. */
     wire.beginTransmission(i2c_address);
     wire.write(0x40);
+    wire.endTransmission();
+
+    delay_ms(30);
 
     /* Read data from Transmitter. */
     uint8_t res = wire.requestFrom(i2c_address, 4);
     if (res == 4)
     {
-       uint32_t resp = 0;
-       for (int i=0; i<4; i++) {
-           resp = resp + wire.read();
-           resp = (resp << 8);
-       }
-       uptime = resp;
-       return 0;
+        uint32_t resp = 0;
+        for (int i = 0; i < 4; i++) {
+            resp = (resp >> 8); // Shift existing bits to the right
+            resp = resp + (wire.read() << 24); // Add the new byte shifted to the leftmost position
+        }
+        uptime = resp;
+        return 0;
     }
     else {
         return 1;
@@ -91,6 +113,9 @@ unsigned char Transmitter::report_last_telemetry() {
     /* Write command to Transmitter. */
     wire.beginTransmission(i2c_address);
     wire.write(0x26);
+    wire.endTransmission();
+
+    delay_ms(30);
 
     /* Read data from Transmitter. */
     uint8_t res = wire.requestFrom(i2c_address, 18);
@@ -137,7 +162,9 @@ unsigned char Transmitter::measure_telemetry() {
     /* Write command to Transmitter. */
     wire.beginTransmission(i2c_address);
     wire.write(0x25);
+    wire.endTransmission();
 
+    delay_ms(30);
 
     /* Read data from Transmitter. */
     uint8_t res = wire.requestFrom(i2c_address, 18);
@@ -253,6 +280,7 @@ unsigned char Transmitter::send_frame(uint8_t* frame, uint8_t size) {
     for (int i=0; i<size; i++) {
         wire.write(static_cast<uint8_t>(frame[i]));
     }
+    wire.endTransmission();
     delay_ms(30);
 
     /* Read data from Transmitter. */
@@ -300,6 +328,10 @@ unsigned char Transmitter::send_frame_override_cs(uint8_t* frame, uint8_t size, 
     for (int i=0; i<size; i++) {
         wire.write(static_cast<uint8_t>(frame[i]));
     }
+
+    wire.endTransmission();
+
+    delay_ms(30);
 
     /* Read data from Transmitter. */
     uint8_t res = wire.requestFrom(i2c_address, 1);

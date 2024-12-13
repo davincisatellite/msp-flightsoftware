@@ -40,6 +40,8 @@ unsigned char Receiver::get_number_of_frames() {
     /* Write command to Receiver. */
     wire.beginTransmission(i2c_address);
     wire.write(0x21);
+    wire.endTransmission();
+    delay_ms(30);
     uint8_t res = wire.requestFrom(i2c_address, 2);
     if (res == 2)
     {
@@ -60,6 +62,8 @@ unsigned char Receiver::get_frame_from_buffer() {
     /* Write command to Receiver. */
     wire.beginTransmission(i2c_address);
     wire.write(0x21);
+    wire.endTransmission();
+    delay_ms(30);
     uint8_t res = wire.requestFrom(i2c_address, 2);
     if (res == 2)
     {
@@ -107,6 +111,8 @@ unsigned char Receiver::measure_telemetry() {
     /* Write command to Receiver. */
     wire.beginTransmission(i2c_address);
     wire.write(0x1A);
+    wire.endTransmission();
+    delay_ms(30);
 
     /* Read data from Receiver. */
     uint8_t res = wire.requestFrom(i2c_address, 18);
@@ -114,13 +120,10 @@ unsigned char Receiver::measure_telemetry() {
     {
         uint16_t raw_doppler_offset = wire.read();
         raw_doppler_offset += (wire.read() << 8);
-        Console::log("Raw doppler: %d\n", raw_doppler_offset);
         uint16_t raw_signal_strength = wire.read();
         raw_signal_strength += (wire.read() << 8);
-        Console::log("Raw SS: %d\n", raw_signal_strength);
         uint16_t raw_power_bus_voltage = wire.read();
         raw_power_bus_voltage += (wire.read() << 8);
-        Console::log("Raw power bus V: %d\n", raw_power_bus_voltage);
         uint16_t raw_total_current = wire.read();
         raw_total_current += (wire.read() << 8);
         uint16_t raw_tx_current = wire.read();
@@ -133,7 +136,6 @@ unsigned char Receiver::measure_telemetry() {
         raw_poweramp_temp += (wire.read() << 8);
         uint16_t raw_oscillator_temp = wire.read();
         raw_oscillator_temp += (wire.read() << 8);
-        Console::log("Raw osc temp: %d\n", raw_oscillator_temp);
         telemetry.doppler_offset = (raw_doppler_offset * 13.352) - 22300;
         telemetry.signal_strength = (raw_signal_strength * 0.03) - 152;
         telemetry.power_bus_voltage = raw_power_bus_voltage * 0.00488;
@@ -157,18 +159,20 @@ unsigned char Receiver::report_uptime() {
     /* Write command to Receiver. */
     wire.beginTransmission(i2c_address);
     wire.write(0x40);
+    wire.endTransmission();
+    delay_ms(30);
 
     /* Read data from Receiver. */
     uint8_t res = wire.requestFrom(i2c_address, 4);
     if (res == 4)
     {
-       uint32_t resp = 0;
-       for (int i=0; i<4; i++) {
-           resp = resp + wire.read();
-           resp = (resp << 8);
-       }
-       uptime = resp;
-       return 0;
+        uint32_t resp = 0;
+        for (int i = 0; i < 4; i++) {
+            resp = (resp >> 8); // Shift existing bits to the right
+            resp = resp + (wire.read() << 24); // Add the new byte shifted to the leftmost position
+        }
+        uptime = resp;
+        return 0;
     }
     else {
         return 1;
