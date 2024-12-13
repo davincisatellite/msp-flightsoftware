@@ -117,7 +117,7 @@ void Console::log( const char *text, ... )
 
         //initialize string buffer for formating routines.
         //initialize with string to make sure it has a string terminator (for strlen)
-        char str_buf[] = "0000000000";
+        char str_buf[] = "00000000000000";
 
         for ( int ii = 0; ii < strlen(text); ii++ )
         {
@@ -136,6 +136,10 @@ void Console::log( const char *text, ... )
                     case 'x':// hexadecimal
                         log_insert(itoa(str_buf,va_arg(format_args, int),16));
                         break;
+                    case 'f': { // Floating-point
+                        log_insert(floatToStr(str_buf,va_arg(format_args, double),2));
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -228,3 +232,27 @@ void Console::log_insert( const char *text )
 }
 
 
+char* Console::floatToStr(char *buffer, double value, int precision)
+{
+
+    int intPart = (int)value; // Extract integer part
+    double fracPart = value - intPart; // Extract fractional part
+
+    // Convert integer part
+    char* start = itoa(buffer, intPart, 10);
+
+    // Append decimal point
+    char *ptr = buffer + strlen(buffer);
+    *ptr++ = '.';
+
+    // Convert fractional part
+    for (int i = 0; i < precision; i++) {
+        fracPart *= 10;
+        int digit = (int)fracPart;
+        *ptr++ = '0' + digit;
+        fracPart -= digit;
+    }
+
+    *ptr = '\0';
+    return start;
+}

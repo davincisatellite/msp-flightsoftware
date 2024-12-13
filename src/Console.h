@@ -24,6 +24,7 @@ private:
     Console();
     static char* itoa(char* str, uint32_t val, uint8_t base );
     static void log_insert( const char *text );
+    static char* floatToStr(char *buffer, double value, int precision);
 
 public:
     static bool isEnabled();
