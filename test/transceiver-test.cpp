@@ -36,7 +36,7 @@
 *
 ******************************************************************************/
 
-//#include <msp.h>
+#include <msp.h>
 #include "../src/DWire.h"
 #include "../src/Console.h"
 #include "../src/DelfiPQcore.h"
@@ -98,7 +98,7 @@ int main(void)
                Console::log("TEST 1 (Soft Reset): PASS");
            }
 
-           delay_ms(1000);
+           delay_ms(2000);
            if (tx.reset_watchdog()) {
                Console::log("TEST 2 (Reset Watchdog): FAIL");
            }
@@ -113,7 +113,7 @@ int main(void)
                Console::log("TEST 3 (Hard Reset): PASS");
            }
 
-           delay_ms(1000);
+           delay_ms(2000);
 
            if (tx.set_default_to_callsign(to_callsign, 0)) {
                Console::log("TEST 4 (Set default TO Callsign): FAIL");
@@ -128,14 +128,13 @@ int main(void)
            else {
                Console::log("TEST 5 (Set default FROM Callsign): PASS");
            }
-
            uint8_t frame[1] = {0b10101010};
            if (tx.send_frame(frame, 1)) {
                Console::log("TEST 6 (Send Frame): FAIL");
            }
            else {
                Console::log("TEST 6 (Send Frame): PASS");
-               Console::log("Remaining TX buffer size: %d", tx.buffer.free_slots);
+               Console::log("Remaining TX buffer size: %d, expected: 39", tx.buffer.free_slots);
            }
 
            if (tx.send_frame_override_cs(frame, 1, to_callsign, 1, from_callsign, 1)) {
@@ -143,7 +142,7 @@ int main(void)
            }
            else {
                Console::log("TEST 7 (Send Frame with override Callsign): PASS");
-               Console::log("Remaining TX buffer size: %d", tx.buffer.free_slots);
+               Console::log("Remaining TX buffer size: %d, expected: 38", tx.buffer.free_slots);
            }
 
            uint8_t beacon[1] = {0b01010101};
@@ -174,15 +173,15 @@ int main(void)
            }
            else {
                Console::log("TEST 11 (Measure Telemetry): PASS");
-               Console::log("Measured instantaneous RF reflected power: %d mW", tx.measured_telemetry.rf_reflected_power);
-               Console::log("Measured instantaneous RF forward power: %d mW", tx.measured_telemetry.rf_forward_power);
-               Console::log("Measured power bus voltage: %d V", tx.measured_telemetry.power_bus_voltage);
-               Console::log("Measured total supply current: %d mA", tx.measured_telemetry.total_current);
-               Console::log("Measured transmitter current: %d mA", tx.measured_telemetry.tx_current);
-               Console::log("Measured receiver current: %d mA", tx.measured_telemetry.rx_current);
-               Console::log("Measured power amplifier current: %d mA", tx.measured_telemetry.poweramp_current);
-               Console::log("Measured power amplifier temperature: %d C", tx.measured_telemetry.poweramp_temp);
-               Console::log("Measured local oscillator temperature: %d C", tx.measured_telemetry.oscillator_temp);
+               Console::log("Measured instantaneous RF reflected power (mW): %f", tx.measured_telemetry.rf_reflected_power);
+               Console::log("Measured instantaneous RF forward power (mW): %f", tx.measured_telemetry.rf_forward_power);
+               Console::log("Measured power bus voltage (V): %f", tx.measured_telemetry.power_bus_voltage);
+               Console::log("Measured total supply current (mA): %f", tx.measured_telemetry.total_current);
+               Console::log("Measured transmitter current (mA): %f", tx.measured_telemetry.tx_current);
+               Console::log("Measured receiver current: (mA): %f", tx.measured_telemetry.rx_current);
+               Console::log("Measured power amplifier current (mA): %f", tx.measured_telemetry.poweramp_current);
+               Console::log("Measured power amplifier temperature (C): %f", tx.measured_telemetry.poweramp_temp);
+               Console::log("Measured local oscillator temperature (C): %f", tx.measured_telemetry.oscillator_temp);
            }
 
            if (tx.report_last_telemetry()) {
@@ -190,15 +189,16 @@ int main(void)
            }
            else {
                Console::log("TEST 12 (Report Telemetry during last transmission): PASS");
-               Console::log("Last instantaneous RF reflected power: %d mW", tx.last_telemetry.rf_reflected_power);
-               Console::log("Last instantaneous RF forward power: %d mW", tx.last_telemetry.rf_forward_power);
-               Console::log("Last power bus voltage: %d V", tx.last_telemetry.power_bus_voltage);
-               Console::log("Last total supply current: %d mA", tx.last_telemetry.total_current);
-               Console::log("Last transmitter current: %d mA", tx.last_telemetry.tx_current);
-               Console::log("Last receiver current: %d mA", tx.last_telemetry.rx_current);
-               Console::log("Last power amplifier current: %d mA", tx.last_telemetry.poweramp_current);
-               Console::log("Last power amplifier temperature: %d C", tx.last_telemetry.poweramp_temp);
-               Console::log("Last local oscillator temperature: %d C", tx.last_telemetry.oscillator_temp);
+               Console::log("Last instantaneous RF reflected power (mW): %f", tx.last_telemetry.rf_reflected_power);
+               Console::log("Last instantaneous RF forward power (mW): %f", tx.last_telemetry.rf_forward_power);
+               Console::log("Last power bus voltage (V): %f", tx.last_telemetry.power_bus_voltage);
+               Console::log("Last total supply current (mA): %f", tx.last_telemetry.total_current);
+               Console::log("Last transmitter current (mA): %f", tx.last_telemetry.tx_current);
+               Console::log("Last receiver current (mA): %f", tx.last_telemetry.rx_current);
+               Console::log("Last power amplifier current (mA): %f", tx.last_telemetry.poweramp_current);
+               Console::log("Last power amplifier temperature (C): %f", tx.last_telemetry.poweramp_temp);
+               Console::log("Last local oscillator temperature (C): %f", tx.last_telemetry.oscillator_temp);
+
            }
 
            if (tx.set_bitrate(9600)) {
@@ -208,12 +208,13 @@ int main(void)
                Console::log("TEST 13 (Set TX bitrate): PASS");
            }
 
+
            if (tx.report_uptime()) {
                Console::log("TEST 14 (Report uptime): FAIL");
            }
            else {
                Console::log("TEST 14 (Report uptime): PASS");
-               Console::log("TX uptime: %d s", tx.uptime);
+               Console::log("TX uptime: %d s, expected: [2, 8] s", tx.uptime);
            }
 
            if (tx.report_state()) {
@@ -221,9 +222,9 @@ int main(void)
            }
            else {
                Console::log("TEST 15 (Report state): PASS");
-               Console::log("TX Idle state: %d - should be 1", static_cast<int>(tx.state.on_idle));
-               Console::log("Beacon active: %d - should be 1", static_cast<int>(tx.state.beacon_active));
-               Console::log("TX bitrate: %d - should be 9600", tx.state.tx_bitrate);
+               Console::log("TX Idle state: %d, expected: 1", static_cast<int>(tx.state.on_idle));
+               Console::log("Beacon active: %d, expected: 1", static_cast<int>(tx.state.beacon_active));
+               Console::log("TX bitrate: %d, expected: 9600", tx.state.tx_bitrate);
            }
 
            if (tx.clear_beacon()) {
@@ -269,7 +270,7 @@ int main(void)
           }
           else {
               Console::log("TEST 4 (Get number of frames in buffer): PASS");
-              Console::log("Number of frames in buffer: %d", rx.frames.number);
+              Console::log("Number of frames in buffer: %d, expected: 0", rx.frames.number);
           }
 
           if (rx.remove_frame_from_buffer()) {
@@ -285,22 +286,22 @@ int main(void)
           }
           else {
               Console::log("TEST 6 (Measure Telemetry): PASS");
-              Console::log("Measured instantaneous Doppler effect offset: %d Hz", rx.telemetry.doppler_offset);
-              Console::log("Measured instantaneous signal strength: %d dB", rx.telemetry.signal_strength);
-              Console::log("Measured power bus voltage: %d V", rx.telemetry.power_bus_voltage);
-              Console::log("Measured total supply current: %d mA", rx.telemetry.total_current);
-              Console::log("Measured transmitter current: %d mA", rx.telemetry.tx_current);
-              Console::log("Measured receiver current: %d mA", rx.telemetry.rx_current);
-              Console::log("Measured power amplifier current: %d mA", rx.telemetry.poweramp_current);
-              Console::log("Measured power amplifier temperature: %d C", rx.telemetry.poweramp_temp);
-              Console::log("Measured local oscillator temperature: %d C", rx.telemetry.oscillator_temp);
+              Console::log("Measured instantaneous Doppler effect offset (Hz): %f", rx.telemetry.doppler_offset);
+              Console::log("Measured instantaneous signal strength (dBm): -%f", -rx.telemetry.signal_strength);
+              Console::log("Measured power bus voltage (V): %f", rx.telemetry.power_bus_voltage);
+              Console::log("Measured total supply current (mA): %f", rx.telemetry.total_current);
+              Console::log("Measured transmitter current (mA): %f", rx.telemetry.tx_current);
+              Console::log("Measured receiver current (mA): %f", rx.telemetry.rx_current);
+              Console::log("Measured power amplifier current (mA): %f", rx.telemetry.poweramp_current);
+              Console::log("Measured power amplifier temperature (C): %f", rx.telemetry.poweramp_temp);
+              Console::log("Measured local oscillator temperature (C): %f", rx.telemetry.oscillator_temp);
           }
           if (rx.report_uptime()) {
               Console::log("TEST 7 (Report uptime): FAIL");
           }
           else {
               Console::log("TEST 7 (Report uptime): PASS");
-              Console::log("RX uptime: %d s", rx.uptime);
+              Console::log("RX uptime: %d s, expected: [1, 4] s", rx.uptime);
           }
 
           Console::log("Receiver test finished\n\n");
