@@ -60,10 +60,6 @@ gcc_startup_msp432p401r_gcc.obj: ../gcc/startup_msp432p401r_gcc.c
 	@ echo Building $@ from $^
 	@ $(CC) $(CFLAGS) $< -c -o $@
 
-hashes:
-	@ rm -f ../src/hashes.h
-	@ scripts/generate-hashes.sh ../src/hashes.h ../src/*
-
 %.obj: ../src/%.c
 	@ echo Building $@ from $^
 	@ $(CC) $(CFLAGS) $< -c -o $@
