@@ -36,7 +36,7 @@
 *
 ******************************************************************************/
 
-#include <msp.h>
+#include <ti/devices/msp432p4xx/inc/msp.h>
 #include "../src/DWire.h"
 #include "../src/Console.h"
 #include "../src/DelfiPQcore.h"
