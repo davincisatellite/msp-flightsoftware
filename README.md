@@ -79,6 +79,17 @@ cd gcc
 make
 ```
 
+### Building test programs
+To build a test program run gmake with
+```
+make test/<test-program>
+```
+e.g. to build `test/eps-test.cpp` run
+```
+make test/eps-test
+```
+which produces `eps-test.out` which can be flashed to the board.
+
 ## Flashing
 1. Run dslite.sh with [the correct ccxml](https://github.com/zephyrproject-rtos/zephyr/blob/main/boards/arm/msp_exp432p401r_launchxl/support/MSP432P401R.ccxml) configuration file.
 ```
