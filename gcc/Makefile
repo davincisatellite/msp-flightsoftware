@@ -5,6 +5,13 @@ LNK = "$(GCC_ARMCOMPILER)/bin/arm-none-eabi-gcc"
 
 SOURCES := $(wildcard ../src/*.c)
 SOURCES += $(wildcard ../src/*.cpp)
+SOURCES := $(filter-out ../src/main.%, $(SOURCES))
+
+MAIN := $(wildcard ../src/main.cpp)
+ifeq ($(MAIN),)
+	MAIN := $(wildcard ../src/main.c)
+endif
+MAIN := $(patsubst %.c, %.obj, $(patsubst %.cpp, %.obj, $(notdir $(MAIN))))
 
 OBJECTS := $(patsubst %.c, %.obj, $(patsubst %.cpp, %.obj, $(notdir $(SOURCES))))
 OBJECTS += gcc_startup_msp432p401r_gcc.obj
@@ -72,12 +79,20 @@ hashes:
 	@ echo Building $@ from $^
 	@ $(CC) $(CFLAGS) $< -c -o $@
 
-$(NAME).out: $(OBJECTS)
+%.obj: ../test/%.cpp
+	@ echo Building test $@ from $^
+	@ $(CC) $(CFLAGS) $< -c -o $@
+
+$(NAME).out: $(MAIN) $(OBJECTS)
 	@ echo Linking $@ with $^
-	@ $(LNK)  $(OBJECTS)  $(LFLAGS) -o $(NAME).out
+	@ $(LNK) $^ $(LFLAGS) -o $(NAME).out
+
+test/%: %.obj $(OBJECTS)
+	@ echo Linking test $@ with $^
+	@ $(CC) $^ $(LFLAGS) -o $(notdir $@).out
 
 clean:
 	@ echo Cleaning...
-	@ $(RM) $(OBJECTS) > $(DEVNULL) 2>&1
-	@ $(RM) $(NAME).out > $(DEVNULL) 2>&1
-	@ $(RM) $(NAME).map > $(DEVNULL) 2>&1
+	@ $(RM) *.obj > $(DEVNULL) 2>&1
+	@ $(RM) *.out > $(DEVNULL) 2>&1
+	@ $(RM) *.map > $(DEVNULL) 2>&1
