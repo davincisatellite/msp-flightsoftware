@@ -171,6 +171,26 @@ enum class ConfigParameter { //ICD table 3-25 page 78/87
     VD6_CH_BF               = 0x481E //uint16   //read only
 };
 
+enum ParameterType {
+    // List of valid Param-IDs based on Table 3-24: Possible Parameter Data Types from page 77 ICD
+    Int8 = 0x1000,
+    UInt8 = 0x2000,
+    Int16 = 0x3000,
+    UInt16 = 0x4000,
+    Int32 = 0x5000, //note, not used
+    UInt32 = 0x6000, //note, not used
+    Float = 0x7000, //note, not used
+    Int64 = 0x8000, //note, not used
+    UInt64 = 0x9000, //note, not used
+    Double = 0xA000, //note, not used
+    Invalid
+    };
+
+enum AccessType {
+    ReadOnly,
+    ReadWrite
+};
+
 union returnType {
     int8_t i8;
     uint8_t ui8;
@@ -184,6 +204,46 @@ union returnType {
     double d;
 };
 
+enum class CommandCode {
+    GET_PARAM = 0x82,                        // reference: page 62 of 87 (ICD)
+    SET_PARAM = 0x84,                        // reference: page 64 of 87 (ICD)
+    RESET_PARAM = 0x86,                      // reference: page 65 of 87 (ICD)
+    WATCHDOG = 0x06,                         // reference: page 32 of 87 (ICD)
+    NO_OPERATION = 0x02,                     // reference: page 30 of 87 (ICD)
+    SYSTEM_RESET = 0xAA,                     // reference: page 29 of 87 (ICD)
+    CANCEL_OPERATION = 0x04,                 // reference: page 31 of 87 (ICD)
+    SWITCH_TO_SAFETY_MODE = 0x32,            // reference: page 39 of 87 (ICD)
+    GET_PDU_OVERCURRENT_FAULT_STATE = 0x42,  // reference: page 43 of 87 (ICD)
+    GET_PDU_ABF_PLACED_STATE = 0x44,         // reference: page 44 of 87 (ICD)
+    GET_PDU_HOUSEKEEPING_DATA_RAW = 0x50,    // reference: page 46 of 87 (ICD)
+    GET_PDU_HOUSEKEEPING_DATA_ENG = 0x52,    // reference: page 49 of 87 (ICD)
+    GET_PDU_HOUSEKEEPING_DATA_AVG = 0x54,    // reference: page 51 of 87 (ICD)
+    GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60,    // reference: page 53 of 87 (ICD)
+    GET_PBU_HOUSEKEEPING_DATA_ENG = 0x62,    // reference: page 54 of 87 (ICD)
+    GET_PBU_HOUSEKEEPING_DATA_AVG = 0x64,    // reference: page 56 of 87 (ICD)
+    GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72,    // reference: page 60 of 87 (ICD)
+    GET_PCU_HOUSEKEEPING_DATA_AVG = 0x74,    // reference: page 61 of 87 (ICD)
+    GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70,    // reference: page 58 of 87 (ICD)
+    SWITCH_NOMINAL_MODE = 0x30,              // reference: page 38 of 87 (ICD)
+    OUTPUT_BUS_CHANNEL_OFF = 0x18,           // reference: page 37 of 87 (ICD)
+    OUTPUT_BUS_GROUP_STATE = 0x14,           // reference: page 35 of 87 (ICD)
+    OUTPUT_BUS_GROUP_OFF = 0x12,             // reference: page 34 of 87 (ICD)
+    OUTPUT_BUS_GROUP_ON = 0x10,              // reference: page 33 of 87 (ICD)
+    RESET_CONFIGURATION = 0x90               // reference: page 66 of 87 (ICD)
+};
+
+// Constants for command codes and other identifiers
+enum Identifiers {
+    STID = 0x00,                                      // reference: page 17 of 87 (ICD)
+    IVID = 0x06,                                      // reference: page 19 of 87 (ICD)
+    BID = 0x00                                        // reference: page 20 of 87 (ICD)
+};
+
+// Enum for reset keys or confirmation keys
+enum ResetKey {
+    RESET_KEY_SYSTEM_RESET = 0xA6,                    // reference: page 29 of 87 (ICD)
+    CONF_KEY_RESET_CONFIGURATION = 0xA7               // reference: page 66 of 87 (ICD)
+};
 
 class EPS {
 public:
@@ -275,6 +335,13 @@ public:
     static config_reply get_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
     static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
     static config_reply set_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id, returnType conf_par_value);
+
+    static ParameterType getConfigParameterType(ConfigParameter conf_par);
+    static AccessType getAccessType(ConfigParameter conf_par);
+    static uint8_t get_param_length(ParameterType par_type);
+    static void writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode);
+    static void readCommand(DWire &wire, EPS::ReplyBase &reply);
+    static bool write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode);
 };
 
 #endif //EPS_CONVERSION_EPS_H
