@@ -1,6 +1,7 @@
 /Debug/
 
 src/hashes.h
+src/gitinfo.h
 
 gcc/*
 !gcc/scripts

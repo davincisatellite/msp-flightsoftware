@@ -64,6 +64,10 @@ hashes:
 	@ rm -f ../src/hashes.h
 	@ scripts/generate-hashes.sh ../src/hashes.h ../src/*
 
+gitinfo:
+	@ rm -f ../src/gitinfo.h
+	@ scripts/generate-gitinfo.sh ../src/gitinfo.h
+
 %.obj: ../src/%.c
 	@ echo Building $@ from $^
 	@ $(CC) $(CFLAGS) $< -c -o $@
