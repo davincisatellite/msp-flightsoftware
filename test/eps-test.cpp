@@ -1,4 +1,4 @@
-#include "src/EPS.h"
+#include "../src/EPS.h"
 #include <cstddef> //for size_t
 #include <cstring> //for memcpy
 
