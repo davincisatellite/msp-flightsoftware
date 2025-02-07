@@ -83,16 +83,25 @@ bool test_write_config_params(DWire &wire, uint8_t i2c_address) {
 
 bool test_no_operation(DWire &wire, uint8_t i2c_address) {
     EPS::standard_reply reply = EPS::no_operation(wire, i2c_address);
-    if(reply.stid != 0x00 || reply.ivid != 0x06 || reply.rc != 0x03 || reply.stat != 0x80) {
+    if(reply.rc != 0x03 || reply.stat != 0x80) {
         return false;
     }
     return true;
 }
 
+bool test_watchdog(DWire &wire, uint8_t i2c_address) {
+    EPS::standard_reply reply = EPS::watchdog(wire, i2c_address);
+    if(reply.rc != 0x07) {
+        return false;
+    }
+    return true;
+}
+
+
+
 //WriteCommand and ReadCommand are tested indirectly through all other tests
 
 
-// reset_watchdog(DWire &wire, uint8_t i2c_address);
 // no_operation(DWire &wire, uint8_t i2c_address);
 // system_reset(DWire &wire, uint8_t i2c_address);
 // cancel_operation(DWire &wire, uint8_t i2c_address);

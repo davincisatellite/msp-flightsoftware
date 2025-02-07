@@ -217,7 +217,7 @@ EPS::config_reply EPS::get_config_params(DWire &wire, uint8_t i2c_address, Confi
     return read_config_params(wire, i2c_address, par_id, reply);
 }
 
-EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
+EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::WATCHDOG);
@@ -237,7 +237,6 @@ EPS::standard_reply EPS::reset_watchdog(DWire &wire, uint8_t i2c_address) {
     }
 
     return reply;
-
 }
 
 EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
