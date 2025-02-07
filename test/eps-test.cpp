@@ -1,32 +1,6 @@
-#include "EPS.h"
+#include "src/EPS.h"
 #include <cstddef> //for size_t
 #include <cstring> //for memcpy
-
-
-int main(void)
-{
-    DWire wire = DWire();
-    uint8_t i2c_address = 0x20;
-
-    if (!test_getConfigParameterType()) {
-        return 1;
-    }
-
-    if(!test_getAccessType()) {
-        return 2;
-    }
-
-    if(!test_get_param_length()) {
-        return 3;
-    }
-
-    if(!test_write_config_params()) {
-        return 4;
-    }
-
-    return 0;
-
-}
 
 bool test_getConfigParameterType() {
     if (EPS::getConfigParameterType(ConfigParameter::BOOT_RESUME_ENA) != Int8) {
@@ -103,15 +77,16 @@ bool test_write_config_params(DWire &wire, uint8_t i2c_address) {
     //read param not allowed
     if (EPS::write_config_params(wire, i2c_address, ConfigParameter::TTC_PREVCMD_ELAPSED, CommandCode::GET_PARAM)) {
         return false;
-   
+    }
     return true;
 }
 
 bool test_no_operation(DWire &wire, uint8_t i2c_address) {
-    reply = EPS::no_operation(wire, i2c_address);
-    if(reply.stid != 0x00 || reply.ivid != 0x06 || reply.rc != 0x03 || reply.stad != 0x80) {
+    EPS::standard_reply reply = EPS::no_operation(wire, i2c_address);
+    if(reply.stid != 0x00 || reply.ivid != 0x06 || reply.rc != 0x03 || reply.stat != 0x80) {
         return false;
     }
+    return true;
 }
 
 //WriteCommand and ReadCommand are tested indirectly through all other tests
@@ -143,3 +118,29 @@ bool test_no_operation(DWire &wire, uint8_t i2c_address) {
 // get_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
 // reset_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
 // set_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id, returnType conf_par_value);
+
+
+int main(void)
+{
+    DWire wire = DWire();
+    uint8_t i2c_address = 0x20;
+
+    if (!test_getConfigParameterType()) {
+        return 1;
+    }
+
+    if(!test_getAccessType()) {
+        return 2;
+    }
+
+    if(!test_get_param_length()) {
+        return 3;
+    }
+
+    if(!test_write_config_params(wire, i2c_address)) {
+        return 4;
+    }
+
+    return 0;
+
+}
