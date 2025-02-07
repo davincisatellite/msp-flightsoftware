@@ -217,28 +217,6 @@ EPS::config_reply EPS::get_config_params(DWire &wire, uint8_t i2c_address, Confi
     return read_config_params(wire, i2c_address, par_id, reply);
 }
 
-EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
-    standard_reply reply;
-
-    EPS::writeCommand(wire, i2c_address, CommandCode::WATCHDOG);
-
-    // delay
-    delay_ms(25);
-
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
-
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        EPS::readCommand(wire, reply);
-        reply.error = false;
-    } else {
-        reply.error = true;
-    }
-
-    return reply;
-}
-
 EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
