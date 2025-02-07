@@ -1,0 +1,38 @@
+/*
+ * Console.h
+ *
+ *  Created on: 28 Mar 2020
+ *      Author: stefanosperett
+ */
+
+#ifndef CONSOLE_H_
+#define CONSOLE_H_
+
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <stdarg.h>
+
+extern "C" {
+#include<string.h>
+}
+
+class Console
+{
+private:
+    static unsigned int baudrate;
+
+    // Private constructor to prevent instancing.
+    Console();
+    static char* itoa(char* str, uint32_t val, uint8_t base );
+    static void log_insert( const char *text );
+    static char* floatToStr(char *buffer, double value, int precision);
+
+public:
+    static bool isEnabled();
+    static void init( unsigned int baudrate );
+    static void log( const char *text, ... );
+    static void log( void );
+    static void flush( void );
+
+};
+
+#endif /* CONSOLE_H_ */
