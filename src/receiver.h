@@ -29,7 +29,7 @@ public:
         uint16_t doppler_f;
         uint16_t rssi;
         uint16_t size;
-        int frame;
+        uint8_t frame[200];
         bool error;
     };
 

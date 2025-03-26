@@ -61,7 +61,7 @@ unsigned char Receiver::get_number_of_frames() {
 unsigned char Receiver::get_frame_from_buffer() {
     /* Write command to Receiver. */
     wire.beginTransmission(i2c_address);
-    wire.write(0x21);
+    wire.write(0x22);
     wire.endTransmission();
     delay_ms(30);
     uint8_t res = wire.requestFrom(i2c_address, 2);
@@ -80,10 +80,11 @@ unsigned char Receiver::get_frame_from_buffer() {
             lsb = wire.read();
             msb = wire.read();
             frame.rssi = (msb << 8) + lsb;
-            frame.frame = 0;
             for (int i = 0; i<frame_size; i++) {
-                frame.frame = frame.frame << 8;
-                frame.frame += wire.read();
+                frame.frame[i] = wire.read();
+            }
+            for (int i = frame_size; i<200; i++) {
+                frame.frame[i] = 0;
             }
             frame.error = false;
             return 0;
