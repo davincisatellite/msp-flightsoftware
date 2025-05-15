@@ -3,69 +3,156 @@
 #include <cstring> //for memcpy
 #include "../src/Console.h"
 
+/*
+     For each config data type we will test the boundaries and a random value between them.
+*/
 bool test_getConfigParameterType() {
-    if (EPS::getConfigParameterType(ConfigParameter::BOOT_RESUME_ENA) != Int8) {
-        Console::log("fail BOOT_RESUME_ENA getconfigparamtype");
-        return false;
+    int there_is_an_error=0;
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1000))!=Int8 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1A3C))!=Int8 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1FFF))!=Int8) {
+        Console::log("It fails on the ones with the top hex digit 1 in getConfigParameterType");
+        there_is_an_error=1;
     }
-    if (EPS::getConfigParameterType(ConfigParameter::BOARD_IDENTIFIER_KEY) != UInt8) {
-        Console::log("fail BOARD_IDENTIFIER_KEY getconfigparamtype");
-        return false;
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x2000))!=UInt8 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x203A))!=UInt8 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x2FFF))!=UInt8) {
+        Console::log("It fails on the ones with the top hex digit 2 in getConfigParameterType");
+        there_is_an_error=1;
     }
-    if(EPS::getConfigParameterType(ConfigParameter::HITHR_BMON_UNBAL_02) != Int16) {
-        Console::log("fail HITHR_BMON_UNBAL_02 getconfigparamtype");
-        return false;
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x3000))!=Int16 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x33F7))!=Int16 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x3FFF))!=Int16) {
+        Console::log("It fails on the ones with the top hex digit 3 in getConfigParameterType");
+        there_is_an_error=1;
     }
-    if(EPS::getConfigParameterType(ConfigParameter::VD6_CH_BF) != UInt16) {
-        Console::log("fail VD6_CH_BF getconfigparamtype");
-        return false;
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4000))!=UInt16 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4D1A))!=UInt16 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4FFF))!=UInt16) {
+        Console::log("It fails on the ones with the top hex digit 4 in getConfigParameterType");
+        there_is_an_error=1;
     }
-
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x5000))!=Int32 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x509D))!=Int32 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x5FFF))!=Int32) {
+        Console::log("It fails on the ones with the top hex digit 5 in getConfigParameterType");
+        there_is_an_error=1;
+    }
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x6000))!=UInt32 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x663B))!=UInt32 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x6FFF))!=UInt32) {
+        Console::log("It fails on the ones with the top hex digit 6 in getConfigParameterType");
+        there_is_an_error=1;
+    }
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x7000))!=Float ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x70AA))!=Float ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x7FFF))!=Float) {
+        Console::log("It fails on the ones with the top hex digit 7 in getConfigParameterType");
+        there_is_an_error=1;
+    }
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8000))!=Int64 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8D1A))!=Int64 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8FFF))!=Int64) {
+        Console::log("It fails on the ones with the top hex digit 8 in getConfigParameterType");
+        there_is_an_error=1;
+    }
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9000))!=UInt64 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9F61))!=UInt64 ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9FFF))!=UInt64) {
+        Console::log("It fails on the ones with the top hex digit 9 in getConfigParameterType");
+        there_is_an_error=1;
+    }
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0xA000))!=Double ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xA5E8))!=Double ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xAFFF))!=Double) {
+        Console::log("It fails on the ones with the top hex digit A in getConfigParameterType");
+        there_is_an_error=1;
+    }
+    //test some invalid values
+    if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0xB000))!=Invalid ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x0))!=Invalid ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xFFF))!=Invalid ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xC068))!=Invalid ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xD3A2))!=Invalid ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xEF03))!=Invalid ||
+            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xFFFF))!=Invalid) {
+        Console::log("It fails on the invalid values in getConfigParameterType");
+        there_is_an_error=1;
+    }
+    if (there_is_an_error==1)
+        return false;
     return true;
 }
 
 bool test_getAccessType() {
+    int there_is_an_error=0;
     if (EPS::getAccessType(ConfigParameter::SAFETY_VOLT_LOTHR) != ReadWrite) {
-        Console::log("fail SAFETY_VOLT_LOTHR getaccesstype");
-        return false;
+        Console::log("fail SAFETY_VOLT_LOTHR in getaccesstype");
+        there_is_an_error=1;
     }
     if (EPS::getAccessType(ConfigParameter::SAFETY_VOLT_HITHR) != ReadWrite) {
-        Console::log("fail SAFETY_VOLT_HITHR getaccesstype");
-        return false;
+        Console::log("fail SAFETY_VOLT_HITHR in getaccesstype");
+        there_is_an_error=1;
     }
-    if(EPS::getAccessType(ConfigParameter::CONF_PARAM_CHANGED) != ReadOnly) {
-        Console::log("fail CONF_PARAM_CHANGED getaccesstype");
-        return false;
+    //SAFETY_VOLT_LOTHR and SAFETY_VOLT_HITHR_USED have the same address so the result should be the same, ReadWrite.
+    //See the Documentation for more details. The main idea is that they are treated the same.
+    if (EPS::getAccessType(ConfigParameter::SAFETY_VOLT_LOTHR_USED) != ReadWrite) {
+        Console::log("fail SAFETY_VOLT_LOTHR_USED in getaccesstype");
+        there_is_an_error=1;
     }
-    if(EPS::getAccessType(ConfigParameter::STID) != ReadOnly) {
-        Console::log("fail STID getaccesstype");
-        return false;
+    if(EPS::getAccessType(ConfigParameter::SAFETY_VOLT_HITHR_USED) != ReadWrite) {
+        Console::log("fail SAFETY_VOLT_HITHR_USED in getaccesstype");
+        there_is_an_error=1;
     }
-    if(EPS::getAccessType(ConfigParameter::BID_USED) != ReadOnly) {
-        Console::log("fail BID_USED getaccesstype");
-        return false;
+    //test the other values. if 0x?8?? -> ReadOnly, else ReadWrite
+
+    //0x1???
+    for (int i = 0x1000; i <= 0x100A; ++i)
+        if(EPS::getAccessType(static_cast<ConfigParameter>(i)) != ReadWrite) {
+            Console::log("It fails between 0x1000 and 0x100A in getaccesstype");
+            there_is_an_error=1;
+        }
+    if(EPS::getAccessType(ConfigParameter::CONF_PARAM_CHANGED) != ReadOnly) {//0x1800
+        Console::log("fail CONF_PARAM_CHANGED in getaccesstype");
+        there_is_an_error=1;
     }
-    if(EPS::getAccessType(ConfigParameter::SAFETY_VOLT_HITHR_USED) != ReadOnly) {
-        Console::log("fail SAFETY_VOLT_HITHR_USED getaccesstype");
+    //0x2???
+    for (int i = 0x2000; i <= 0x2002; ++i)
+        if(EPS::getAccessType(static_cast<ConfigParameter>(i)) != ReadWrite) {
+            Console::log("It fails between 0x2000 and 0x2002 in getaccesstype");
+            there_is_an_error=1;
+        }
+    for (int i = 0x2800; i <= 0x2803; ++i)
+        if(EPS::getAccessType(static_cast<ConfigParameter>(i)) != ReadOnly) {
+            Console::log("It fails between 0x2800 and 0x2803 in getaccesstype");
+            there_is_an_error=1;
+        }
+    //0x3???
+    for (int i = 0x3000; i <= 0x3029; ++i)
+        if(EPS::getAccessType(static_cast<ConfigParameter>(i)) != ReadWrite) {
+            Console::log("It fails between 0x3000 and 0x3029 in getaccesstype");
+            there_is_an_error=1;
+        }
+    for (int i = 0x3800; i <= 0x3801; ++i)
+        if(EPS::getAccessType(static_cast<ConfigParameter>(i)) != ReadOnly) {
+            Console::log("It fails between 0x3800 and 0x3801 in getaccesstype");
+            there_is_an_error=1;
+        }
+    //0x4???
+    for (int i = 0x4000; i <= 0x4027; ++i)
+        if(EPS::getAccessType(static_cast<ConfigParameter>(i)) != ReadWrite) {
+            Console::log("It fails between 0x4000 and 0x4027 in getaccesstype");
+            there_is_an_error=1;
+        }
+    //0x480D and 0x480E are ReadWrite, and we tested them at the beginning
+    for (int i = 0x4800; i <= 0x481E; ++i)
+        if (i!=0x480D && i!=0x480E)
+            if(EPS::getAccessType(static_cast<ConfigParameter>(i)) != ReadOnly) {
+                Console::log("It fails between 0x4800 and 0x481E (excluding 0x480D and 0x480E)  in getaccesstype");
+                there_is_an_error=1;
+            }
+    if (there_is_an_error==1)
         return false;
-    }
-    if(EPS::getAccessType(ConfigParameter::VD6_CH_BF) != ReadOnly) {
-        Console::log("fail VD6_CH_BF getaccesstype");
-        return false;
-    }
-    if(EPS::getAccessType(ConfigParameter::OBUS_LATCHOFF_DELAY_06) != ReadWrite) {
-        Console::log("fail OBUS_LATCHOFF_DELAY_06 getaccesstype");
-        return false;
-    }
-    if(EPS::getAccessType(ConfigParameter::BP1_TEMP2_POSDIV) != ReadWrite) {
-        Console::log("fail BP1_TEMP2_POSDIV getaccesstype");
-        return false;
-    }
-    if(EPS::getAccessType(ConfigParameter::OBUS_VD1_ALWAYS_ENA) != ReadWrite) {
-        Console::log("fail OBUS_VD1_ALWAYS_ENA getaccesstype");
-        return false;
-    }
-    
     return true;
 }
 
@@ -1029,122 +1116,125 @@ int main(void)
     uint8_t i2c_address = 0x20;
     Console::init(9600);
 
+    int nr_of_errors=0;
     if (!test_getConfigParameterType()) {
-        return 1;
+        nr_of_errors++;
     }
 
     if(!test_getAccessType()) {
-        return 2;
+        nr_of_errors++;
     }
 
     if(!test_get_param_length()) {
-        return 3;
+        nr_of_errors++;
     }
 
     if(!test_write_config_params(wire, i2c_address)) {
-        return 4;
+        nr_of_errors++;
     }
 
     if(!test_no_operation(wire, i2c_address)) {
-        return 5;
+        nr_of_errors++;
     }
 
     if(!test_watchdog(wire, i2c_address)) {
-        return 6;
+        nr_of_errors++;
     }
 
     if(!test_get_config_params(wire, i2c_address)) {
-        return 7;
+        nr_of_errors++;
     }
 
     if(!test_get_pcu_housekeeping_data_raw(wire, i2c_address)) {
-        return 8;
+        nr_of_errors++;
     }
 
     if(!test_get_pcu_housekeeping_data_eng(wire, i2c_address)) {
-        return 9;
+        nr_of_errors++;
     }
 
     if(!test_get_pcu_housekeeping_data_running_average(wire, i2c_address)) {
-        return 10;
+        nr_of_errors++;
     }
 
     if(!test_get_pdu_overcurrent_fault_state(wire, i2c_address)) {
-        return 11;
+        nr_of_errors++;
     }
 
     if(!test_get_pdu_abf_placed_state(wire, i2c_address)) {
-        return 12;
+        nr_of_errors++;
     }
 
     if(!test_get_pdu_housekeeping_data_raw(wire, i2c_address)) {
-        return 13;
+        nr_of_errors++;
     }
 
     if(!test_get_pdu_housekeeping_data_eng(wire, i2c_address)) {
-        return 14;
+        nr_of_errors++;
     }
 
     if(!test_get_pdu_housekeeping_data_running_average(wire, i2c_address)) {
-        return 15;
+        nr_of_errors++;
     }
 
     if(!test_get_pbu_housekeeping_data_raw(wire, i2c_address)) {
-        return 16;
+        nr_of_errors++;
     }
 
     if(!test_get_pbu_housekeeping_data_eng(wire, i2c_address)) {
-        return 17;
+        nr_of_errors++;
     }
 
     if(!test_get_pbu_housekeeping_data_running_average(wire, i2c_address)) {
-        return 18;
+        nr_of_errors++;
     }
 
     if(!test_system_reset(wire, i2c_address)) {
-        return 19;
+        nr_of_errors++;
     }
 
     if(!test_cancel_operation(wire, i2c_address)) {
-        return 20;
+        nr_of_errors++;
     }
 
     if(!test_switch_safety_mode(wire, i2c_address)) {
-        return 21;
+        nr_of_errors++;
     }
 
     if(!test_switch_nominal_mode(wire, i2c_address)) {
-        return 22;
+        nr_of_errors++;
     }
 
     if(!test_output_bus_group_state(wire, i2c_address)) {
-        return 23;
+        nr_of_errors++;
     }
 
     if(!test_output_bus_channel_off(wire, i2c_address)) {
-        return 24;
+        nr_of_errors++;
     }
 
     if(!test_output_bus_group_on(wire, i2c_address)) {
-        return 25;
+        nr_of_errors++;
     }
 
     if(!test_output_bus_group_off(wire, i2c_address)) {
-        return 26;
+        nr_of_errors++;
     }
 
     if(!test_reset_configuration(wire, i2c_address)) {
-        return 27;
+        nr_of_errors++;
     }
 
     if(!test_set_config_params(wire, i2c_address)) {
-        return 28;
+        nr_of_errors++;
     }
 
     if(!test_reset_config_params(wire, i2c_address)) {
-        return 29;
+        nr_of_errors++;
     }
-
-    Console::log("All tests passed successfully.");
-    return 0;
+    if (nr_of_errors == 0)
+        Console::log("All tests passed successfully.");
+    else
+        Console::log(nr_of_errors+" errors found.");
+    return nr_of_errors;
 }
