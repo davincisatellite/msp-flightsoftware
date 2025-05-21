@@ -8,7 +8,10 @@
 #define ANTENNA_I2C_ADDRESS_MCA 0x31
 #define ANTENNA_I2C_ADDRESS_MCB 0x32
 
-#define ANTENNA_TEMPERATURE_THRESHOLD 2100 //0 deg C
+#define ANTENNA_TEMPERATURE_THRESHOLD 0.0 // 0 deg C
+
+#define SUCCESS 0
+#define FAIL 1
 
 #ifndef ANTENNA_H_
 #define ANTENNA_H_
@@ -48,7 +51,7 @@ public:
     };
 
     struct ant_temperature {
-        uint16_t Vout;
+        // uint16_t Vout;
 //        int16_t temp;
         float temp;
         bool error;

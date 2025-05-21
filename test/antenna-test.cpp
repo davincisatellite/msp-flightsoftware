@@ -80,20 +80,21 @@ int main(void)
     while(1)
     {
         int devices = I2CScanner::scan(I2Cinternal);
-        Console::log("%d devices found\n", devices);
-        I2CScanner::scan(I2Cinternal, [](unsigned char n){ Console::log("%d \n", n);});
+        Console::log("%d devices found", devices);
+        I2CScanner::scan(I2Cinternal, [](unsigned char n){ Console::log("%d", n);});
+        Console::log("\n");
         if (TEST_ANTENNA)
         {
             Console::log("Antenna A test starting...\n");
             Console::log("Antenna address 0x31");
 
-            if (antennaA.reset()) {
+            if (antennaB.reset()) {
                 Console::log("TEST 1 (Reset): FAIL");
             }
             else {
                 Console::log("TEST 1 (Reset): PASS");
             }
-            delay_ms(500);
+
             antennaA.report_deployment_status();
             Console::log("Is the antenna system armed: %d", static_cast<int>(antennaA.status.arm));
             Console::log("Is there a status error: %d", static_cast<int>(antennaA.status.error));
@@ -123,10 +124,10 @@ int main(void)
                 Console::log("TEST 4 (Temp): FAIL");
             }
             else {
-                Console::log("Test 4 (Temp): PASS       Vout = %d,     temp = %d (millidegree C)", antennaA.temperature.Vout, static_cast<int>(antennaA.temperature.temp*1000));
+                Console::log("Test 4 (Temp): PASS       temp = %d (millidegree C)",  static_cast<int>(antennaA.temperature.temp*1000));
             }
             if (antennaA.temp_above_threshold()) {
-                Console::log("Test 5 (Temp_Threshold): PASS     Temp_Thresohold set to 0 deg C");
+                Console::log("Test 5 (Temp_Threshold): PASS     Temp_Thresohold = %d (0 deg C)", static_cast<int>(ANTENNA_TEMPERATURE_THRESHOLD*1000));
             }
             else {
                 Console::log("Test 5 (Temp_Threshold): FAIL");
@@ -200,10 +201,10 @@ int main(void)
                 Console::log("TEST 4 (Temp): FAIL");
             }
             else {
-                Console::log("Test 4 (Temp): PASS       Vout = %d", antennaB.temperature.Vout);
+                Console::log("Test 4 (Temp): PASS       temp = %d (millidegree C)",  static_cast<int>(antennaB.temperature.temp*1000));
             }
             if (antennaB.temp_above_threshold()) {
-                Console::log("Test 5 (Temp_Threshold): PASS     Temp_Thresohold = %s (0 deg C)", ANTENNA_TEMPERATURE_THRESHOLD);
+                Console::log("Test 5 (Temp_Threshold): PASS     Temp_Thresohold = %d (millidegree C)", static_cast<int>(ANTENNA_TEMPERATURE_THRESHOLD*1000));
             }
             else {
                 Console::log("Test 5 (Temp_Threshold): FAIL");

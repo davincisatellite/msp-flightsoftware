@@ -47,13 +47,13 @@ unsigned char Antenna::report_deployment_status() {
         status.arm = (lsb & 0b00000001) != 0;
         status.indb = (msb & 0b00010000) != 0;
         status.error = false;
-        return 0;
+        return SUCCESS;
     }
     /* Signal error if data did not arrive. */
     else
     {
         status.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -74,19 +74,17 @@ unsigned char Antenna::report_temperature() {
         uint16_t lsb = wire.read();
         uint16_t msb = wire.read();
         uint32_t resp = (msb << 8) + lsb;
-//        Console::log("Resp: %d \n", resp);
 
-        temperature.Vout = static_cast<uint16_t>((3300 * resp) / 1023);
-        temperature.temp = -0.0907 * temperature.Vout + 190.15;
-//        temperature.temp = static_cast<int16_t>(-50 + (200/2196)*(2616-temperature.Vout));
+        uint16_t Vout = static_cast<uint16_t>((3300 * resp) / 1023);
+        temperature.temp = -0.0907 * Vout + 190.15;
         temperature.error = false;
-        return 0;
+        return SUCCESS;
     }
     /* Signal error if data did not arrive. */
     else
     {
         temperature.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -99,12 +97,14 @@ unsigned char Antenna::reset() {
 // Pings the antenna. Returns 0 if the output of the temperature sensor makes sense, 1 otherwise.
 
 unsigned char Antenna::ping() {
-    report_temperature();
-    if (temperature.Vout > 420 && temperature.Vout < 2616) {
-        return 0;
+    if (report_temperature()) {
+        return FAIL;
+    }
+    if (temperature.temp > -50.0 && temperature.temp < 150.0 && !temperature.error) {
+        return SUCCESS;
     }
     else {
-        return 1;
+        return FAIL;
     }
 }
 
@@ -148,7 +148,7 @@ unsigned char Antenna::deploy_sequential() {
 
 unsigned char Antenna::deploy(uint8_t antenna_no, bool override) {
     if (antenna_no < 1 || antenna_no > 4) {
-        return 1;
+        return FAIL;
     }
     uint8_t reg;
     if (override) {
@@ -172,7 +172,7 @@ unsigned char Antenna::deploy(uint8_t antenna_no, bool override) {
         case 4:
             return static_cast<unsigned char>(!status.a4b);
     }
-    return 1;
+    return FAIL;
 }
 
 // Cancels any ongoing deployment. Returns 0 if there is no active ongoing deployment, 1 otherwise.
@@ -192,7 +192,7 @@ bool Antenna::temp_above_threshold() {
         return false;
     }
     else {
-        return (temperature.Vout < ANTENNA_TEMPERATURE_THRESHOLD);
+        return (temperature.temp > ANTENNA_TEMPERATURE_THRESHOLD && !temperature.error);
     }
 }
 
@@ -211,10 +211,10 @@ unsigned char Antenna::report_deployment_activation_count() {
         }
         else {
             deployment_activation_count.error = true;
-            return 1;
+            return FAIL;
         }
     }
-    return 0;
+    return SUCCESS;
 }
 
 
@@ -234,8 +234,8 @@ unsigned char Antenna::report_deployment_activation_time() {
         }
         else {
             deployment_activation_time.error = true;
-            return 1;
+            return FAIL;
         }
     }
-    return 0;
+    return SUCCESS;
 }
