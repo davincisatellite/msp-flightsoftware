@@ -174,14 +174,120 @@ bool test_get_param_length() {
     return false;
 
 }
-
-bool test_write_config_params(DWire &wire, uint8_t i2c_address) {
-    
-    //read param not allowed
-    if (EPS::write_config_params(wire, i2c_address, ConfigParameter::TTC_PREVCMD_ELAPSED, CommandCode::GET_PARAM)) {
-        Console::log("fail TTC_PREVCMD_ELAPSED write_config_params");
-        return false;
+bool test_writeCommand(uint8_t i2c_address) {
+    DWire my_wire = DWire();
+    int there_is_an_error=0;
+    EPS::writeCommand(my_wire,i2c_address, static_cast<CommandCode>(0x70));
+    uint8_t byte1=my_wire.read();
+    uint8_t byte2=my_wire.read();
+    uint8_t byte3=my_wire.read();
+    uint8_t byte4=my_wire.read();
+    if (byte1!=STID) {
+        Console::log("It fails on writing first byte in writeCommand");
+        there_is_an_error=1;
     }
+    if (byte2!=IVID) {
+        Console::log("It fails on writing second byte in writeCommand");
+        there_is_an_error=1;
+    }
+    if (byte3!=static_cast<CommandCode>(0x70)) {
+        Console::log("It fails on writing third byte in writeCommand");
+        there_is_an_error=1;
+    }
+    if (byte4!=BID) {
+        Console::log("It fails on writing forth byte in writeCommand");
+        there_is_an_error=1;
+    }
+    if (there_is_an_error==1)
+        return false;
+    return true;
+}
+bool test_read_command(uint8_t i2c_address) {
+    int there_is_an_error=0;
+    DWire my_wire = DWire();
+
+    my_wire.beginTransmission(i2c_address);
+    my_wire.write(STID);
+    my_wire.write(IVID);
+    my_wire.write(0x34);
+    my_wire.write(BID);
+
+    EPS::ReplyBase reply ={};
+    EPS::readCommand(my_wire,reply);
+    if (reply.stid!=STID) {
+        Console::log("It fails on reading STID in read_command");
+        there_is_an_error=1;
+    }
+    if (reply.ivid!=IVID) {
+        Console::log("It fails on reading IVID in read_command");
+        there_is_an_error=1;
+    }
+    if (reply.rc!=static_cast<uint8_t>(0x34)) {
+        Console::log("It fails on reading rc in read_command");
+        there_is_an_error=1;
+    }
+    if (reply.bid!=BID) {
+        Console::log("It fails on reading BID in read_command");
+        there_is_an_error=1;
+    }
+    //status byte
+    if (reply.stat!=0) {
+        Console::log("It fails on reading stat in read_command");
+        there_is_an_error=1;
+    }
+    if (there_is_an_error==1)
+        return false;
+    return true;
+}
+bool test_write_config_params(uint8_t i2c_address) {
+    int there_is_an_error=0;
+    DWire my_wire = DWire();
+    //I assume i2c_address has an important value
+
+    //invalid param (not allowed)
+    if(EPS::write_config_params(my_wire, i2c_address, static_cast<ConfigParameter>(0xB234), CommandCode::GET_PARAM)) {
+        Console::log("It fails on invalid cofig_param with command GET_PARAM in write_config_params");
+        there_is_an_error=1;
+    }
+
+    my_wire = DWire();
+    //read-only param should not be allowed
+    if(EPS::write_config_params(my_wire, i2c_address, ConfigParameter::BID_USED, CommandCode::GET_PARAM)) {
+        Console::log("It fails on read-only cofig_param (BID_USED) with command GET_PARAM in write_config_params");
+        there_is_an_error=1;
+    }
+
+    my_wire = DWire();
+    if(EPS::write_config_params(my_wire, i2c_address, ConfigParameter::HITHR_BAT_HEATER_01, CommandCode::GET_PARAM)==false) {
+        Console::log("It fails on read/write cofig_param (BID_USED) with command GET_PARAM in write_config_params");
+        there_is_an_error=1;
+    }
+    //test if the wire has content (6 bytes)
+    my_wire.read();
+    my_wire.read();
+    uint8_t byte3=my_wire.read();
+    my_wire.read();
+    uint8_t byte5=my_wire.read();
+    uint8_t byte6=my_wire.read();
+
+    if (byte3!=static_cast<uint8_t>(CommandCode::GET_PARAM)) {
+        Console::log("It fails on writing CommandCode to the wire in write_config_params");
+        there_is_an_error=1;
+    }
+
+    if (byte5!=0x30) //test if the most significant byte of HITHR_BAT_HEATER_01 was written (little-endian format)
+    {
+        Console::log("byte 5 (least significant byte) was not correctly written");
+        there_is_an_error=1;
+    }
+    if (byte6!=(static_cast<uint16_t>(ConfigParameter::HITHR_BAT_HEATER_01))>>8)
+    {
+        Console::log("byte 6 (most significant byte) was not correctly written");
+        there_is_an_error=1;
+    }
+
+    if (there_is_an_error==1)
+        return false;
     return true;
 }
 

@@ -97,12 +97,12 @@ bool EPS::write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter 
     if (EPS::getAccessType(par_id) == ReadOnly) { // Read-only parameter
         return false;
     }
-
+    //the following if is redundant (we already test if param_type is invalid)
     // Get the expected length of PAR_VAL for the given PAR_ID
-    uint8_t par_val_length = EPS::get_param_length(param_type);
-    if (par_val_length == 0) { // Invalid param_id
-        return false;
-    }
+    //uint8_t par_val_length = EPS::get_param_length(param_type);
+    //if (par_val_length == 0) { // Invalid param_id
+    //    return false;
+    //}
 
     EPS::writeCommand(wire, i2c_address, commandCode);
 
