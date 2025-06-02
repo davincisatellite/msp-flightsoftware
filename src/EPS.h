@@ -341,6 +341,7 @@ public:
     static void writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode);
     static void readCommand(DWire &wire, EPS::ReplyBase &reply);
     static bool write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode);
+    static config_reply read_config_params(DWire &wire, unsigned char i2c_address, ConfigParameter par_id, config_reply &reply);
 };
 
 #endif //EPS_CONVERSION_EPS_H

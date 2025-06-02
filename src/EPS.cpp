@@ -114,7 +114,7 @@ bool EPS::write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter 
     return true;
 }
 
-EPS::config_reply read_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, EPS::config_reply &reply) {
+EPS::config_reply EPS::read_config_params(DWire &wire, unsigned char i2c_address, ConfigParameter par_id, EPS::config_reply &reply) {
 
     // Request 8 bytes + PAR_VAL length of data
     uint8_t par_val_length = EPS::get_param_length(EPS::getConfigParameterType(par_id));
@@ -369,7 +369,7 @@ EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uin
     return reply;
 }
 
-EPS::pdu_abf_placed_state get_pdu_abf_placed_state(DWire &wire, uint8_t i2c_address) {
+EPS::pdu_abf_placed_state EPS::get_pdu_abf_placed_state(DWire &wire, uint8_t i2c_address) {
     EPS::pdu_abf_placed_state reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::GET_PDU_ABF_PLACED_STATE);
