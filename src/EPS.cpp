@@ -70,13 +70,17 @@ uint8_t EPS::get_param_length(ParameterType par_type) {
             return 0; // Invalid par_id
     }
 }
-
+/**
+* This method writes 4 bytes to the wire.
+* The bytes are, in this order: STID, IVID, comandCode, BID
+*/
 void EPS::writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
     wire.beginTransmission(i2c_address);
     wire.write(STID);
     wire.write(IVID);
     wire.write(static_cast<uint8_t>(commandCode));
     wire.write(BID);
+    //should we end the tranmission? TODO
 }
 
 void EPS::readCommand(DWire &wire, EPS::ReplyBase &reply) {
@@ -114,7 +118,7 @@ bool EPS::write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter 
     return true;
 }
 
-EPS::config_reply EPS::read_config_params(DWire &wire, unsigned char i2c_address, ConfigParameter par_id, EPS::config_reply &reply) {
+EPS::config_reply EPS::read_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, EPS::config_reply &reply) {
 
     // Request 8 bytes + PAR_VAL length of data
     uint8_t par_val_length = EPS::get_param_length(EPS::getConfigParameterType(par_id));

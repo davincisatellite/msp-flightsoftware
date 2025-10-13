@@ -177,7 +177,7 @@ bool test_get_param_length() {
 bool test_writeCommand(uint8_t i2c_address) {
     DWire my_wire = DWire();
     int there_is_an_error=0;
-    EPS::writeCommand(my_wire,i2c_address, static_cast<CommandCode>(0x70));
+    EPS::writeCommand(my_wire,i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_RAW);
     uint8_t byte1=my_wire.read();
     uint8_t byte2=my_wire.read();
     uint8_t byte3=my_wire.read();
@@ -190,10 +190,11 @@ bool test_writeCommand(uint8_t i2c_address) {
         Console::log("It fails on writing second byte in writeCommand");
         there_is_an_error=1;
     }
-    // if (byte3 != CommandCode::GET_PCU_HOUSEKEEPING_DATA_RAW){//static_cast<CommandCode>(0x70)) {
-    //     Console::log("It fails on writing third byte in writeCommand");
-    //     there_is_an_error=1;
-    // }
+    //or simply if (byte3 != 0x70)
+    if (static_cast<CommandCode>(byte3) != CommandCode::GET_PCU_HOUSEKEEPING_DATA_RAW){//static_cast<CommandCode>(0x70)) {
+        Console::log("It fails on writing third byte in writeCommand");
+        there_is_an_error=1;
+    }
     if (byte4!=BID) {
         Console::log("It fails on writing forth byte in writeCommand");
         there_is_an_error=1;
@@ -314,12 +315,40 @@ bool test_read_config_params(uint8_t i2c_address) {
     return true;
 }
 // no_operation(DWire &wire, uint8_t i2c_address);
-bool test_no_operation(DWire &wire, uint8_t i2c_address) {
-    EPS::standard_reply reply = EPS::no_operation(wire, i2c_address);
-    if(reply.rc != 0x03 || reply.stat != 0x80) {
-        Console::log("fail no_operation");
+bool test_no_operation(uint8_t i2c_address) {
+    DWire my_wire = DWire();
+    EPS::standard_reply reply = EPS::no_operation(my_wire, i2c_address);
+    if(reply.rc != 0x03 || reply.stat != 0x80 || reply.error == true) {
+        Console::log("fail no_operation ",reply.rc, reply.stat,reply.error);
         return false;
     }
+    return true;
+}
+
+// cancel_operation(DWire &wire, uint8_t i2c_address);
+bool test_cancel_operation(uint8_t i2c_address) {
+    DWire my_wire = DWire();
+    EPS::standard_reply reply = EPS::cancel_operation(my_wire, i2c_address);
+
+    // Check if an error occurred during the execution of the command
+    if (reply.error) {
+        Console::log("fail cancel_operation: Error flag set");
+        return false;
+    }
+
+    // Expected response code (RC) for a successful cancel operation
+    if (reply.rc != 0x03) { // Check ICD for the expected response code
+        Console::log("fail cancel_operation: Unexpected response code");
+        return false;
+    }
+
+    // Expected system status after cancellation
+    if (reply.stat != 0x80) { // Check ICD for expected status
+        Console::log("fail cancel_operation: Unexpected system status");
+        return false;
+    }
+
+    Console::log("pass cancel_operation");
     return true;
 }
 
@@ -943,32 +972,6 @@ bool test_system_reset(DWire &wire, uint8_t i2c_address) {
 }
 
 
-// cancel_operation(DWire &wire, uint8_t i2c_address);
-bool test_cancel_operation(DWire &wire, uint8_t i2c_address) {
-    EPS::standard_reply reply = EPS::cancel_operation(wire, i2c_address);
-
-    // Check if an error occurred during the execution of the command
-    if (reply.error) {
-        Console::log("fail cancel_operation: Error flag set");
-        return false;
-    }
-
-    // Expected response code (RC) for a successful cancel operation
-    if (reply.rc != 0x03) { // Check ICD for the expected response code
-        Console::log("fail cancel_operation: Unexpected response code");
-        return false;
-    }
-
-    // Expected system status after cancellation
-    if (reply.stat != 0x80) { // Check ICD for expected status
-        Console::log("fail cancel_operation: Unexpected system status");
-        return false;
-    }
-
-    Console::log("pass cancel_operation");
-    return true;
-}
-
 // switch_safety_mode(DWire &wire, uint8_t i2c_address);
 bool test_switch_safety_mode(DWire &wire, uint8_t i2c_address) {
     EPS::standard_reply reply = EPS::switch_safety_mode(wire, i2c_address);
@@ -1237,9 +1240,13 @@ bool test_reset_config_params(DWire &wire, uint8_t i2c_address) {
 }
 
 //WriteCommand and ReadCommand are tested indirectly through all other tests
-
+#include "DWire_test_examples.cpp"
 int main(void)
 {
+    //test the DWIRe first!!
+    int r = main_test_DWire();
+    Console::log("DWire test result: ", r);
+
     DWire wire = DWire();
     uint8_t i2c_address = 0x20;
     Console::init(9600);
@@ -1261,7 +1268,11 @@ int main(void)
         nr_of_errors++;
     }
 
-    if(!test_no_operation(wire, i2c_address)) {
+    if(!test_no_operation(i2c_address)) {
+        nr_of_errors++;
+    }
+
+    if(!test_cancel_operation(i2c_address)) {
         nr_of_errors++;
     }
 
@@ -1318,10 +1329,6 @@ int main(void)
     }
 
     if(!test_system_reset(wire, i2c_address)) {
-        nr_of_errors++;
-    }
-
-    if(!test_cancel_operation(wire, i2c_address)) {
         nr_of_errors++;
     }
 
