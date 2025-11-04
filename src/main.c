@@ -51,7 +51,8 @@
 
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
-int main(void)
+//int main(void)
+int main2222(void)//revert to original when the test will pass
 {
     volatile uint32_t i;
 

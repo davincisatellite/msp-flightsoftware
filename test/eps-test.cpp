@@ -421,6 +421,7 @@ bool test_get_config_params(DWire &wire, uint8_t i2c_address) {
         Console::log("fail CONF_NVM_SAVE_CNTR get_config_params");
         return false;
     }
+    return true;
 }
 
 // get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
@@ -1246,6 +1247,11 @@ int main(void)
     //test the DWIRe first!!
     int r = main_test_DWire();
     Console::log("DWire test result: ", r);
+
+    if (r==0)//do not continue until we solved the DWire problem.
+        return -1;
+
+    //if the DWire tests were successful, then we continue
 
     DWire wire = DWire();
     uint8_t i2c_address = 0x20;
