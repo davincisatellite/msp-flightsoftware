@@ -18,9 +18,6 @@ unsigned char Antenna::report_deployment_status() {
     wire.beginTransmission(i2c_address);
     wire.write(0b11000011);
 
-//    /* Wait for antenna to process command. */
-//    delay_ms(30);
-
     /* Read data from Antenna. */
     uint8_t res = wire.requestFrom(i2c_address, 2);
 
@@ -29,8 +26,6 @@ unsigned char Antenna::report_deployment_status() {
     {
         uint8_t lsb = wire.read();
         uint8_t msb = wire.read();
-//        Console::log("MSB: %d\n", msb);
-//        Console::log("LSB: %d\n", lsb);
         status.a1s = (msb & 0b10000000) == 0;
         status.a1t = (msb & 0b01000000) != 0;
         status.a1b = (msb & 0b00100000) != 0;
@@ -61,9 +56,6 @@ unsigned char Antenna::report_temperature() {
     /* Write command to Antenna. */
     wire.beginTransmission(i2c_address);
     wire.write(0b11000000);
-
-//    /* Wait for antenna to process command. */
-//    delay_ms(30);
 
     /* Read data from Antenna. */
     uint8_t res = wire.requestFrom(i2c_address, 2);
@@ -111,16 +103,10 @@ unsigned char Antenna::ping() {
 // Arms the antenna. Returns 0 if antenna is armed successfully, 1 otherwise.
 
 unsigned char Antenna::arm() {
-//    report_deployment_status();
     wire.beginTransmission(i2c_address);
     wire.write(0b10101101);
     wire.endTransmission();
-//    delay_ms(30);
     report_deployment_status();
-//    Console::log("Setting status error to true for debugging\n");
-//    status.error = true;
-//    Console::log("Status error (debug): %d\n", static_cast<int>(status.error));
-//    Console::log("Arming status: %d\n", status.arm);
     return static_cast<unsigned char>(!status.arm);
 }
 
@@ -130,7 +116,6 @@ unsigned char Antenna::disarm () {
     wire.beginTransmission(i2c_address);
     wire.write(0b10101100);
     wire.endTransmission();
-//    delay_ms(30);
     report_deployment_status();
     return static_cast<unsigned char>(status.arm);
 }
@@ -139,9 +124,9 @@ unsigned char Antenna::disarm () {
 
 unsigned char Antenna::deploy_sequential() {
     wire.beginTransmission(i2c_address);
-    wire.write(0b10101101);
+    wire.write(0b10100101);
+    wire.write(0b00000000);
     wire.endTransmission();
-//    delay_ms(30);
     report_deployment_status();
     return static_cast<unsigned char>(!(status.a1b && status.a2b && status.a3b && status.a4b));
 }
@@ -159,8 +144,8 @@ unsigned char Antenna::deploy(uint8_t antenna_no, bool override) {
     }
     wire.beginTransmission(i2c_address);
     wire.write(reg);
+    wire.write(0b00000000);
     wire.endTransmission();
-//    delay_ms(30);
     report_deployment_status();
     switch (antenna_no) {
         case 1:
@@ -181,7 +166,6 @@ unsigned char Antenna::cancel_deploy() {
     wire.beginTransmission(i2c_address);
     wire.write(0b10101001);
     wire.endTransmission();
-//    delay_ms(30);
     report_deployment_status();
     return static_cast<unsigned char>(status.a1b && status.a2b && status.a3b && status.a4b);
 }
@@ -203,7 +187,6 @@ unsigned char Antenna::report_deployment_activation_count() {
         uint8_t reg = 0b10101111 + antenna_no;
         wire.beginTransmission(i2c_address);
         wire.write(reg);
-//        delay_ms(30);
         uint8_t res = wire.requestFrom(i2c_address, 1);
         if (res == 1)
         {
@@ -224,7 +207,6 @@ unsigned char Antenna::report_deployment_activation_time() {
         uint8_t reg = 0b10110011 + antenna_no;
         wire.beginTransmission(i2c_address);
         wire.write(reg);
-//        delay_ms(30);
         uint8_t res = wire.requestFrom(i2c_address, 2);
         if (res == 2)
         {
