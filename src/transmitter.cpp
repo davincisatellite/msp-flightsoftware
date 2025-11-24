@@ -47,15 +47,15 @@ unsigned char Transmitter::report_state() {
             default:
                 state.tx_bitrate = 0;
                 state.error = true;
-                return 1;
+                return FAIL;
         }
         state.error = false;
-        return 0;
+        return SUCCESS;
     }
     /* Signal error if data did not arrive. */
     else
     {
-        return 1;
+        return FAIL;
     }
 }
 
@@ -77,10 +77,10 @@ unsigned char Transmitter::report_uptime() {
             resp = resp + (wire.read() << 24); // Add the new byte shifted to the leftmost position
         }
         uptime = resp;
-        return 0;
+        return SUCCESS;
     }
     else {
-        return 1;
+        return FAIL;
     }
 }
 
@@ -149,12 +149,12 @@ unsigned char Transmitter::report_last_telemetry() {
         last_telemetry.poweramp_temp = (raw_poweramp_temp * -0.07669) + 195.6037;
         last_telemetry.oscillator_temp = (raw_oscillator_temp * -0.07669) + 195.6037;
         last_telemetry.error = false;
-        return 0;
+        return SUCCESS;
     }
     else
     {
         last_telemetry.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -198,12 +198,12 @@ unsigned char Transmitter::measure_telemetry() {
         measured_telemetry.poweramp_temp = (raw_poweramp_temp * -0.07669) + 195.6037;
         measured_telemetry.oscillator_temp = (raw_oscillator_temp * -0.07669) + 195.6037;
         measured_telemetry.error = false;
-        return 0;
+        return SUCCESS;
     }
     else
     {
         measured_telemetry.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -260,7 +260,14 @@ unsigned char Transmitter::reset_software() {
     /* Write command to Transmitter. */
     wire.beginTransmission(i2c_address);
     wire.write(0xAA);
-    return wire.endTransmission();
+    wire.endTransmission();
+    report_uptime();
+    if (uptime < 3) {
+        return SUCCESS;
+    }
+    else {
+        return FAIL;
+    }
 }
 
 //Power cycles the full board (transmitter and receiver will be both reset).
@@ -268,7 +275,14 @@ unsigned char Transmitter::reset_hardware() {
     /* Write command to Transmitter. */
     wire.beginTransmission(i2c_address);
     wire.write(0xAB);
-    return wire.endTransmission();
+    wire.endTransmission();
+    report_uptime();
+    if (uptime < 3) {
+        return SUCCESS;
+    }
+    else {
+        return FAIL;
+    }
 }
 
 //Adds a frame to the frame buffer of the transmitter. The frame will contain the default callsigns as they are set in the controller at the time this command is received.
@@ -292,18 +306,18 @@ unsigned char Transmitter::send_frame(uint8_t* frame, uint8_t size) {
         if (resp == 0xFF) {
             //Frame has not been added.
             buffer.error = true;
-            return 1;
+            return FAIL;
         }
         else {
             buffer.error = false;
-            return 0;
+            return SUCCESS;
         }
     }
     /* Signal error if data did not arrive. */
     else
     {
         buffer.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -342,18 +356,18 @@ unsigned char Transmitter::send_frame_override_cs(uint8_t* frame, uint8_t size, 
         if (resp == 0xFF) {
             //Buffer is completely full, frame has not been added.
             buffer.error = true;
-            return 1;
+            return FAIL;
         }
         else {
             buffer.error = false;
-            return 0;
+            return SUCCESS;
         }
     }
     /* Signal error if data did not arrive. */
     else
     {
         buffer.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -396,4 +410,16 @@ unsigned char Transmitter::set_beacon_override_cs(uint8_t* frame, uint8_t size, 
         wire.write(static_cast<uint8_t>(frame[i]));
     }
     return wire.endTransmission();
+}
+
+unsigned char Transmitter::ping() {
+    if (report_uptime() != SUCCESS) {
+        return FAIL;
+    }
+    // Check if the two most-significant bits are zero
+    if ((uptime & 0xC0000000) == 0) {
+        return SUCCESS;
+    } else {
+        return FAIL;
+    }
 }

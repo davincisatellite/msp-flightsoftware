@@ -8,6 +8,9 @@
 #ifndef RECEIVER_H_
 #define RECEIVER_H_
 
+#define SUCCESS 0
+#define FAIL 1
+
 #define RX_I2C_ADDRESS 0x60
 
 #include "DWire.h"
@@ -59,6 +62,7 @@ public:
     unsigned char reset_watchdog();
     unsigned char reset_software();
     unsigned char reset_hardware();
+    unsigned char ping();
 };
 
 

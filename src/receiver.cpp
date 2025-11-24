@@ -25,7 +25,14 @@ unsigned char Receiver::reset_software() {
     /* Write command to Receiver. */
     wire.beginTransmission(i2c_address);
     wire.write(0xAA);
-    return wire.endTransmission();
+    wire.endTransmission();
+    report_uptime();
+    if (uptime < 3) {
+        return SUCCESS;
+    }
+    else {
+        return FAIL;
+    }
 }
 
 //Power cycles the full board (transmitter and receiver will be both reset).
@@ -33,7 +40,14 @@ unsigned char Receiver::reset_hardware() {
     /* Write command to Receiver. */
     wire.beginTransmission(i2c_address);
     wire.write(0xAB);
-    return wire.endTransmission();
+    wire.endTransmission();
+    report_uptime();
+    if (uptime < 3) {
+        return SUCCESS;
+    }
+    else {
+        return FAIL;
+    }
 }
 
 unsigned char Receiver::get_number_of_frames() {
@@ -49,12 +63,12 @@ unsigned char Receiver::get_number_of_frames() {
         uint8_t msb = wire.read();
         frames.number = (msb << 8) + lsb;
         frames.error = false;
-        return 0;
+        return SUCCESS;
     }
     else
     {
         frames.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -87,25 +101,34 @@ unsigned char Receiver::get_frame_from_buffer() {
                 frame.frame[i] = 0;
             }
             frame.error = false;
-            return 0;
+            return SUCCESS;
         }
         else
         {
             frame.error = true;
-            return 0;
+            return FAIL;
         }
     }
     else
     {
-        return 1;
+        return FAIL;
     }
 }
 
 unsigned char Receiver::remove_frame_from_buffer() {
     /* Write command to Receiver. */
+    get_number_of_frames();
+    uint16_t old_frames_num = frames.number;
+    if (old_frames_num == 0)
+        return FAIL;
     wire.beginTransmission(i2c_address);
     wire.write(0x24);
-    return wire.endTransmission();
+    wire.endTransmission();
+    get_number_of_frames();
+    if (old_frames_num - frames.number == 1)
+        return SUCCESS;
+    else
+        return FAIL;
 }
 
 unsigned char Receiver::measure_telemetry() {
@@ -147,12 +170,12 @@ unsigned char Receiver::measure_telemetry() {
         telemetry.poweramp_temp = (raw_poweramp_temp * -0.07669) + 195.6037;
         telemetry.oscillator_temp = (raw_oscillator_temp * -0.07669) + 195.6037;
         telemetry.error = false;
-        return 0;
+        return SUCCESS;
     }
     else
     {
         telemetry.error = true;
-        return 1;
+        return FAIL;
     }
 }
 
@@ -173,9 +196,21 @@ unsigned char Receiver::report_uptime() {
             resp = resp + (wire.read() << 24); // Add the new byte shifted to the leftmost position
         }
         uptime = resp;
-        return 0;
+        return SUCCESS;
     }
     else {
-        return 1;
+        return FAIL;
+    }
+}
+
+unsigned char Receiver::ping() {
+    if (report_uptime() != SUCCESS) {
+        return FAIL;
+    }
+    // Check if the two most-significant bits are zero
+    if ((uptime & 0xC0000000) == 0) {
+        return SUCCESS;
+    } else {
+        return FAIL;
     }
 }

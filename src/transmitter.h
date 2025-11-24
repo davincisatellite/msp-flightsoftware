@@ -8,6 +8,9 @@
 #ifndef TRANSMITTER_H_
 #define TRANSMITTER_H_
 
+#define SUCCESS 0
+#define FAIL 1
+
 #define TX_I2C_ADDRESS 0x61
 
 #include "DWire.h"
@@ -66,7 +69,7 @@ public:
     unsigned char send_frame_override_cs(uint8_t* frame, uint8_t size, char to_callsign[6], uint8_t to_num, char from_callsign[6], uint8_t from_num);
     unsigned char set_beacon(uint8_t* frame, uint8_t size, uint16_t time_interval);
     unsigned char set_beacon_override_cs(uint8_t* frame, uint8_t size, uint16_t time_interval, char to_callsign[6], uint8_t to_num, char from_callsign[6], uint8_t from_num);
-
+    unsigned char ping();
 
 };
 
