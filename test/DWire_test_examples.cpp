@@ -1,3 +1,4 @@
+#include "DWire_test_examples.h"
 #include "../src/EPS.h"
 #include "../src/DWire.h"
 #include "../src/Console.h"
@@ -212,7 +213,8 @@ uint8_t try_initializing_DWire_without_end(uint8_t i2c_address)
     return ans;
 }
 //experimental
-int main_test_DWire() {
+// int main_test_DWire() {
+int mainnn() {
     uint8_t i2c_address = 0x20;
     Console::init(9600);
 
