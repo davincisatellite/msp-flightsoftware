@@ -176,6 +176,8 @@ bool test_get_param_length() {
 }
 bool test_writeCommand(uint8_t i2c_address) {
     DWire my_wire = DWire();
+    my_wire.setFastMode();
+    my_wire.begin();
     int there_is_an_error=0;
     EPS::writeCommand(my_wire,i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_RAW);
     uint8_t byte1=my_wire.read();
@@ -206,6 +208,8 @@ bool test_writeCommand(uint8_t i2c_address) {
 bool test_read_command(uint8_t i2c_address) {
     int there_is_an_error=0;
     DWire my_wire = DWire();
+    my_wire.setFastMode();
+    my_wire.begin();
 
     my_wire.beginTransmission(i2c_address);
     my_wire.write(STID);
@@ -243,6 +247,8 @@ bool test_read_command(uint8_t i2c_address) {
 bool test_write_config_params(uint8_t i2c_address) {
     int there_is_an_error=0;
     DWire my_wire = DWire();
+    my_wire.setFastMode();
+    my_wire.begin();
     //I assume i2c_address has an important value
 
     //invalid param (not allowed)
@@ -295,6 +301,8 @@ bool test_write_config_params(uint8_t i2c_address) {
 bool test_read_config_params(uint8_t i2c_address) {
     int there_is_an_error=0;
     DWire my_wire = DWire();
+    my_wire.setFastMode();
+    my_wire.begin();
     EPS::config_reply reply ={};
 
     //test when we get different response length (8 instead of 9)
@@ -317,6 +325,8 @@ bool test_read_config_params(uint8_t i2c_address) {
 // no_operation(DWire &wire, uint8_t i2c_address);
 bool test_no_operation(uint8_t i2c_address) {
     DWire my_wire = DWire();
+    my_wire.setFastMode();
+    my_wire.begin();
     EPS::standard_reply reply = EPS::no_operation(my_wire, i2c_address);
     if(reply.rc != 0x03 || reply.stat != 0x80 || reply.error == true) {
         Console::log("fail no_operation ",reply.rc, reply.stat,reply.error);
@@ -328,6 +338,8 @@ bool test_no_operation(uint8_t i2c_address) {
 // cancel_operation(DWire &wire, uint8_t i2c_address);
 bool test_cancel_operation(uint8_t i2c_address) {
     DWire my_wire = DWire();
+    my_wire.setFastMode();
+    my_wire.begin();
     EPS::standard_reply reply = EPS::cancel_operation(my_wire, i2c_address);
 
     // Check if an error occurred during the execution of the command
@@ -1241,11 +1253,11 @@ bool test_reset_config_params(DWire &wire, uint8_t i2c_address) {
 }
 
 //WriteCommand and ReadCommand are tested indirectly through all other tests
-#include "DWire_test_examples.cpp"
+#include "DWire_test_examples.h"
 int main(void)
 {
     //test the DWIRe first!!
-    int r = main_test_DWire();
+    int r = mainnn();
     Console::log("DWire test result: ", r);
 
     if (r==0)//do not continue until we solved the DWire problem.

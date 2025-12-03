@@ -91,7 +91,7 @@ $(NAME).out: $(MAIN) $(OBJECTS)
 	@ echo Linking $@ with $^
 	@ $(LNK) $^ $(LFLAGS) -o $(NAME).out
 
-test/%: %.obj $(OBJECTS)
+test/%: %.obj $(OBJECTS) DWire_test_examples.obj
 	@ echo Linking test $@ with $^
 	@ $(CC) $^ $(LFLAGS) -o $(notdir $@).out
 
