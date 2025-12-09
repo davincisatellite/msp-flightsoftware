@@ -1,12 +1,10 @@
-#include <msp.h>
-#include "DWire.h"
-#include "Console.h"
-#include "DelfiPQcore.h"
-#include "delay.h"
-#include "antenna.h"
-//#include "transmitter.h"
-//#include "receiver.h"
-#include "I2CScanner.h"
+#include <ti/devices/msp432p4xx/inc/msp.h>
+#include "../src/DWire.h"
+#include "../src/Console.h"
+#include "../src/DelfiPQcore.h"
+#include "../src/delay.h"
+#include "../src/antenna.h"
+#include "../src/I2CScanner.h"
 
 #define TEST_ANTENNA true
 
@@ -65,7 +63,6 @@ int main(void)
         }
         else {
             Console::log("Ping - Temperature Sensor Check: PASS\n");
-            Console::log("Antenna Temperature Vout: %d mV\n", antennaA.temperature.Vout);
             Console::log("Antenna Temperature: %.2f C\n", antennaA.temperature.temp);
         }
         Console::log("\n");
@@ -174,7 +171,7 @@ int main(void)
         antennaA.report_deployment_status();
         int deployment_system_active_status = antennaA.status.a1b | antennaA.status.a2b | antennaA.status.a3b | antennaA.status.a4b;
         if (deployment_system_active_status == 0) {
-            Console:log("Deployment system is not active\n");
+            Console::log("Deployment system is not active\n");
         }
         while(deployment_system_active_status>0) {
             antennaA.report_deployment_status();
@@ -195,7 +192,6 @@ int main(void)
         }
         else {
             Console::log("Temperature Above Threshold: PASS\n");
-            Console::log("Antenna Temperature Vout: %d mV\n", antennaA.temperature.Vout);
             Console::log("Antenna Temperature: %.2f C\n", antennaA.temperature.temp);
         }
         Console::log("\n");
@@ -209,8 +205,8 @@ int main(void)
             antennaA.deploy(i, true, 3);
             delay_ms(3500);
             antennaA.report_deployment_status();
-            IGNORED = antennaA.status.ig;
-            Console::log("IGNORED status after overide deployment: %d\n", IGNORED);
+            bool IGNORED = antennaA.status.ig;
+            Console::log("IGNORED status after overide deployment: %d\n", static_cast<int>(IGNORED));
             Console::log("Antenna %d deployed status: %d\n", i, 
                 (i == 1) ? static_cast<int>(antennaA.status.a1s) :
                 (i == 2) ? static_cast<int>(antennaA.status.a2s) :
@@ -233,7 +229,6 @@ int main(void)
         // 8.2 Check all temperatures are printed
         antennaA.report_temperature();
         Console::log("Final Antenna Temperature Report:\n");
-        Console::log("Antenna Temperature Vout: %d mV\n", antennaA.temperature.Vout);
         Console::log("Antenna Temperature: %.2f C\n", antennaA.temperature.temp); 
         Console::log("\n");
 
