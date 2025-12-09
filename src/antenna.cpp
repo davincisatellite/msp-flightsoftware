@@ -122,16 +122,16 @@ unsigned char Antenna::disarm () {
 
 // Starts the automated sequential antenna deployment. Returns 0 if the deployment system is active on every antenna, 1 otherwise.
 
-unsigned char Antenna::deploy_sequential() {
+unsigned char Antenna::deploy_sequential(uint8_t activation_time = 0) {
     wire.beginTransmission(i2c_address);
     wire.write(0b10100101);
-    wire.write(0b00000000);
+    wire.write(activation_time);
     wire.endTransmission();
     report_deployment_status();
     return static_cast<unsigned char>(!(status.a1b && status.a2b && status.a3b && status.a4b));
 }
 
-unsigned char Antenna::deploy(uint8_t antenna_no, bool override) {
+unsigned char Antenna::deploy(uint8_t antenna_no, bool override, uint8_t activation_time = 0) {
     if (antenna_no < 1 || antenna_no > 4) {
         return FAIL;
     }
@@ -144,7 +144,7 @@ unsigned char Antenna::deploy(uint8_t antenna_no, bool override) {
     }
     wire.beginTransmission(i2c_address);
     wire.write(reg);
-    wire.write(0b00000000);
+    wire.write(activation_time);
     wire.endTransmission();
     report_deployment_status();
     switch (antenna_no) {

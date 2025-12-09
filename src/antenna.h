@@ -72,8 +72,8 @@ public:
     unsigned char ping();
     unsigned char arm();
     unsigned char disarm();
-    unsigned char deploy_sequential();
-    unsigned char deploy(uint8_t antenna_no, bool override);
+    unsigned char deploy_sequential(uint8_t activation_time);
+    unsigned char deploy(uint8_t antenna_no, bool override, uint8_t activation_time);
     unsigned char cancel_deploy();
     unsigned char report_deployment_activation_count();
     unsigned char report_deployment_activation_time();
