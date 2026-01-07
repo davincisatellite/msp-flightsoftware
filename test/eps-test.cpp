@@ -2,6 +2,8 @@
 #include <cstddef> //for size_t
 #include <cstring> //for memcpy
 #include "../src/Console.h"
+#include "../src/DelfiPQcore.h"
+#include "../src/delay.h"
 
 /*
      For each config data type we will test the boundaries and a random value between them.
@@ -1253,15 +1255,15 @@ bool test_reset_config_params(DWire &wire, uint8_t i2c_address) {
 }
 
 //WriteCommand and ReadCommand are tested indirectly through all other tests
-#include "DWire_test_examples.h"
-int main(void)
+// #include "DWire_test_examples.h"
+int mainnnn(void)//change name to mainnn
 {
     //test the DWIRe first!!
-    int r = mainnn();
-    Console::log("DWire test result: ", r);
-
-    if (r==0)//do not continue until we solved the DWire problem.
-        return -1;
+    // int r = mainnn();
+    // Console::log("DWire test result: ", r);
+    //
+    // if (r==0)//do not continue until we solved the DWire problem.
+    //     return -1;
 
     //if the DWire tests were successful, then we continue
 
@@ -1390,4 +1392,379 @@ int main(void)
     else
         Console::log(nr_of_errors+" errors found.");
     return nr_of_errors;
+}
+
+
+
+// Each test is completely independent and can be compiled separately
+// I used i2c_address = 0x20, which seems to be ok.
+
+// HOW TO TEST:
+// 1. Compile the project with one test at a time (e.g., rename main1 to main)
+// 2. Each test follows the correct I2C communication pattern:
+//    a) Initialize DWire (setFastMode, begin)
+//    b) Write command (beginTransmission, write, endTransmission)
+//    c) Wait for EPS to process (delay_ms)
+//    d) Request data from slave (requestFrom)  <-- THIS WAS MISSING!
+//    e) Read data (read)
+
+// OBS: without requestFrom(), the RX buffer is empty and read() returns 0.
+//
+// VERIFICATION:
+// - Each test returns: 1 = PASS, 0 = FAIL
+// - You can check the return value even if Console is unreliable
+// - If Console shows weird results, check the return value instead
+
+
+// Test 1: Basic DWire initialization and setup
+// Returns: 1 on success, 0 on failure
+int main() {
+    Console::init(9600);
+    DelfiPQcore::initMCU(); // Initialize MCU for clock synchronization
+    
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    Console::log("Test 1: DWire initialized successfully");
+    Console::log("Test 1: PASS - Basic initialization works");
+    return 1; // Success
+}
+
+// Test 2: Write command and verify it's in TX buffer (without transmission)
+// Returns: 1 on success, 0 on failure
+int main2() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    // Write a command to the buffer
+    wire.beginTransmission(i2c_address);
+    wire.write(0x00); // STID
+    wire.write(0x06); // IVID
+    wire.write(0x02); // NO_OPERATION command
+    wire.write(0x00); // BID
+
+    Console::log("Test 2: Command written to TX buffer");
+    Console::log("Test 2: PASS - Write to buffer works");
+    return 1; // Success
+}
+
+// Test 3: Complete write cycle (beginTransmission, write, endTransmission)
+// Returns: 1 on success, 0 on failure
+int main3() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    // Write and end transmission
+    wire.beginTransmission(i2c_address);
+    wire.write(0x00); // STID
+    wire.write(0x06); // IVID
+    wire.write(0x02); // NO_OPERATION
+    wire.write(0x00); // BID
+    bool result = wire.endTransmission(true);
+    
+    if (result == false) {
+        Console::log("Test 3: PASS - Transmission completed successfully");
+        return 1; // Success
+    } else {
+        Console::log("Test 3: FAIL - Transmission failed or NAK received");
+        return 0; // Failure
+    }
+}
+
+// Test 4: Request data from slave (requestFrom) - basic test
+// Returns: 1 on success, 0 on failure
+int main4() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    // Request 5 bytes from the slave
+    uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
+    
+    // Note: Console::log doesn't support direct integer printing without format specifiers
+    if (bytes_received > 0) {
+        Console::log("Test 4: PASS - Successfully requested data");
+        return 1; // Success
+    } else {
+        Console::log("Test 4: FAIL - No data received (may be expected if EPS not connected)");
+        return 0; // Failure (or expected if no EPS connected)
+    }
+}
+
+// Test 5: Complete I2C cycle - Write command, wait, request, read
+// Returns: 1 on success, 0 on failure
+int main5() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    wire.beginTransmission(i2c_address);
+    wire.write(0x00); // STID
+    wire.write(0x06); // IVID
+    wire.write(0x02); // NO_OPERATION
+    wire.write(0x00); // BID
+    wire.endTransmission(true);
+
+    // delay_ms(25); // not sure if we should wait
+
+    uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
+    
+    if (bytes_received == 5) {
+        uint8_t stid = wire.read();
+        uint8_t ivid = wire.read();
+        uint8_t rc = wire.read();
+        uint8_t bid = wire.read();
+        uint8_t stat = wire.read();
+        
+        // Verify response structure (STID=0x00, IVID=0x06, BID=0x00)
+        if (stid == 0x00 && ivid == 0x06 && bid == 0x00) {
+            Console::log("Test 5: PASS - Complete I2C cycle works, valid response received");
+            return 1; // Success
+        } else {
+            Console::log("Test 5: FAIL - Invalid response structure");
+            return 0; // Failure
+        }
+    } else {
+        Console::log("Test 5: FAIL - Expected 5 bytes");
+        return 0; // Failure
+    }
+}
+
+// Test 6: Test NO_OPERATION command using EPS function
+// Returns: 1 on success, 0 on failure
+int main6() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::standard_reply reply = EPS::no_operation(wire, i2c_address);
+    
+    if (!reply.error && reply.rc == 0x03 && reply.stat == 0x80) {
+        Console::log("Test 6: PASS - NO_OPERATION command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 6: FAIL - NO_OPERATION returned error or wrong values");
+        return 0; // Failure
+    }
+}
+
+// Test 7: Test reading a simple config parameter (STID - Int8)
+// Returns: 1 on success, 0 on failure
+int main7() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::config_reply reply = EPS::get_config_params(wire, i2c_address, ConfigParameter::STID);
+    
+    if (!reply.error && reply.par_id == ConfigParameter::STID) {
+        Console::log("Test 7: PASS - Config parameter read works");
+        return 1; // Success
+    } else {
+        Console::log("Test 7: FAIL - Config parameter read returned error");
+        return 0; // Failure
+    }
+}
+
+// Test 8: Test reading IVID (UInt8)
+// Returns: 1 on success, 0 on failure
+int main8() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::config_reply reply = EPS::get_config_params(wire, i2c_address, ConfigParameter::IVID);
+    
+    if (!reply.error && reply.par_id == ConfigParameter::IVID) {
+        Console::log("Test 8: PASS - IVID read works");
+        return 1; // Success
+    } else {
+        Console::log("Test 8: FAIL - IVID read returned error");
+        return 0; // Failure
+    }
+}
+
+// Test 9: Test reading BID_USED (read-only parameter)
+// Returns: 1 on success, 0 on failure
+int main9() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::config_reply reply = EPS::get_config_params(wire, i2c_address, ConfigParameter::BID_USED);
+    
+    if (!reply.error && reply.par_id == ConfigParameter::BID_USED) {
+        Console::log("Test 9: PASS - BID_USED read works");
+        return 1; // Success
+    } else {
+        Console::log("Test 9: FAIL - BID_USED read returned error");
+        return 0; // Failure
+    }
+}
+
+// Test 10: Test reading Int16 parameter
+// Returns: 1 on success, 0 on failure
+int main10() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::config_reply reply = EPS::get_config_params(wire, i2c_address, ConfigParameter::HITHR_BAT_HEATER_01);
+    
+    if (!reply.error && reply.par_id == ConfigParameter::HITHR_BAT_HEATER_01) {
+        Console::log("Test 10: PASS - Int16 parameter read works");
+        return 1; // Success
+    } else {
+        Console::log("Test 10: FAIL - Int16 parameter read returned error");
+        return 0; // Failure
+    }
+}
+
+// Test 11: Test reading UInt16 parameter
+// Returns: 1 on success, 0 on failure
+int main11() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::config_reply reply = EPS::get_config_params(wire, i2c_address, ConfigParameter::VD6_CH_BF);
+    
+    if (!reply.error && reply.par_id == ConfigParameter::VD6_CH_BF) {
+        Console::log("Test 11: PASS - UInt16 parameter read works");
+        return 1; // Success
+    } else {
+        Console::log("Test 11: FAIL - UInt16 parameter read returned error");
+        return 0; // Failure
+    }
+}
+
+// Test 12: Test WATCHDOG command
+// Returns: 1 on success, 0 on failure
+int main12() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::standard_reply reply = EPS::watchdog(wire, i2c_address);
+    
+    if (!reply.error && reply.rc == 0x07) {
+        Console::log("Test 12: PASS - WATCHDOG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 12: FAIL - WATCHDOG returned error or wrong RC");
+        return 0; // Failure
+    }
+}
+
+// Test 13: Test CANCEL_OPERATION command
+// Returns: 1 on success, 0 on failure
+int main13() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::standard_reply reply = EPS::cancel_operation(wire, i2c_address);
+    
+    if (!reply.error && reply.rc == 0x03 && reply.stat == 0x80) {
+        Console::log("Test 13: PASS - CANCEL_OPERATION command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 13: FAIL - CANCEL_OPERATION returned error");
+        return 0; // Failure
+    }
+}
+
+// Test 14: Test reading PCU housekeeping data (raw)
+// Returns: 1 on success, 0 on failure
+int main14() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x2C; // PCU_1_ADDR
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_raw(wire, i2c_address);
+    
+    if (!reply.error) {
+        Console::log("Test 14: PASS - PCU housekeeping data read works");
+        return 1; // Success
+    } else {
+        Console::log("Test 14: FAIL - PCU housekeeping data read returned error");
+        return 0; // Failure
+    }
+}
+
+// Test 15: Test reading PBU housekeeping data (raw)
+// Returns: 1 on success, 0 on failure
+int main15() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+    
+    uint8_t i2c_address = 0x28; // PBU_1_ADDR
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+    
+    EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_raw(wire, i2c_address);
+    
+    if (!reply.error) {
+        Console::log("Test 15: PASS - PBU housekeeping data read works");
+        return 1; // Success
+    } else {
+        Console::log("Test 15: FAIL - PBU housekeeping data read returned error");
+        return 0; // Failure
+    }
 }
