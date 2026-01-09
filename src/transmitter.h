@@ -2,7 +2,7 @@
  * transmitter.h
  *
  *  Created on: May 06, 2023
- *      Author: bgrochowski
+ *      Author: bgrochowski, dptrias
  */
 
 #ifndef TRANSMITTER_H_
@@ -69,6 +69,8 @@ public:
     unsigned char send_frame_override_cs(uint8_t* frame, uint8_t size, char to_callsign[6], uint8_t to_num, char from_callsign[6], uint8_t from_num);
     unsigned char set_beacon(uint8_t* frame, uint8_t size, uint16_t time_interval);
     unsigned char set_beacon_override_cs(uint8_t* frame, uint8_t size, uint16_t time_interval, char to_callsign[6], uint8_t to_num, char from_callsign[6], uint8_t from_num);
+    unsigned char set_tx_mode(uint8_t mode);
+    unsigned char set_rssi_transponder_threshold(uint16_t threshold);
     unsigned char ping();
 
 };

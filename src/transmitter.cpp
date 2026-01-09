@@ -2,7 +2,7 @@
  * transmitter.cpp
  *
  *  Created on: May 06, 2023
- *      Author: bgrochowski
+ *      Author: bgrochowski, dptrias
  */
 
 #include "transmitter.h"
@@ -409,6 +409,30 @@ unsigned char Transmitter::set_beacon_override_cs(uint8_t* frame, uint8_t size, 
     for (int i=0; i<size; i++) {
         wire.write(static_cast<uint8_t>(frame[i]));
     }
+    return wire.endTransmission();
+}
+
+//Sets the transmitter operating mode.
+//Mode 1: Nominal mode. Mode 2: Transponder mode. Any other value will have no effect.
+unsigned char Transmitter::set_tx_mode(uint8_t mode) {
+    /* Write command to Transmitter. */
+    wire.beginTransmission(i2c_address);
+    wire.write(0x38);
+
+    /* Write mode byte */
+    wire.write(mode);
+    return wire.endTransmission();
+}
+
+//Sets the RSSI (Received Signal Strength Indicator) threshold used in the transponder mode to decide whether to transmit a received frame or not.
+unsigned char Transmitter::set_rssi_transponder_threshold(uint16_t threshold) {
+    /* Write command to Transmitter. */
+    wire.beginTransmission(i2c_address);
+    wire.write(0x52);
+
+    /* Write threshold bytes, big endian */
+    wire.write(static_cast<uint8_t>((threshold >> 8) & 0xFF));
+    wire.write(static_cast<uint8_t>(threshold & 0xFF));
     return wire.endTransmission();
 }
 

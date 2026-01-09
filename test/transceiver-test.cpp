@@ -233,6 +233,27 @@ int main(void)
            else {
                Console::log("TEST 16 (Clear Beacon): PASS");
            }
+
+           if (tx.set_tx_mode(2)) {
+               Console::log("TEST 17 (Set TX Mode to Transponder): FAIL");
+           }
+           else {
+               Console::log("TEST 17 (Set TX Mode to Transponder): PASS");
+           }
+
+           if (tx.set_rssi_transponder_threshold(100)) {
+           Console::log("TEST 18 (Set RSSI Transponder Threshold): FAIL");
+           }
+           else {
+           Console::log("TEST 18 (Set RSSI Transponder Threshold): PASS");
+           }
+
+           if (tx.set_tx_mode(1)) {
+               Console::log("TEST 19 (Retrun TX Mode to Nominal): FAIL");
+           }
+           else {
+               Console::log("TEST 19 (Retrun TX Mode to Nominal): PASS");
+           }
            Console::log("Transmitter test finished\n\n");
 
 
