@@ -234,7 +234,7 @@ int main(void)
                Console::log("TEST 16 (Clear Beacon): PASS");
            }
 
-           if (tx.set_tx_mode(2)) {
+           if (tx.set_tx_mode(TX_TRANSPONDER)) {
                Console::log("TEST 17 (Set TX Mode to Transponder): FAIL");
            }
            else {
@@ -248,7 +248,7 @@ int main(void)
            Console::log("TEST 18 (Set RSSI Transponder Threshold): PASS");
            }
 
-           if (tx.set_tx_mode(1)) {
+           if (tx.set_tx_mode(TX_NOMINAL)) {
                Console::log("TEST 19 (Retrun TX Mode to Nominal): FAIL");
            }
            else {

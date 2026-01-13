@@ -11,6 +11,9 @@
 #define SUCCESS 0
 #define FAIL 1
 
+#define TX_NOMINAL 1
+#define TX_TRANSPONDER 2
+
 #define TX_I2C_ADDRESS 0x61
 
 #include "DWire.h"
