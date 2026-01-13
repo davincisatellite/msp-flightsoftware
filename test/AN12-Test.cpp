@@ -42,7 +42,7 @@ int main(void)
 
 
         // delay before testing
-        delay_ms(1000);
+        delay_ms(5000);
 
 
 
@@ -55,6 +55,8 @@ int main(void)
         }
         Console::log("\n");
 
+        delay_ms(1000);
+
 
 
         // 1 : Check Temperature 
@@ -63,9 +65,11 @@ int main(void)
         }
         else {
             Console::log("Ping - Temperature Sensor Check: PASS\n");
-            Console::log("Antenna Temperature: %.2f C\n", antennaA.temperature.temp);
+            Console::log("Antenna Temperature: %d C\n", static_cast<int>(antennaA.temperature.temp));
         }
         Console::log("\n");
+
+        delay_ms(1000);
 
 
 
@@ -80,57 +84,61 @@ int main(void)
             Console::log("Report arm Status now is not armed - Arm Check: PASS\n");
         }
         // 2.3 Check if all antennas are deployed
-        if (antennaA.status.a1s == 0){
-            Console::log("Antenna 1 deployed: PASS\n");
+        if (antennaA.status.a1s == true){
+            Console::log("Antenna 1 deployed: PASS");
         }
-        if (antennaA.status.a1s == 1){
-            Console::log("Antenna 1 is not deployed: FAIL\n");
+        if (antennaA.status.a1s == false){
+            Console::log("Antenna 1 is not deployed: FAIL");
         }
-        if (antennaA.status.a2s == 0){
-            Console::log("Antenna 2 deployed: PASS\n");
+        if (antennaA.status.a2s == true){
+            Console::log("Antenna 2 deployed: PASS");
         }
-        if (antennaA.status.a2s == 1){
-            Console::log("Antenna 2 is not deployed: FAIL\n");
+        if (antennaA.status.a2s == false){
+            Console::log("Antenna 2 is not deployed: FAIL");
         }
-        if (antennaA.status.a3s == 0){
-            Console::log("Antenna 3 deployed: PASS\n");
+        if (antennaA.status.a3s == true){
+            Console::log("Antenna 3 deployed: PASS");
         }
-        if (antennaA.status.a3s == 1){
-            Console::log("Antenna 3 is not deployed: FAIL\n");
+        if (antennaA.status.a3s == false){
+            Console::log("Antenna 3 is not deployed: FAIL");
         }
-        if (antennaA.status.a4s == 0){
-            Console::log("Antenna 4 deployed: PASS\n");
+        if (antennaA.status.a4s == true){
+            Console::log("Antenna 4 deployed: PASS");
         }
-        if (antennaA.status.a4s == 1){
-            Console::log("Antenna 4 is not deployed: FAIL\n");
+        if (antennaA.status.a4s == false){
+            Console::log("Antenna 4 is not deployed: FAIL");
         }
 
+        Console::log("\n");
+
         // 2.4 Check that deployment systems are NOT ACTIVE
-        if (antennaA.status.a1b == 0){
-            Console::log("Antenna 1 deployment system is NOT ACTIVE: PASS\n");
+        if (antennaA.status.a1b == false){
+            Console::log("Antenna 1 deployment system is NOT ACTIVE: PASS");
         }
-        if (antennaA.status.a1b == 1){
-            Console::log("Antenna 1 deployment system is ACTIVE: FAIL\n");
+        if (antennaA.status.a1b == true){
+            Console::log("Antenna 1 deployment system is ACTIVE: FAIL");
         }
-        if (antennaA.status.a2b == 0){
-            Console::log("Antenna 2 deployment system is NOT ACTIVE: PASS\n");
+        if (antennaA.status.a2b == false){
+            Console::log("Antenna 2 deployment system is NOT ACTIVE: PASS");
         }
-        if (antennaA.status.a2b == 1){
-            Console::log("Antenna 2 deployment system is ACTIVE: FAIL\n");
+        if (antennaA.status.a2b == true){
+            Console::log("Antenna 2 deployment system is ACTIVE: FAIL");
         }
-        if (antennaA.status.a3b == 0){
-            Console::log("Antenna 3 deployment system is NOT ACTIVE: PASS\n");
+        if (antennaA.status.a3b == false){
+            Console::log("Antenna 3 deployment system is NOT ACTIVE: PASS");
         }
-        if (antennaA.status.a3b == 1){
-            Console::log("Antenna 3 deployment system is ACTIVE: FAIL\n");
+        if (antennaA.status.a3b == true){
+            Console::log("Antenna 3 deployment system is ACTIVE: FAIL");
         }
-        if (antennaA.status.a4b == 0){
-            Console::log("Antenna 4 deployment system is NOT ACTIVE: PASS\n");
+        if (antennaA.status.a4b == false){
+            Console::log("Antenna 4 deployment system is NOT ACTIVE: PASS");
         }
-        if (antennaA.status.a4b == 1){
-            Console::log("Antenna 4 deployment system is ACTIVE: FAIL\n");
+        if (antennaA.status.a4b == true){
+            Console::log("Antenna 4 deployment system is ACTIVE: FAIL");
         }
         Console::log("\n");
+
+        delay_ms(1000);
 
 
 
@@ -151,6 +159,8 @@ int main(void)
         }
         Console::log("\n");
 
+        delay_ms(1000);
+
 
 
         // 4 : Arm antenna system
@@ -162,6 +172,8 @@ int main(void)
         }
         Console::log("\n");
 
+        delay_ms(1000);
+
 
         // 5 : Start deployment
         Console::log("Starting automated sequential deployment...\n");
@@ -171,12 +183,13 @@ int main(void)
         antennaA.report_deployment_status();
         int deployment_system_active_status = antennaA.status.a1b | antennaA.status.a2b | antennaA.status.a3b | antennaA.status.a4b;
         if (deployment_system_active_status == 0) {
-            Console::log("Deployment system is not active\n");
+            Console::log("Deployment system is not active: PASS (antennas should be deployed)\n");
         }
         while(deployment_system_active_status>0) {
+            Console::log("Deployment system is active: FAIL (antennas should be deployed)");
             antennaA.report_deployment_status();
             bool IGNORED = antennaA.status.ig;
-            Console::log("IGNORED status: %d\n, should be 0", IGNORED);
+            Console::log("IGNORED status: %d\n, should be 0 (not ignoring)", IGNORED);
             Console::log("Antenna 1 deployment system active status: %d\n", antennaA.status.a1b);
             Console::log("Antenna 2 deployment system active status: %d\n", antennaA.status.a2b);
             Console::log("Antenna 3 deployment system active status: %d\n", antennaA.status.a3b);
@@ -185,73 +198,135 @@ int main(void)
         }
         Console::log("\n");
 
+        delay_ms(1000);
+
 
         // 6 : Print the temperature and check if above threshold
         if (antennaA.temp_above_threshold()) {
-            Console::log("Temperature Above Threshold: FAIL\n");
+            Console::log("Temperature Above Threshold: TRUE\n");
+            Console::log("Antenna Temperature: %d C\n", static_cast<int>(antennaA.temperature.temp));
         }
         else {
             Console::log("Temperature Above Threshold: PASS\n");
-            Console::log("Antenna Temperature: %.2f C\n", antennaA.temperature.temp);
+            Console::log("Antenna Temperature: %d C\n", static_cast<int>(antennaA.temperature.temp));
         }
         Console::log("\n");
+
+        delay_ms(1000);
 
 
 
         // 7 : For each antenna, do overide deployment and check IGNORED status and deployment status
         Console::log("Starting overide deployment for each antenna...\n");
         for (int i = 1; i <= 4; i++) {
-            Console::log("Overide deploying Antenna %d...\n", i);
-            antennaA.deploy(i, true, 3);
-            delay_ms(3500);
+            Console::log("Overide deploying Antenna %d...", i);
+            antennaA.deploy(i, false, 0);
+            delay_ms(1000);
             antennaA.report_deployment_status();
             bool IGNORED = antennaA.status.ig;
-            Console::log("IGNORED status after overide deployment: %d\n", static_cast<int>(IGNORED));
-            Console::log("Antenna %d deployed status: %d\n", i, 
+            Console::log("IGNORED status after overide deployment: %d (should be 1, ignoring switches)", static_cast<int>(IGNORED));
+            Console::log("Antenna %d deployed status: %d, should be 1", i, 
                 (i == 1) ? static_cast<int>(antennaA.status.a1s) :
                 (i == 2) ? static_cast<int>(antennaA.status.a2s) :
                 (i == 3) ? static_cast<int>(antennaA.status.a3s) :
                             static_cast<int>(antennaA.status.a4s));
+            Console::log("Antenna %d deployment system status: %d, should be 1", i, 
+                (i == 1) ? static_cast<int>(antennaA.status.a1b) :
+                (i == 2) ? static_cast<int>(antennaA.status.a2b) :
+                (i == 3) ? static_cast<int>(antennaA.status.a3b) :
+                            static_cast<int>(antennaA.status.a4b));
             Console::log("\n");
+            delay_ms(2000);
+            antennaA.report_deployment_status();
+            IGNORED = antennaA.status.ig;
+            Console::log("IGNORED status after overide deployment: %d (should be 1, ignoring switches)", static_cast<int>(IGNORED));
+            Console::log("Antenna %d deployed status: %d, should be 1", i, 
+                (i == 1) ? static_cast<int>(antennaA.status.a1s) :
+                (i == 2) ? static_cast<int>(antennaA.status.a2s) :
+                (i == 3) ? static_cast<int>(antennaA.status.a3s) :
+                            static_cast<int>(antennaA.status.a4s));
+            Console::log("Antenna %d deployment system status: %d, should be 1", i, 
+                (i == 1) ? static_cast<int>(antennaA.status.a1b) :
+                (i == 2) ? static_cast<int>(antennaA.status.a2b) :
+                (i == 3) ? static_cast<int>(antennaA.status.a3b) :
+                            static_cast<int>(antennaA.status.a4b));
+            Console::log("\n");
+            if (antennaA.cancel_deploy() == 0) {
+                Console::log("Cancelled deployment after 3 seconds: PASS\n");
+            }
+            else {
+                Console::log("Cancelled deployment after 3 seconds did not work: FAIL\n");
+            }
         }
+
+        delay_ms(1000);
 
 
 
         // 8.1 : Print current status of all antennas
         antennaA.report_deployment_status();
         Console::log("Final Antenna Status Report:\n");
-        Console::log("Antenna 1 deployed status: %d, should be 0\n", static_cast<int>(antennaA.status.a1s));
-        Console::log("Antenna 2 deployed status: %d, should be 0\n", static_cast<int>(antennaA.status.a2s));
-        Console::log("Antenna 3 deployed status: %d, should be 0\n", static_cast<int>(antennaA.status.a3s));
-        Console::log("Antenna 4 deployed status: %d, should be 0\n", static_cast<int>(antennaA.status.a4s));
-        Console::log("Antenna system armed status: %d, should be 1\n", static_cast<int>(antennaA.status.arm));
+        if (antennaA.status.a1s == true){
+            Console::log("Antenna 1 deployed: PASS");
+        }
+        if (antennaA.status.a1s == false){
+            Console::log("Antenna 1 is not deployed: FAIL");
+        }
+        if (antennaA.status.a2s == true){
+            Console::log("Antenna 2 deployed: PASS");
+        }
+        if (antennaA.status.a2s == false){
+            Console::log("Antenna 2 is not deployed: FAIL");
+        }
+        if (antennaA.status.a3s == true){
+            Console::log("Antenna 3 deployed: PASS");
+        }
+        if (antennaA.status.a3s == false){
+            Console::log("Antenna 3 is not deployed: FAIL");
+        }
+        if (antennaA.status.a4s == true){
+            Console::log("Antenna 4 deployed: PASS");
+        }
+        if (antennaA.status.a4s == false){
+            Console::log("Antenna 4 is not deployed: FAIL");
+        }
+        if (antennaA.status.arm == true) {
+            Console::log("Antenna system is armed: PASS");
+        }
+        else {
+            Console::log("Antenna system is not armed: FAIL");
+        }
 
         // 8.2 Check all temperatures are printed
         antennaA.report_temperature();
         Console::log("Final Antenna Temperature Report:\n");
-        Console::log("Antenna Temperature: %.2f C\n", antennaA.temperature.temp); 
+        Console::log("Antenna Temperature: %d C\n", static_cast<int>(antennaA.temperature.temp));
         Console::log("\n");
+
+        delay_ms(1000);
 
         
 
         // 9 : Disarm antenna system
         if (antennaA.disarm()) {
-            Console::log("Disarm: FAIL\n");
+            Console::log("Disarm: FAIL");
         }
         else {
-            Console::log("Disarm: PASS\n");
+            Console::log("Disarm: PASS");
         }
         Console::log("\n");
+
+        delay_ms(1000);
 
 
 
         // 10 : Check activation count (it should be > 0 for all antennas)
         antennaA.report_deployment_activation_count();
         Console::log("Final Deployment Activation Count Report:\n");
-        Console::log("Antenna 1 deployment activation count: %d, should be >0\n", antennaA.deployment_activation_count.count[0]);
-        Console::log("Antenna 2 deployment activation count: %d, should be >0\n", antennaA.deployment_activation_count.count[1]);
-        Console::log("Antenna 3 deployment activation count: %d, should be >0\n", antennaA.deployment_activation_count.count[2]);
-        Console::log("Antenna 4 deployment activation count: %d, should be >0\n", antennaA.deployment_activation_count.count[3]);
+        Console::log("Antenna 1 deployment activation count: %d, should be >0", antennaA.deployment_activation_count.count[0]);
+        Console::log("Antenna 2 deployment activation count: %d, should be >0", antennaA.deployment_activation_count.count[1]);
+        Console::log("Antenna 3 deployment activation count: %d, should be >0", antennaA.deployment_activation_count.count[2]);
+        Console::log("Antenna 4 deployment activation count: %d, should be >0", antennaA.deployment_activation_count.count[3]);
         Console::log("\n");
 
 
