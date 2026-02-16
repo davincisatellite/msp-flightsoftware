@@ -1415,6 +1415,16 @@ int mainnnn(void)//change name to mainnn
 // - You can check the return value even if Console is unreliable
 // - If Console shows weird results, check the return value instead
 
+/*
+ * IMPORTANT DWire I2C RULES (MSP432):
+ * - NEVER call requestFrom(addr, 1)
+ * - ALWAYS read >= 2 bytes
+ * - DWire.begin() must be called for I2C configuration
+ * - Use endTransmission(false) for register reads
+ * - Prefer burst reads
+ *
+ * Violating these WILL break I2C on real peripherals.
+ */
 
 // Test 1: Basic DWire initialization and setup
 // Returns: 1 on success, 0 on failure
@@ -1493,20 +1503,19 @@ int main4() {
     wire.setFastMode();
     wire.begin();
     
-    // Request 5 bytes from the slave
+    // Request 5 bytes from the slave even though we did not write anything
     uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
-    
-    // Note: Console::log doesn't support direct integer printing without format specifiers
-    if (bytes_received > 0) {
-        Console::log("Test 4: PASS - Successfully requested data");
+
+    if (bytes_received == 0) {
+        Console::log("Test 4: PASS - Successfully requested 0 data");
         return 1; // Success
     } else {
-        Console::log("Test 4: FAIL - No data received (may be expected if EPS not connected)");
+        Console::log("Test 4: FAIL - Data received (may be expected if EPS not connected)");
         return 0; // Failure (or expected if no EPS connected)
     }
 }
 
-// Test 5: Complete I2C cycle - Write command, wait, request, read
+// Test 5: Complete I2C cycle - Write command, wait, request, read ending in False
 // Returns: 1 on success, 0 on failure
 int main5() {
     Console::init(9600);
@@ -1526,14 +1535,14 @@ int main5() {
 
     // delay_ms(25); // not sure if we should wait
 
-    uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
+    uint8_t bytes_received = wire.requestFrom(i2c_address, 4);
     
-    if (bytes_received == 5) {
+    if (bytes_received == 4) {
         uint8_t stid = wire.read();
         uint8_t ivid = wire.read();
         uint8_t rc = wire.read();
         uint8_t bid = wire.read();
-        uint8_t stat = wire.read();
+        // uint8_t stat = wire.read();
         
         // Verify response structure (STID=0x00, IVID=0x06, BID=0x00)
         if (stid == 0x00 && ivid == 0x06 && bid == 0x00) {
@@ -1544,7 +1553,49 @@ int main5() {
             return 0; // Failure
         }
     } else {
-        Console::log("Test 5: FAIL - Expected 5 bytes");
+        Console::log("Test 5: FAIL - Expected 4 bytes");
+        return 0; // Failure
+    }
+}
+// Test 5.2: Complete I2C cycle - Write command, wait, request, read ending in False
+// Returns: 1 on success, 0 on failure
+int main5bis() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    wire.beginTransmission(i2c_address);
+    wire.write(0x00); // STID
+    wire.write(0x06); // IVID
+    wire.write(0x02); // NO_OPERATION
+    wire.write(0x00); // BID
+    wire.endTransmission(false);
+
+    // delay_ms(25); // not sure if we should wait
+
+    uint8_t bytes_received = wire.requestFrom(i2c_address, 4);
+
+    if (bytes_received == 5) {
+        uint8_t stid = wire.read();
+        uint8_t ivid = wire.read();
+        uint8_t rc = wire.read();
+        uint8_t bid = wire.read();
+        // uint8_t stat = wire.read();
+
+        // Verify response structure (STID=0x00, IVID=0x06, BID=0x00)
+        if (stid == 0x00 && ivid == 0x06 && bid == 0x00) {
+            Console::log("Test 5: PASS - Complete I2C cycle works, valid response received");
+            return 1; // Success
+        } else {
+            Console::log("Test 5: FAIL - Invalid response structure");
+            return 0; // Failure
+        }
+    } else {
+        Console::log("Test 5: FAIL - Expected 4 bytes");
         return 0; // Failure
     }
 }
@@ -1765,6 +1816,64 @@ int main15() {
         return 1; // Success
     } else {
         Console::log("Test 15: FAIL - PBU housekeeping data read returned error");
+        return 0; // Failure
+    }
+}
+// Test 16. Write and read just 2 bytes
+// Returns: 1 on success, 0 on failure
+int main16() {
+    Console::init(9600);
+    DelfiPQcore::initMCU();
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    wire.beginTransmission(i2c_address);
+    wire.write(0x01); // STID
+    wire.write(0x06); // IVID
+    wire.endTransmission(false);
+
+    // delay_ms(25); // not sure if we should wait
+
+    uint8_t bytes_received = wire.requestFrom(i2c_address, 2);
+
+    if (bytes_received == 2) {
+        uint8_t a = wire.read();
+        uint8_t b = wire.read();
+
+        // Verify response structure (STID=0x00, IVID=0x06, BID=0x00)
+        if (a == 0x01 && b == 0x06) {
+            Console::log("Test 16: PASS - Complete 2 reads");
+            //return 1; // partial Success
+        } else {
+            Console::log("Test 16: FAIL - Invalid response structure");
+            return 0; // Failure
+        }
+    } else {
+        Console::log("Test 16: FAIL - Expected 2 bytes");
+        return 0; // Failure
+    }
+    wire.beginTransmission(i2c_address);
+    wire.write(0x02); // STID
+    wire.write(0x04); // IVID
+    wire.endTransmission(false);
+    bytes_received = wire.requestFrom(i2c_address, 2);
+    if (bytes_received == 2) {
+        uint8_t c = wire.read();
+        uint8_t d = wire.read();
+
+        // Verify response structure (STID=0x00, IVID=0x06, BID=0x00)
+        if (c == 0x02 && d == 0x04) {
+            Console::log("Test 16: PASS - Complete 2 another reads");
+            //return 1; // partial Success
+        } else {
+            Console::log("Test 16: FAIL - Invalid response structure for the second pait of reads");
+            return 0; // Failure
+        }
+    } else {
+        Console::log("Test 16: FAIL - Expected another 2 bytes");
         return 0; // Failure
     }
 }
