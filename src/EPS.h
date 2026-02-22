@@ -225,11 +225,13 @@ enum class CommandCode {
     GET_PCU_HOUSEKEEPING_DATA_AVG = 0x74,    // reference: page 61 of 87 (ICD)
     GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70,    // reference: page 58 of 87 (ICD)
     SWITCH_NOMINAL_MODE = 0x30,              // reference: page 38 of 87 (ICD)
+    OUTPUT_BUS_CHANNEL_ON = 0x16,            // reference: page 36 of 87 (ICD)
     OUTPUT_BUS_CHANNEL_OFF = 0x18,           // reference: page 37 of 87 (ICD)
     OUTPUT_BUS_GROUP_STATE = 0x14,           // reference: page 35 of 87 (ICD)
     OUTPUT_BUS_GROUP_OFF = 0x12,             // reference: page 34 of 87 (ICD)
     OUTPUT_BUS_GROUP_ON = 0x10,              // reference: page 33 of 87 (ICD)
-    RESET_CONFIGURATION = 0x90               // reference: page 66 of 87 (ICD)
+    RESET_CONFIGURATION = 0x90,              // reference: page 66 of 87 (ICD)
+    LOAD_CONFIGURATION = 0x92                // reference: page 67 of 87 (ICD)
 };
 
 // Constants for command codes and other identifiers
@@ -242,7 +244,9 @@ enum Identifiers {
 // Enum for reset keys or confirmation keys
 enum ResetKey {
     RESET_KEY_SYSTEM_RESET = 0xA6,                    // reference: page 29 of 87 (ICD)
-    CONF_KEY_RESET_CONFIGURATION = 0xA7               // reference: page 66 of 87 (ICD)
+    CONF_KEY_RESET_CONFIGURATION = 0xA7,              // reference: page 66 of 87 (ICD)
+    RESET_KEY = 0xA6,                                 // reference: page 29 of 87 (ICD)
+    CONF_KEY = 0xA7                                   // reference: page 66 of 87 (ICD)
 };
 
 class EPS {
@@ -255,8 +259,8 @@ public:
         uint8_t ivid;
         uint8_t rc; //TODO according to ICD, GetPBUHousekeepingData(ENG) returns the cc instead? I believe it is the only one
         uint8_t bid;
-        uint8_t stat;
-        uint8_t error;
+        uint8_t stat; //It contains info regarding whether the EPS rejected the command.
+        uint8_t error; //defined as: could we send this command and EPS responded with something (accept/reject)? If yes -> true
 
         virtual ~ReplyBase() = default; // Virtual destructor for proper cleanup
     };
@@ -325,12 +329,13 @@ public:
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
+    static standard_reply output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
     static standard_reply output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
-    // static standard_reply output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx); // redo with page 36
     static standard_reply output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
-    static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
+    static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
+    static standard_reply load_configuration(DWire &wire, uint8_t i2c_address);
     static config_reply get_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
     static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
     static config_reply set_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id, returnType conf_par_value);
@@ -338,8 +343,13 @@ public:
     static ParameterType getConfigParameterType(ConfigParameter conf_par);
     static AccessType getAccessType(ConfigParameter conf_par);
     static uint8_t get_param_length(ParameterType par_type);
+    //these will be made private in the future
     static void writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode);
+    static void writeCommand5Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte);
+    static void writeCommand6Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte, uint8_t sixthByte);
+    static void writeCommandSaveConfiguration(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t CONF_KEY, uint16_t CHECKSUM);
     static void readCommand(DWire &wire, EPS::ReplyBase &reply);
+    static bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n);
     static bool write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode);
     static config_reply read_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, config_reply &reply);
 };
