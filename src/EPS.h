@@ -245,7 +245,6 @@ enum Identifiers {
 enum ResetKey {
     RESET_KEY_SYSTEM_RESET = 0xA6,                    // reference: page 29 of 87 (ICD)
     CONF_KEY_RESET_CONFIGURATION = 0xA7,              // reference: page 66 of 87 (ICD)
-    RESET_KEY = 0xA6,                                 // reference: page 29 of 87 (ICD)
     CONF_KEY = 0xA7                                   // reference: page 66 of 87 (ICD)
 };
 

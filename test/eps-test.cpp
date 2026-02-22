@@ -1746,7 +1746,7 @@ int main7() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::writeCommand5Bytes(wire,i2c_address,CommandCode::OUTPUT_BUS_CHANNEL_ON, 0x01);
+    EPS::writeCommand5Bytes(wire,i2c_address,CommandCode::OUTPUT_BUS_CHANNEL_ON, 0x03);
     delay_ms(20);
     EPS::standard_reply reply;
     uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
@@ -1782,7 +1782,7 @@ int main7_2() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::standard_reply reply = EPS::output_bus_channel_on(wire,i2c_address, 0x01);
+    EPS::standard_reply reply = EPS::output_bus_channel_on(wire,i2c_address, 0x03);
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x17 && reply.stat == 0x80) {
@@ -1808,7 +1808,7 @@ int main8() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::writeCommand5Bytes(wire,i2c_address,CommandCode::OUTPUT_BUS_CHANNEL_OFF, 0x01);
+    EPS::writeCommand5Bytes(wire,i2c_address,CommandCode::OUTPUT_BUS_CHANNEL_OFF, 0x03);
     delay_ms(20);
     EPS::standard_reply reply;
     uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
@@ -1844,7 +1844,7 @@ int main8_2() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::standard_reply reply = EPS::output_bus_channel_on(wire,i2c_address, 0x01);
+    EPS::standard_reply reply = EPS::output_bus_channel_on(wire,i2c_address, 0x03);
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x19 && reply.stat == 0x80) {

@@ -379,7 +379,7 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
     standard_reply reply;
 
     /* Write command to EPS */
-    EPS::writeCommand5Bytes(wire, i2c_address, CommandCode::SYSTEM_RESET, RESET_KEY);
+    EPS::writeCommand5Bytes(wire, i2c_address, CommandCode::SYSTEM_RESET, RESET_KEY_SYSTEM_RESET);
 
     // delay
     delay_ms(20);
