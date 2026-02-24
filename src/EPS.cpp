@@ -191,7 +191,7 @@ void EPS::readCommand(DWire &wire, EPS::ReplyBase &reply) {
     reply.rc = wire.read();     // Response code
     reply.bid = wire.read();    // BID
     reply.stat = wire.read();   // Status byte
-//    Console::log("read: %d %d %d %d %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat);
+    Console::log("read: %d %d %d %d %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat);
 }
 bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
     //it is assumed you already called:  wire.requestFrom(i2c_address, n);
@@ -771,11 +771,13 @@ EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address,
 
     // if response if 5 bytes long populate reply struct else mark error.
     if (response == 5) {
+        Console::log("5 bytes");
         EPS::readCommand(wire, reply);
         reply.error = false;
     } else {
         reply.error = true;
     }
+    return reply;
 }
 EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx) {
    /*
