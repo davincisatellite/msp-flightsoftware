@@ -1964,3 +1964,43 @@ int main11() {
         return 0; // Failure
     }
 }
+//Test 12: Test check in point
+//not an actual test, just a method to see what is currently in the EPS.
+int main12() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test Checking EPS State starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+
+    delay_ms(20); //important
+
+    uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
+    if (bytes_received == 5) {
+        uint8_t stid = wire.read();
+        uint8_t ivid = wire.read();
+        uint8_t rc = wire.read();
+        uint8_t bid = wire.read();
+        uint8_t stat = wire.read();
+        print_5_bytes_response(stid,ivid,rc,bid,stat);
+        //safety check
+        if (stid == 0xFF || rc == 0xFF) {
+            Console::log("No valid response yet (0xFF). Waiting 100ms.");
+            delay_ms(100);
+        }
+        Console::log("Re reading...\n");
+        print_5_bytes_response(stid,ivid,rc,bid,stat);
+
+    }
+    else {
+        Console::log("Test 12: Too few Bytes received: %d", bytes_received);
+        return 0;
+    }
+}
