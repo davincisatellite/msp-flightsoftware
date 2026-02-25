@@ -196,7 +196,6 @@ void EPS::readCommand(DWire &wire, EPS::ReplyBase &reply) {
 bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
     //it is assumed you already called:  wire.requestFrom(i2c_address, n);
     //the first 5 bytes are STID, IVID, RC, BID, STAT
-    if (n<0) return false;
 
     for (uint8_t i = 0; i < n; i++) {
         buf[i] = wire.read();
