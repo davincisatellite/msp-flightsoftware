@@ -202,6 +202,24 @@ bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
     }
     return true;
 }
+void fill_VIPD_variable(EPS::VIPD &vipd, uint8_t *buf) {
+  //it is assumed that buf has at least 6 spaces (it should have exactly 6 spaces)
+  vipd.volt  = buf[0]+(buf[1]<<8);
+  vipd.curr  = buf[2]+(buf[3]<<8);
+  vipd.power = buf[4]+(buf[5]<<8);
+}
+void fill_BPD_variable(EPS::BPD &bpd, uint8_t *buf) {
+  //it is assumed that buf has at least 22 spaces (it should have exactly 6 spaces)
+  fill_VIPD_variable(bpd.vip_bp_input, buf);
+  bpd.stat_bp    = buf[6]+(buf[7]<<8);
+  bpd.volt_cell1 = buf[8]+(buf[9]<<8);
+  bpd.volt_cell2 = buf[10]+(buf[11]<<8);
+  bpd.volt_cell3 = buf[12]+(buf[13]<<8);
+  bpd.volt_cell4 = buf[14]+(buf[15]<<8);
+  bpd.bat_temp1  = buf[16]+(buf[17]<<8);
+  bpd.bat_temp2  = buf[18]+(buf[19]<<8);
+  bpd.bat_temp3  = buf[20]+(buf[21]<<8);
+}
 
 bool EPS::write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode) {
     ParameterType param_type = EPS::getConfigParameterType(par_id);
@@ -492,31 +510,83 @@ EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
     return reply;
 }
 
-EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address) {
-    pdu_overcurrent_reply reply;
+EPS::system_status_reply EPS::get_system_status(DWire &wire, uint8_t i2c_address){
+  /*
+    Action: return system status information.
 
-    EPS::writeCommand(wire, i2c_address, CommandCode::GET_PDU_OVERCURRENT_FAULT_STATE);
+  	Write length: 4 bytes.
+	Read length: 36 bytes.
+   */
+    system_status_reply reply;
+    EPS::writeCommand(wire, i2c_address, CommandCode::GET_SYSTEM_STATUS);
 
-    // delay
-    delay_ms(25);
+    delay_ms(20);
 
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
+    uint8_t response = wire.requestFrom(i2c_address, 36);
 
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        EPS::readCommand(wire, reply);
+    if (response == 36) {
+        uint8_t buffer[36];
+    	EPS::read_n_bytes(wire, buffer, 36);
 
-        // read (reserved) and discard
-        (void) wire.read();
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        reply.mode = buffer[5];
+        reply.conf = buffer[6];
+        reply.reset_cause = buffer[7];
+        //8)AA 9)BB 10)CC 11)DD  -> 0xDDCCBBAA
+        reply.uptime = buffer[8]+(buffer[9]<<8)+(buffer[10]<<16)+(buffer[11]<<24);
+        reply.sys_error       = buffer[12]+(buffer[13]<<8);
+        reply.rc_cnt_pwron    = buffer[14]+(buffer[15]<<8);
+        reply.rc_cnt_wdg      = buffer[16]+(buffer[17]<<8);
+        reply.rc_cnt_cmd      = buffer[18]+(buffer[19]<<8);
+        reply.rc_cnt_mcu      = buffer[20]+(buffer[21]<<8);
+        reply.rc_cnt_emlopo   = buffer[22]+(buffer[23]<<8);
+        reply.prevcmd_elapsed = buffer[24]+(buffer[25]<<8);
+        //the other 10 bytes are reserved.
 
-        // reads in little endian order
-        reply.stat_ob_on = wire.read() + (wire.read() << 8);
-        reply.stat_ob_ocf = wire.read() + (wire.read() << 8);
+        reply.error = false;
+    }
+    else
+        reply.error = true;
 
-        for (int i = 0; i < 16; ++i) {
-            reply.ocf_cnt_ch[i] = wire.read() + (wire.read() << 8);
-        }
+    return reply;
+}
+
+EPS::overcurrent_reply EPS::get_overcurrent_fault_state(DWire &wire, uint8_t i2c_address) {
+  /*
+    Action: Prepare the response buffer with output bus over current events. Over current fault counters are incremented
+	each time a bus is latched off due to an overcurrent event
+
+	Note: only applicable to PDU/PIU boards. Specify it in STID
+
+	Write length: 4 bytes.
+	Read length: 42 bytes.
+   */
+    overcurrent_reply reply;
+    EPS::writeCommand(wire, i2c_address, CommandCode::GET_OVERCURRENT_FAULT_STATE);
+
+    delay_ms(20);
+
+    uint8_t response = wire.requestFrom(i2c_address, 42);
+
+    if (response == 42) {
+        uint8_t buffer[42];
+    	EPS::read_n_bytes(wire, buffer, 42);
+
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        //buffer[5] is reserved
+        reply.stat_ob_on  = buffer[6]+(buffer[7]<<8);
+        reply.stat_ob_ocf = buffer[8]+(buffer[9]<<8);
+
+        for (int i=0;i<16;i++)
+          reply.ocf_cnt_ch[i] = buffer[10+2*i]+(buffer[11+2*i]<<8);
 
         reply.error = false;
     } else {
@@ -526,26 +596,39 @@ EPS::pdu_overcurrent_reply EPS::get_pdu_overcurrent_fault_state(DWire &wire, uin
     return reply;
 }
 
-EPS::pdu_abf_placed_state EPS::get_pdu_abf_placed_state(DWire &wire, uint8_t i2c_address) {
-    EPS::pdu_abf_placed_state reply;
+EPS::pbu_abf_placed_state EPS::get_pbu_abf_placed_state(DWire &wire, uint8_t i2c_address) {
+  /*
+    Action: Prepare the response buffer with ABF placed state information.
+    Note: only applicable to PBU boards
+	For the values of the abf_placed (one value, but redundant):
+    - 0xAB = ABF is placed
+    - 0x00 = ABF is not placed
+    - other values is invalid
 
-    EPS::writeCommand(wire, i2c_address, CommandCode::GET_PDU_ABF_PLACED_STATE);
+	Write length: 4 bytes.
+	Read length: 8 bytes.
+   */
+    EPS::pbu_abf_placed_state reply;
+
+    EPS::writeCommand(wire, i2c_address, CommandCode::GET_PBU_ABF_PLACED_STATE);
 
     // delay
-    delay_ms(25);
+    delay_ms(20);
 
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
+    uint8_t response = wire.requestFrom(i2c_address, 8);
 
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        EPS::readCommand(wire, reply);
+    if (response == 8) {
+        uint8_t buffer[42];
+    	EPS::read_n_bytes(wire, buffer, 42);
 
-        // read (reserved) and discard
-        (void) wire.read();
-
-        reply.abf_placed_0 = wire.read();
-        reply.abf_placed_1 = wire.read();
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        //buffer[5] is reserved
+        reply.abf_placed_0  = buffer[6];
+        reply.abf_placed_1 = buffer[7];
 
         reply.error = false;
     } else {
@@ -556,44 +639,44 @@ EPS::pdu_abf_placed_state EPS::get_pdu_abf_placed_state(DWire &wire, uint8_t i2c
 }
 
 EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+  /*
+    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering form.
+    Note: only applicable to PDU boards
+    Note: in the raw form, the temp and volt vars are "uint16_t". In eng form, they are "int16_t". We used "int16_t".
+    Consider this when you get the raw form (translate from int16 to uint16)
+
+    Write length: 4 bytes.
+    Read length: 158 bytes.
+   */
     EPS::pdu_housekeeping_data_reply reply;
 
     EPS::writeCommand(wire, i2c_address, commandCode);
 
-    // delay
-    delay_ms(25);
+    delay_ms(20);
 
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
+    uint8_t response = wire.requestFrom(i2c_address, 158);
 
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        EPS::readCommand(wire, reply);
+    if (response == 158) {
+        uint8_t buffer[158];
+        EPS::read_n_bytes(wire, buffer, 158);
 
-        // read (reserved) and discard
-        (void) wire.read();
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        //buffer[5] is reserved
+        reply.volt_brdsup = buffer[6]+(buffer[7]<<8);
+        reply.temp        = buffer[8]+(buffer[9]<<8);
+        fill_VIPD_variable(reply.vip_input, buffer+10);
+        reply.stat_ch_on  = buffer[16]+(buffer[17]<<8);
+        reply.stat_ch_ocf = buffer[18]+(buffer[19]<<8);
 
-        reply.volt_brdsup = wire.read() + (wire.read() << 8);
-        reply.temp = wire.read() + (wire.read() << 8);
+        for(int i=0;i<7;i++)
+            fill_VIPD_variable(reply.vip_vd[i], buffer+20+i*6);
 
-        for (int i = 0; i < 6; ++i) {
-            reply.vip_input[i] = wire.read();
-        }
-
-        reply.stat_ch_on = wire.read() + (wire.read() << 8);
-        reply.stat_ch_ocf = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 7; ++i) {
-            for (int j = 0; j < 6; ++j) {
-                reply.vip_vd[i][j] = wire.read();
-            }
-        }
-
-        for (int i = 0; i < 16; ++i) {
-            for (int j = 0; j < 6; ++j) {
-                reply.vip_ch[i][j] = wire.read();
-            }
-        }
+        for(int i=0;i<16;i++)
+            fill_VIPD_variable(reply.vip_ch[i], buffer+62+i*6);
 
         reply.error = false;
     } else {
@@ -602,13 +685,12 @@ EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data(DWire &wire, uint8_t 
 
     return reply;
 }
-
-EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
-    return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_ENG);
-}
-
 EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
     return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_RAW);
+}
+
+EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
+    return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_ENG);
 }
 
 EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
@@ -616,37 +698,38 @@ EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire
 }
 
 EPS::pbu_housekeeping_data_reply get_pbu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+  /*
+    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values.
+    Note: only applicable to PBU boards
+
+    Write length: 4 bytes.
+    Read length: 84 bytes.
+   */
     EPS::pbu_housekeeping_data_reply reply;
 
     EPS::writeCommand(wire, i2c_address, commandCode);
 
-    // delay
-    delay_ms(25);
+    delay_ms(20);
 
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
+    uint8_t response = wire.requestFrom(i2c_address, 84);
 
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        EPS::readCommand(wire, reply);
+    if (response == 84) {
+        uint8_t buffer[84];
+        EPS::read_n_bytes(wire, buffer, 84);
 
-        // read (reserved) and discard
-        (void) wire.read();
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        //buffer[5] is reserved
+        reply.volt_brdsup = buffer[6]+(buffer[7]<<8);
+        reply.temp        = buffer[8]+(buffer[9]<<8);
+        fill_VIPD_variable(reply.vip_input, buffer+10);
+        reply.stat_bu = buffer[16]+(buffer[17]<<8);
 
-        reply.volt_brdsup = wire.read() + (wire.read() << 8);
-        reply.temp = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 6; ++i) {
-            reply.vip_input[i] = wire.read();
-        }
-
-        reply.stat_bu = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 22; ++j) {
-                reply.bp[i][j] = wire.read();
-            }
-        }
+        for(int i=0;i<3;i++)
+            fill_BPD_variable(reply.bp[i], buffer+18+i*22);
 
         reply.error = false;
     } else {
@@ -656,12 +739,12 @@ EPS::pbu_housekeeping_data_reply get_pbu_housekeeping_data(DWire &wire, uint8_t 
     return reply;
 }
 
-EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
-    return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_ENG);
-}
-
 EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
     return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_RAW);
+}
+
+EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
+    return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_ENG);
 }
 
 EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
@@ -982,4 +1065,56 @@ EPS::standard_reply EPS::load_configuration(DWire &wire, uint8_t i2c_address) {
 
     return reply;
 
+}
+// there are some methods to print the data on the screen
+void print_standard_reply(EPS::standard_reply reply) {
+    Console::log("--- Standard Reply Data ---");
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+}
+void print_system_status(EPS::system_status_reply reply) {
+    Console::log("--- System status Data ---");
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+
+    //Console::log("MODE: %d", reply.mode);
+    if (reply.mode==0)
+        Console::log("MODE: 0 -> Startup");
+   	else if (reply.mode==1)
+        Console::log("MODE: 1 -> Nominal");
+   	else if (reply.mode==2)
+        Console::log("MODE: 2 -> Safety");
+   	else if (reply.mode==3)
+        Console::log("MODE: 3 -> Emergency Low Power");
+    else
+      	Console::log("MODE: %d -> Invalid mode", reply.mode);
+
+    //Console::log("CONF: %d", reply.conf);
+    if (reply.conf==0)
+        Console::log("CONF: 0 -> Parameters have NOT been altered since the last load/save.");
+   	else if (reply.conf==1)
+        Console::log("CONF: 1 -> Parameters have been altered since the last load/save.");
+    else
+      	Console::log("CONF: %d -> Invalid conf", reply.conf);
+
+    //Console::log("RESET_CAUSE:     %d", reply.reset_cause);
+    if (reply.reset_cause==0)
+    	Console::log("RESET_CAUSE:     %d -> power-on; system returned from an unpowered state", reply.reset_cause);
+   	else if (reply.reset_cause==1)
+    	Console::log("RESET_CAUSE:     %d -> watchdog; system was reset due to watchdog timeout", reply.reset_cause);
+   	else if (reply.reset_cause==2)
+    	Console::log("RESET_CAUSE:     %d -> commanded; system was reset due a reset command", reply.reset_cause);
+   	else if (reply.reset_cause==3)
+    	Console::log("RESET_CAUSE:     %d -> control system reset; an upset in the EPS control system caused a reset", reply.reset_cause);
+   	else if (reply.reset_cause==4)
+    	Console::log("RESET_CAUSE:     %d -> emlopo; emergency, input voltage dropped below the threshold", reply.reset_cause);
+   	else
+    	Console::log("RESET_CAUSE:     %d -> invalid response", reply.reset_cause);
+
+    Console::log("UPTIME:          %d s", reply.uptime);
+    Console::log("(SYS) ERROR:     %d", reply.sys_error);
+    Console::log("RC_CNT_PWRON:    %d", reply.rc_cnt_pwron);
+    Console::log("RC_CNT_WDG:      %d", reply.rc_cnt_wdg);
+    Console::log("RC_CNT_CMD:      %d", reply.rc_cnt_cmd);
+    Console::log("RC_CNT_MCU:      %d", reply.rc_cnt_mcu);
+    Console::log("RC_CNT_EMLOPO:   %d", reply.rc_cnt_emlopo);
+    Console::log("PREVCMD_ELAPSED: %d s", reply.prevcmd_elapsed);
 }

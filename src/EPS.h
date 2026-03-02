@@ -213,8 +213,9 @@ enum class CommandCode {
     SYSTEM_RESET = 0xAA,                     // reference: page 29 of 87 (ICD)
     CANCEL_OPERATION = 0x04,                 // reference: page 31 of 87 (ICD)
     SWITCH_TO_SAFETY_MODE = 0x32,            // reference: page 39 of 87 (ICD)
-    GET_PDU_OVERCURRENT_FAULT_STATE = 0x42,  // reference: page 43 of 87 (ICD)
-    GET_PDU_ABF_PLACED_STATE = 0x44,         // reference: page 44 of 87 (ICD)
+    GET_SYSTEM_STATUS = 0x40,                // reference: page 40 of 87 (ICD)
+    GET_OVERCURRENT_FAULT_STATE = 0x42,      // reference: page 43 of 87 (ICD)
+    GET_PBU_ABF_PLACED_STATE = 0x44,         // reference: page 44 of 87 (ICD)
     GET_PDU_HOUSEKEEPING_DATA_RAW = 0x50,    // reference: page 46 of 87 (ICD)
     GET_PDU_HOUSEKEEPING_DATA_ENG = 0x52,    // reference: page 49 of 87 (ICD)
     GET_PDU_HOUSEKEEPING_DATA_AVG = 0x54,    // reference: page 51 of 87 (ICD)
@@ -250,7 +251,22 @@ enum ResetKey {
 
 class EPS {
 public:
-
+    struct VIPD {
+        int16_t volt;  //Channel voltage
+        int16_t curr;  //Channel current
+        int16_t power; //Channel power
+    };
+    struct BPD {
+        VIPD vip_bp_input; //Input V, I and P data for the battery
+        uint16_t stat_bp;   //Bitflag field indicating BP board status.
+        int16_t volt_cell1;  //Voltage across cell 1
+        int16_t volt_cell2;  //Voltage across cell 2
+        int16_t volt_cell3;  //Voltage across cell 3
+        int16_t volt_cell4;  //Voltage across cell 4
+        int16_t bat_temp1;  //Internal temperature of battery
+        int16_t bat_temp2;  //Battery pack temperature in between the center battery cells.
+        int16_t bat_temp3;  //Battery pack temperature on the front of the battery pack
+    };
     // command codes all replies have
     class ReplyBase {
     public:
@@ -268,14 +284,27 @@ public:
     struct standard_reply : public ReplyBase {
 
     };
-
-    struct pdu_overcurrent_reply : public ReplyBase {
-        uint16_t ocf_cnt_ch[16];
-        uint16_t stat_ob_on;
-        uint16_t stat_ob_ocf;
+    struct system_status_reply : public ReplyBase { //26 bytes from EPS
+        uint8_t mode;
+        uint8_t conf;
+        uint8_t reset_cause;
+        uint32_t uptime; //in seconds
+        uint16_t sys_error;
+        uint16_t rc_cnt_pwron;
+        uint16_t rc_cnt_wdg;
+        uint16_t rc_cnt_cmd;
+        uint16_t rc_cnt_mcu;
+        uint16_t rc_cnt_emlopo;
+        uint16_t prevcmd_elapsed;
     };
 
-    struct pdu_abf_placed_state : public ReplyBase {
+    struct overcurrent_reply : public ReplyBase {
+        uint16_t stat_ob_on;
+        uint16_t stat_ob_ocf;
+        uint16_t ocf_cnt_ch[16];
+    };
+
+    struct pbu_abf_placed_state : public ReplyBase {
         uint8_t abf_placed_0;
         uint8_t abf_placed_1;
     };
@@ -295,19 +324,19 @@ public:
     struct pbu_housekeeping_data_reply : public ReplyBase {
         uint16_t volt_brdsup;
         uint16_t temp;
-        uint8_t vip_input[6];
+        VIPD vip_input;
         uint16_t stat_bu;
-        uint8_t bp[3][22];      // Response BP_1 stored in bp[1]. Bytes are kept in the order that they are read
+        BPD bp[3];
     };
 
     struct pdu_housekeeping_data_reply : public ReplyBase {
         uint16_t volt_brdsup;
-        uint16_t temp;
-        uint8_t vip_input[6];
+        int16_t temp;
+        VIPD vip_input;
         uint16_t stat_ch_on;
         uint16_t stat_ch_ocf;
-        uint8_t vip_vd[7][6];
-        uint8_t vip_ch[16][6];
+        VIPD vip_vd[7];
+        VIPD vip_ch[16];
     };
 
     static standard_reply no_operation(DWire &wire, uint8_t i2c_address);
@@ -318,8 +347,8 @@ public:
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
-    static pdu_overcurrent_reply get_pdu_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
-    static pdu_abf_placed_state get_pdu_abf_placed_state(DWire &wire, uint8_t i2c_address);
+    static overcurrent_reply get_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
+    static pbu_abf_placed_state get_pbu_abf_placed_state(DWire &wire, uint8_t i2c_address);
     static pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pdu_housekeeping_data_reply get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
@@ -328,6 +357,7 @@ public:
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
+    static system_status_reply get_system_status(DWire &wire, uint8_t i2c_address);
     static standard_reply output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
     static standard_reply output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
     static standard_reply output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
@@ -351,6 +381,9 @@ public:
     static bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n);
     static bool write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode);
     static config_reply read_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, config_reply &reply);
+
+    //printing methods for visualising data
+    static void print_system_status(system_status_reply reply);
 };
 
 #endif //EPS_CONVERSION_EPS_H
