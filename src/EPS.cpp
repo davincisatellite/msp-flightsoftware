@@ -203,22 +203,37 @@ bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
     return true;
 }
 void fill_VIPD_variable(EPS::VIPD &vipd, uint8_t *buf) {
-  //it is assumed that buf has at least 6 spaces (it should have exactly 6 spaces)
-  vipd.volt  = buf[0]+(buf[1]<<8);
-  vipd.curr  = buf[2]+(buf[3]<<8);
-  vipd.power = buf[4]+(buf[5]<<8);
+    //it is assumed that buf has at least 6 spaces (it should have exactly 6 spaces)
+    vipd.volt  = buf[0]+(buf[1]<<8);
+    vipd.curr  = buf[2]+(buf[3]<<8);
+    vipd.power = buf[4]+(buf[5]<<8);
 }
 void fill_BPD_variable(EPS::BPD &bpd, uint8_t *buf) {
-  //it is assumed that buf has at least 22 spaces (it should have exactly 6 spaces)
-  fill_VIPD_variable(bpd.vip_bp_input, buf);
-  bpd.stat_bp    = buf[6]+(buf[7]<<8);
-  bpd.volt_cell1 = buf[8]+(buf[9]<<8);
-  bpd.volt_cell2 = buf[10]+(buf[11]<<8);
-  bpd.volt_cell3 = buf[12]+(buf[13]<<8);
-  bpd.volt_cell4 = buf[14]+(buf[15]<<8);
-  bpd.bat_temp1  = buf[16]+(buf[17]<<8);
-  bpd.bat_temp2  = buf[18]+(buf[19]<<8);
-  bpd.bat_temp3  = buf[20]+(buf[21]<<8);
+    //it is assumed that buf has at least 22 spaces (it should have exactly 22 spaces)
+    fill_VIPD_variable(bpd.vip_bp_input, buf);
+    bpd.stat_bp    = buf[6]+(buf[7]<<8);
+    bpd.volt_cell1 = buf[8]+(buf[9]<<8);
+    bpd.volt_cell2 = buf[10]+(buf[11]<<8);
+    bpd.volt_cell3 = buf[12]+(buf[13]<<8);
+    bpd.volt_cell4 = buf[14]+(buf[15]<<8);
+    bpd.bat_temp1  = buf[16]+(buf[17]<<8);
+    bpd.bat_temp2  = buf[18]+(buf[19]<<8);
+    bpd.bat_temp3  = buf[20]+(buf[21]<<8);
+}
+void fill_CCD_variable(EPS::CCD &ccd, uint8_t *buf) {
+    //it is assumed that buf has at least 14 spaces (it should have exactly 14 spaces)
+    fill_VIPD_variable(ccd.vip_cc_output, buf);
+    ccd.volt_in_mppt  = buf[6]+(buf[7]<<8);
+    ccd.curr_in_mppt  = buf[8]+(buf[9]<<8);
+    ccd.volt_out_mppt = buf[10]+(buf[11]<<8);
+    ccd.curr_out_mppt = buf[12]+(buf[13]<<8);
+}
+void fill_CCSD_variable(EPS::CCSD &ccsd, uint8_t *buf) {
+    //it is assumed that buf has at least 8 spaces (it should have exactly 8 spaces)
+    ccsd.volt_in_mppt  = buf[0]+(buf[1]<<8);
+    ccsd.curr_in_mppt  = buf[2]+(buf[3]<<8);
+    ccsd.volt_out_mppt = buf[4]+(buf[5]<<8);
+    ccsd.curr_out_mppt = buf[6]+(buf[7]<<8);
 }
 
 bool EPS::write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode) {
@@ -288,12 +303,12 @@ EPS::config_reply EPS::read_config_params(DWire &wire, uint8_t i2c_address, Conf
     return reply;
 }
 
-EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, returnType par_val) {
+EPS::config_reply EPS::set_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, ReturnType par_val) {
     // Initialise reply with default value to avoid uninitialised fields
     EPS::config_reply reply = {};
     reply.error = 1;  // Set default error code
 
-    if(!EPS::write_config_params(wire, i2c_address, par_id, CommandCode::SET_PARAM)) {
+    if(!EPS::write_config_params(wire, i2c_address, par_id, CommandCode::SET_CONF_PARAM)) {
         return reply;
     }
 
@@ -315,14 +330,13 @@ EPS::config_reply EPS::set_config_params(DWire &wire, uint8_t i2c_address, Confi
     return read_config_params(wire, i2c_address, par_id, reply);
 }
 
-EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
+EPS::config_reply EPS::reset_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
     // Initialise reply with default value to avoid uninitialised fields
     EPS::config_reply reply = {};
     reply.error = 1;  // Set default error code
 
-    if(!EPS::write_config_params(wire, i2c_address, par_id, CommandCode::RESET_PARAM)) {
-        return reply;
-    }
+
+//    EPS::writeCommand6Bytes(wire, i2c_address, CommandCode::NO_OPERATION);
 
     // End transmission
     wire.endTransmission();
@@ -333,20 +347,43 @@ EPS::config_reply EPS::reset_config_params(DWire &wire, uint8_t i2c_address, Con
     return read_config_params(wire, i2c_address, par_id, reply);
 }
 
-EPS::config_reply EPS::get_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
+EPS::config_reply EPS::get_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
+  /*
+	Action: get the value of a configuration parameter.
+   */
     // Initialise reply with default value to avoid uninitialised fields
     EPS::config_reply reply = {};
     reply.error = 1;  // Set default error code
 
-    if(!EPS::write_config_params(wire, i2c_address, par_id, CommandCode::GET_PARAM)) {
-        return reply;
-    }
 
-    // End transmission
-    wire.endTransmission();
+    uint8_t bytes[2];
+    uint16_t par_id_uint16 = static_cast<uint16_t>(par_id);
+    bytes[0] = (uint8_t)(par_id_uint16 >> 8);   // most significant byte
+    bytes[1] = (uint8_t)(par_id_uint16 & 0xFF); // least significant byte
 
-    // delay for the operation to complete
-    delay_ms(25); //TODO investigate this delay. is it too much? Maybe poll instead (scheme 2 from ICD 3.3.4)
+    EPS::writeCommand6Bytes(wire, i2c_address, CommandCode::GET_CONF_PARAM, bytes[1], bytes[0]);
+
+    delay_ms(20);
+
+    uint8_t param_length = 2;
+    uint8_t read_length = 8+param_length;
+    uint8_t response = wire.requestFrom(i2c_address, read_length);
+
+    if (response == read_length) {
+        uint8_t buffer[read_length];
+    	EPS::read_n_bytes(wire, buffer, read_length);
+
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        //buffer[5] is reserved
+        reply.par_id = static_cast<ConfigParameter>(buffer[6]+(buffer[7]<<8));
+
+        reply.error = false;
+    } else
+      reply.error = true;
 
     return read_config_params(wire, i2c_address, par_id, reply);
 }
@@ -612,7 +649,6 @@ EPS::pbu_abf_placed_state EPS::get_pbu_abf_placed_state(DWire &wire, uint8_t i2c
 
     EPS::writeCommand(wire, i2c_address, CommandCode::GET_PBU_ABF_PLACED_STATE);
 
-    // delay
     delay_ms(20);
 
     uint8_t response = wire.requestFrom(i2c_address, 8);
@@ -752,35 +788,37 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(
 }
 
 EPS::pcu_housekeeping_data_reply get_pcu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+  /*
+    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values.
+    Note: only applicable to PCU boards
+
+	Write length: 4 bytes.
+	Read length: 72 bytes.
+   */
     EPS::pcu_housekeeping_data_reply reply;
 
     EPS::writeCommand(wire, i2c_address, commandCode);
 
-    // delay
-    delay_ms(25);
+    delay_ms(20);
 
-    // request 5 bytes of data (i.e) the length of the response
-    uint8_t response = wire.requestFrom(i2c_address, 5);
+    uint8_t response = wire.requestFrom(i2c_address, 72);
 
-    // if response if 5 bytes long populate reply struct else mark error
-    if (response == 5) {
-        EPS::readCommand(wire, reply);
+    if (response == 72) {
+        uint8_t buffer[72];
+        EPS::read_n_bytes(wire, buffer, 72);
 
-        // read (reserved) and discard
-        (void) wire.read();
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        //buffer[5] is reserved
+        reply.volt_brdsup = buffer[6]+(buffer[7]<<8);
+        reply.temp        = buffer[8]+(buffer[9]<<8);
+        fill_VIPD_variable(reply.vip_output, buffer+10);
 
-        reply.volt_brdsup = wire.read() + (wire.read() << 8);
-        reply.temp = wire.read() + (wire.read() << 8);
-
-        for (int i = 0; i < 6; ++i) {
-            reply.vip_output[i] = wire.read();
-        }
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 14; ++j) {
-                reply.cc[i][j] = wire.read();
-            }
-        }
+		for(int i=0;i<4;i++)
+            fill_CCD_variable(reply.cc[i], buffer+16+i*14);
 
         reply.error = false;
     } else {
@@ -790,16 +828,83 @@ EPS::pcu_housekeeping_data_reply get_pcu_housekeeping_data(DWire &wire, uint8_t 
     return reply;
 }
 
-EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
-    return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_ENG);
-}
-
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
     return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_RAW);
 }
 
+EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
+    return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_ENG);
+}
+
 EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
     return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_AVG);
+}
+
+
+EPS::piu_housekeeping_data_reply get_piu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
+  /*
+    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values
+    Note: only applicable to PIU boards
+    Note: this method assumes you do not have a daughterboard.
+
+	Write length: 4 bytes.
+	Read length: 116 bytes w/o daughterboard (or 174 bytes with daughterboard).
+   */
+    EPS::piu_housekeeping_data_reply reply;
+
+    EPS::writeCommand(wire, i2c_address, commandCode);
+
+    delay_ms(20);
+
+    uint8_t response = wire.requestFrom(i2c_address, 116);
+
+    if (response == 116) {
+        uint8_t buffer[116];
+        EPS::read_n_bytes(wire, buffer, 116);
+
+        reply.stid = buffer[0];
+        reply.ivid = buffer[1];
+        reply.rc   = buffer[2];
+        reply.bid  = buffer[3];
+        reply.stat = buffer[4];
+        //buffer[5] is reserved
+        reply.volt_brdsup = buffer[6]+(buffer[7]<<8);
+        reply.temp        = buffer[8]+(buffer[9]<<8);
+        fill_VIPD_variable(reply.vip_dist_input, buffer+10);
+        fill_VIPD_variable(reply.vip_bat_input, buffer+16);
+        reply.stat_ch_on  = buffer[22]+(buffer[23]<<8);
+        reply.stat_ch_ocf = buffer[24]+(buffer[25]<<8);
+        reply.bat_stat    = buffer[26]+(buffer[27]<<8);
+        reply.bat_temp2   = buffer[28]+(buffer[29]<<8);
+        reply.bat_temp3   = buffer[30]+(buffer[31]<<8);
+
+		for(int16_t i=0;i<3;i++)
+        	reply.volt_vd[i] = buffer[32+i*2]+(buffer[33+i*2]<<8);
+
+		for(int i=0;i<9;i++)
+        	fill_VIPD_variable(reply.vip_ch[i], buffer+38+i*6);
+
+		for(int i=0;i<3;i++)
+            fill_CCSD_variable(reply.cc[i], buffer+92+i*8);
+
+        reply.error = false;
+    } else {
+        reply.error = true;
+    }
+
+    return reply;
+}
+
+EPS::piu_housekeeping_data_reply EPS::get_piu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
+    return get_piu_housekeeping_data(wire, i2c_address, CommandCode::GET_PIU_HOUSEKEEPING_DATA_RAW);
+}
+
+EPS::piu_housekeeping_data_reply EPS::get_piu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
+    return get_piu_housekeeping_data(wire, i2c_address, CommandCode::GET_PIU_HOUSEKEEPING_DATA_ENG);
+}
+
+EPS::piu_housekeeping_data_reply EPS::get_piu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+    return get_piu_housekeeping_data(wire, i2c_address, CommandCode::GET_PIU_HOUSEKEEPING_DATA_AVG);
 }
 
 EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {

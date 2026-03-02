@@ -37,7 +37,7 @@
 //Note that for the values from 0x3000 to 0x300B, the ICD groups them in groups of 3 and just gives them one name. However, if I understand it correctly, they are in fact three different battery channels.
 //Note that for the values from 0x4008 to 0x4027, the ICD groups them in groups of 16 and just gives them one name. However, if I understand it correctly, they are in fact sixteen enable channels.
 //Note that int32, uint32, float, int64, uint64, and double are mentioned as possible data types in the ICD, but are not used as return type for any parameter value.
-enum class ConfigParameter { //ICD table 3-25 page 78/87
+enum class ConfigParameter: uint16_t { //ICD table 3-25 page 78/87
     BOOT_RESUME_ENA         = 0x1000, //int8     //read/write
     OBUS_VD1_ALWAYS_ENA     = 0x1001, //int8     //read/write
     OBUS_VD2_ALWAYS_ENA     = 0x1002, //int8     //read/write
@@ -191,7 +191,7 @@ enum AccessType {
     ReadWrite
 };
 
-union returnType {
+union ReturnType {
     int8_t i8;
     uint8_t ui8;
     int16_t i16;
@@ -205,8 +205,8 @@ union returnType {
 };
 
 enum class CommandCode {
-    GET_PARAM = 0x82,                        // reference: page 62 of 87 (ICD)
-    SET_PARAM = 0x84,                        // reference: page 64 of 87 (ICD)
+    GET_CONF_PARAM = 0x82,                        // reference: page 62 of 87 (ICD)
+    SET_CONF_PARAM = 0x84,                        // reference: page 64 of 87 (ICD)
     RESET_PARAM = 0x86,                      // reference: page 65 of 87 (ICD)
     WATCHDOG = 0x06,                         // reference: page 32 of 87 (ICD)
     NO_OPERATION = 0x02,                     // reference: page 30 of 87 (ICD)
@@ -222,9 +222,12 @@ enum class CommandCode {
     GET_PBU_HOUSEKEEPING_DATA_RAW = 0x60,    // reference: page 53 of 87 (ICD)
     GET_PBU_HOUSEKEEPING_DATA_ENG = 0x62,    // reference: page 54 of 87 (ICD)
     GET_PBU_HOUSEKEEPING_DATA_AVG = 0x64,    // reference: page 56 of 87 (ICD)
+    GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70,    // reference: page 58 of 87 (ICD)
     GET_PCU_HOUSEKEEPING_DATA_ENG = 0x72,    // reference: page 60 of 87 (ICD)
     GET_PCU_HOUSEKEEPING_DATA_AVG = 0x74,    // reference: page 61 of 87 (ICD)
-    GET_PCU_HOUSEKEEPING_DATA_RAW = 0x70,    // reference: page 58 of 87 (ICD)
+    GET_PIU_HOUSEKEEPING_DATA_RAW = 0xA0,    // reference: page 70 of 87 (ICD)
+    GET_PIU_HOUSEKEEPING_DATA_ENG = 0xA2,    // reference: page 73 of 87 (ICD)
+    GET_PIU_HOUSEKEEPING_DATA_AVG = 0xA4,    // reference: page 76 of 87 (ICD)
     SWITCH_NOMINAL_MODE = 0x30,              // reference: page 38 of 87 (ICD)
     OUTPUT_BUS_CHANNEL_ON = 0x16,            // reference: page 36 of 87 (ICD)
     OUTPUT_BUS_CHANNEL_OFF = 0x18,           // reference: page 37 of 87 (ICD)
@@ -266,6 +269,19 @@ public:
         int16_t bat_temp1;  //Internal temperature of battery
         int16_t bat_temp2;  //Battery pack temperature in between the center battery cells.
         int16_t bat_temp3;  //Battery pack temperature on the front of the battery pack
+    };
+    struct CCD {
+        VIPD vip_cc_output; //Output V, I and P data for the conditioning channel.
+        int16_t volt_in_mppt;  //MPPT input voltage measurement
+        int16_t curr_in_mppt;  //MPPT input current measurement
+        int16_t volt_out_mppt; //MPPT output voltage measurement
+        int16_t curr_out_mppt; //MPPT input current measurement
+    };
+    struct CCSD {
+        int16_t volt_in_mppt;  //MPPT input voltage measurement
+        int16_t curr_in_mppt;  //MPPT input current measurement
+        int16_t volt_out_mppt; //MPPT output voltage measurement
+        int16_t curr_out_mppt; //MPPT input current measurement
     };
     // command codes all replies have
     class ReplyBase {
@@ -309,28 +325,23 @@ public:
         uint8_t abf_placed_1;
     };
 
-    struct config_reply : public ReplyBase {
-        ConfigParameter par_id;
-        returnType conf_par; // maximum length of PAR_VAL
-    };
-
-    struct pcu_housekeeping_data_reply : public ReplyBase {
-        uint16_t volt_brdsup;
-        uint16_t temp;
-        uint8_t vip_output[6];
-        uint8_t cc[4][14];      // Response CC_1 stored in cc[1]. Bytes are kept in the order that they are read
-    };
-
     struct pbu_housekeeping_data_reply : public ReplyBase {
-        uint16_t volt_brdsup;
-        uint16_t temp;
+        int16_t volt_brdsup;
+        int16_t temp;
         VIPD vip_input;
         uint16_t stat_bu;
         BPD bp[3];
     };
 
+    struct pcu_housekeeping_data_reply : public ReplyBase {
+        int16_t volt_brdsup;
+        int16_t temp;
+        VIPD vip_output; //Output V, I and P data for the unit. Effectively a sum of all CCx.
+        CCD cc[4];       //cc1 is at cc[0]
+    };
+
     struct pdu_housekeeping_data_reply : public ReplyBase {
-        uint16_t volt_brdsup;
+        int16_t volt_brdsup;
         int16_t temp;
         VIPD vip_input;
         uint16_t stat_ch_on;
@@ -339,22 +350,50 @@ public:
         VIPD vip_ch[16];
     };
 
+    struct piu_housekeeping_data_reply : public ReplyBase {
+        int16_t volt_brdsup;
+        int16_t temp;
+        VIPD vip_dist_input;
+        VIPD vip_bat_input;
+        uint16_t stat_ch_on;
+        uint16_t stat_ch_ocf;
+        uint16_t bat_stat;
+        int16_t bat_temp2;
+        int16_t bat_temp3;
+        int16_t volt_vd[3];
+        VIPD vip_ch[9];
+        CCSD cc[3]; //cc1 is at cc[0]
+    };
+
+    struct config_reply : public ReplyBase {
+        ConfigParameter par_id;
+        ReturnType conf_par; // maximum length of PAR_VAL
+    };
+
     static standard_reply no_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply system_reset(DWire &wire, uint8_t i2c_address);
     static standard_reply cancel_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply watchdog(DWire &wire, uint8_t i2c_address);
     // static pbu_housekeeping_data_reply watchdog(DWire &wire, uint8_t i2c_address); // removed because previous watchdog cannot be overloaded. merge error?
-    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
-    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
-    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
     static overcurrent_reply get_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
     static pbu_abf_placed_state get_pbu_abf_placed_state(DWire &wire, uint8_t i2c_address);
+    //Getting housekeeping data
     static pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pdu_housekeeping_data_reply get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+
+    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
+    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
+    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+
+    static piu_housekeeping_data_reply get_piu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
+    static piu_housekeeping_data_reply get_piu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
+    static piu_housekeeping_data_reply get_piu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
     static system_status_reply get_system_status(DWire &wire, uint8_t i2c_address);
@@ -363,11 +402,13 @@ public:
     static standard_reply output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
     static standard_reply output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
+    //Configuration Commands
+    static config_reply get_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id);
+    static config_reply set_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id, ReturnType conf_par_value);
+    static config_reply reset_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
     static standard_reply load_configuration(DWire &wire, uint8_t i2c_address);
-    static config_reply get_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
-    static config_reply reset_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
-    static config_reply set_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id, returnType conf_par_value);
+    // static standard_reply save_configuration(DWire &wire, uint8_t i2c_address);
 
     static ParameterType getConfigParameterType(ConfigParameter conf_par);
     static AccessType getAccessType(ConfigParameter conf_par);
