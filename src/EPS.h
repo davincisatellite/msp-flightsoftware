@@ -205,9 +205,9 @@ union ReturnType {
 };
 
 enum class CommandCode {
-    GET_CONF_PARAM = 0x82,                        // reference: page 62 of 87 (ICD)
-    SET_CONF_PARAM = 0x84,                        // reference: page 64 of 87 (ICD)
-    RESET_PARAM = 0x86,                      // reference: page 65 of 87 (ICD)
+    GET_CONF_PARAM = 0x82,                   // reference: page 62 of 87 (ICD)
+    SET_CONF_PARAM = 0x84,                   // reference: page 64 of 87 (ICD)
+    RESET_CONF_PARAM = 0x86,                 // reference: page 65 of 87 (ICD)
     WATCHDOG = 0x06,                         // reference: page 32 of 87 (ICD)
     NO_OPERATION = 0x02,                     // reference: page 30 of 87 (ICD)
     SYSTEM_RESET = 0xAA,                     // reference: page 29 of 87 (ICD)
@@ -235,7 +235,8 @@ enum class CommandCode {
     OUTPUT_BUS_GROUP_OFF = 0x12,             // reference: page 34 of 87 (ICD)
     OUTPUT_BUS_GROUP_ON = 0x10,              // reference: page 33 of 87 (ICD)
     RESET_CONFIGURATION = 0x90,              // reference: page 66 of 87 (ICD)
-    LOAD_CONFIGURATION = 0x92                // reference: page 67 of 87 (ICD)
+    LOAD_CONFIGURATION = 0x92,               // reference: page 67 of 87 (ICD)
+    SAVE_CONFIGURATION = 0x94                // reference: page 68 of 87 (ICD)
 };
 
 // Constants for command codes and other identifiers
@@ -330,7 +331,7 @@ public:
         int16_t temp;
         VIPD vip_input;
         uint16_t stat_bu;
-        BPD bp[3];
+        BPD bp[3];   //bp1 is at bp[0]
     };
 
     struct pcu_housekeeping_data_reply : public ReplyBase {
@@ -367,14 +368,13 @@ public:
 
     struct config_reply : public ReplyBase {
         ConfigParameter par_id;
-        ReturnType conf_par; // maximum length of PAR_VAL
+        ReturnType par_value;
     };
 
     static standard_reply no_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply system_reset(DWire &wire, uint8_t i2c_address);
     static standard_reply cancel_operation(DWire &wire, uint8_t i2c_address);
     static standard_reply watchdog(DWire &wire, uint8_t i2c_address);
-    // static pbu_housekeeping_data_reply watchdog(DWire &wire, uint8_t i2c_address); // removed because previous watchdog cannot be overloaded. merge error?
     static overcurrent_reply get_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
     static pbu_abf_placed_state get_pbu_abf_placed_state(DWire &wire, uint8_t i2c_address);
     //Getting housekeeping data
@@ -397,6 +397,7 @@ public:
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
     static system_status_reply get_system_status(DWire &wire, uint8_t i2c_address);
+
     static standard_reply output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
     static standard_reply output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx);
     static standard_reply output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag);
@@ -408,8 +409,8 @@ public:
     static config_reply reset_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter conf_par_id);
     static standard_reply reset_configuration(DWire &wire, uint8_t i2c_address);
     static standard_reply load_configuration(DWire &wire, uint8_t i2c_address);
-    // static standard_reply save_configuration(DWire &wire, uint8_t i2c_address);
-
+    static standard_reply save_configuration(DWire &wire, uint8_t i2c_address);
+    //helpers
     static ParameterType getConfigParameterType(ConfigParameter conf_par);
     static AccessType getAccessType(ConfigParameter conf_par);
     static uint8_t get_param_length(ParameterType par_type);
@@ -417,7 +418,7 @@ public:
     static void writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode);
     static void writeCommand5Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte);
     static void writeCommand6Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte, uint8_t sixthByte);
-    static void writeCommandSaveConfiguration(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t CONF_KEY, uint16_t CHECKSUM);
+    // static void writeCommandSaveConfiguration(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t CONF_KEY, uint16_t CHECKSUM);
     static void readCommand(DWire &wire, EPS::ReplyBase &reply);
     static bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n);
     static bool write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode);
