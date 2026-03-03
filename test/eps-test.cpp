@@ -1066,7 +1066,7 @@ int main14() {
         return 0; // Failure
     }
 }
-// Test 15: Test OUTPUT_BUS_GROUP_STATE command using EPS method on channels 2,3,4,6,7 (no 0,1,5)
+// Test 15: Test OUTPUT_BUS_GROUP_STATE command using EPS method on channels 2,3,4,6,7,8 (no 0,1,5)
 // Returns: 1 on success, 0 on failure
 int main15() {
     DelfiPQcore::initMCU();
@@ -1074,15 +1074,15 @@ int main15() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 14 OUTPUT_BUS_GROUP_STATE starting\n");
+    Console::log("EPS Test 15 OUTPUT_BUS_GROUP_STATE starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
 
-    //0b00000001 11000000 -> is good (just 6,7,8)
-    EPS::standard_reply reply = EPS::output_bus_group_state(wire,i2c_address, 0x01C0);//0x00DC
+    //0b00000001 01100111 -> 0,1,2,5,6,8 are on and 3,4 7 are off
+    EPS::standard_reply reply = EPS::output_bus_group_state(wire,i2c_address, 0x0167);//0x0167
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x15 && reply.stat == 0x80) {
@@ -1094,7 +1094,7 @@ int main15() {
     }
 }
 
-// Test 16: Test Get PIU Housekeeping Data (eng)
+// Test 16: Test Get PIU Housekeeping Data (eng) (old printing)
 // Returns: 1 on success, 0 on failure
 int main() {
     DelfiPQcore::initMCU();
@@ -1179,3 +1179,498 @@ Response: stid 30  ivid 30  rc 0  bid 0  stat 4  error 1
 Test 13: FAIL - OUTPUT_BUS_GROUP_ON command rejected
 
 */
+// Test 17: Test GET_SYSTEM_STATUS command using EPS method
+// Returns: 1 on success, 0 on failure
+int main17() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 17 GET_SYSTEM_STATUS starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::system_status_reply reply = EPS::get_system_status(wire,i2c_address);
+    EPS::print_system_status(reply);
+
+    if (!reply.error && reply.rc == 0x41 && reply.stat == 0x80) {
+        Console::log("Test 17: PASS - GET_SYSTEM_STATUS command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 17: FAIL - GET_SYSTEM_STATUS command rejected");
+        return 0; // Failure
+    }
+}
+// Test 18: Test GET_OVERCURRENT_FAULT_STATE command using EPS method
+// Returns: 1 on success, 0 on failure
+int main18() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 18 GET_OVERCURRENT_FAULT_STATE starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::overcurrent_reply reply = EPS::get_overcurrent_fault_state(wire,i2c_address);
+    EPS::print_overcurrent_reply(reply);
+
+    if (!reply.error && reply.rc == 0x43 && reply.stat == 0x80) {
+        Console::log("Test 18: PASS - GET_OVERCURRENT_FAULT_STATE command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 18: FAIL - GET_OVERCURRENT_FAULT_STATE command rejected");
+        return 0; // Failure
+    }
+}
+// Test 19: Test GET_PBU_ABF_PLACED_STATE command using EPS method
+// Returns: 1 on success, 0 on failure
+int main19() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 19 GET_PBU_ABF_PLACED_STATE starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pbu_abf_placed_state reply = EPS::get_pbu_abf_placed_state(wire,i2c_address);
+    EPS::print_pbu_abf_placed_state(reply);
+
+    if (!reply.error && reply.rc == 0x45 && reply.stat == 0x80) {
+        Console::log("Test 19: PASS - GET_PBU_ABF_PLACED_STATE command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 19: FAIL - GET_PBU_ABF_PLACED_STATE command rejected");
+        return 0; // Failure
+    }
+}
+// Test 20: Test GET_PDU_HOUSEKEEPING_DATA_RAW command using EPS method
+// Returns: 1 on success, 0 on failure
+int main20() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 20 GET_PDU_HOUSEKEEPING_DATA_RAW starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_raw(wire,i2c_address);
+    EPS::print_pdu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x51 && reply.stat == 0x80) {
+        Console::log("Test 20: PASS - GET_PDU_HOUSEKEEPING_DATA_RAW command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 20: FAIL - GET_PDU_HOUSEKEEPING_DATA_RAW command rejected");
+        return 0; // Failure
+    }
+}
+// Test 21: Test GET_PDU_HOUSEKEEPING_DATA_ENG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main21() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 21 GET_PDU_HOUSEKEEPING_DATA_ENG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_eng(wire,i2c_address);
+    EPS::print_pdu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x53 && reply.stat == 0x80) {
+        Console::log("Test 21: PASS - GET_PDU_HOUSEKEEPING_DATA_ENG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 21: FAIL - GET_PDU_HOUSEKEEPING_DATA_ENG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 22: Test GET_PDU_HOUSEKEEPING_DATA_AVG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main22() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 22 GET_PDU_HOUSEKEEPING_DATA_AVG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_avg(wire,i2c_address);
+    EPS::print_pdu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x55 && reply.stat == 0x80) {
+        Console::log("Test 22: PASS - GET_PDU_HOUSEKEEPING_DATA_AVG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 22: FAIL - GET_PDU_HOUSEKEEPING_DATA_AVG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 23: Test GET_PBU_HOUSEKEEPING_DATA_RAW command using EPS method
+// Returns: 1 on success, 0 on failure
+int main23() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 23 GET_PBU_HOUSEKEEPING_DATA_RAW starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_raw(wire,i2c_address);
+    EPS::print_pbu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x61 && reply.stat == 0x80) {
+        Console::log("Test 23: PASS - GET_PBU_HOUSEKEEPING_DATA_RAW command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 23: FAIL - GET_PBU_HOUSEKEEPING_DATA_RAW command rejected");
+        return 0; // Failure
+    }
+}
+// Test 24: Test GET_PBU_HOUSEKEEPING_DATA_ENG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main24() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 24 GET_PBU_HOUSEKEEPING_DATA_ENG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_eng(wire,i2c_address);
+    EPS::print_pbu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x63 && reply.stat == 0x80) {
+        Console::log("Test 24: PASS - GET_PBU_HOUSEKEEPING_DATA_ENG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 24: FAIL - GET_PBU_HOUSEKEEPING_DATA_ENG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 25: Test GET_PBU_HOUSEKEEPING_DATA_AVG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main25() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 25 GET_PBU_HOUSEKEEPING_DATA_AVG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_avg(wire,i2c_address);
+    EPS::print_pbu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x65 && reply.stat == 0x80) {
+        Console::log("Test 25: PASS - GET_PBU_HOUSEKEEPING_DATA_AVG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 25: FAIL - GET_PBU_HOUSEKEEPING_DATA_AVG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 26: Test GET_PCU_HOUSEKEEPING_DATA_RAW command using EPS method
+// Returns: 1 on success, 0 on failure
+int main26() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 26 GET_PCU_HOUSEKEEPING_DATA_RAW starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_raw(wire,i2c_address);
+    EPS::print_pcu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x71 && reply.stat == 0x80) {
+        Console::log("Test 26: PASS - GET_PCU_HOUSEKEEPING_DATA_RAW command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 26: FAIL - GET_PCU_HOUSEKEEPING_DATA_RAW command rejected");
+        return 0; // Failure
+    }
+}
+// Test 27: Test GET_PCU_HOUSEKEEPING_DATA_ENG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main27() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 27 GET_PCU_HOUSEKEEPING_DATA_ENG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_eng(wire,i2c_address);
+    EPS::print_pcu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x73 && reply.stat == 0x80) {
+        Console::log("Test 27: PASS - GET_PCU_HOUSEKEEPING_DATA_ENG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 27: FAIL - GET_PCU_HOUSEKEEPING_DATA_ENG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 28: Test GET_PCU_HOUSEKEEPING_DATA_AVG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main28() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 28 GET_PCU_HOUSEKEEPING_DATA_AVG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_avg(wire,i2c_address);
+    EPS::print_pcu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0x75 && reply.stat == 0x80) {
+        Console::log("Test 28: PASS - GET_PCU_HOUSEKEEPING_DATA_AVG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 28: FAIL - GET_PCU_HOUSEKEEPING_DATA_AVG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 29: Test GET_PIU_HOUSEKEEPING_DATA_RAW command using EPS method
+// Returns: 1 on success, 0 on failure
+int main29() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 29 GET_PIU_HOUSEKEEPING_DATA_RAW starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_raw(wire,i2c_address);
+    EPS::print_piu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0xA1 && reply.stat == 0x80) {
+        Console::log("Test 29: PASS - GET_PIU_HOUSEKEEPING_DATA_RAW command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 29: FAIL - GET_PIU_HOUSEKEEPING_DATA_RAW command rejected");
+        return 0; // Failure
+    }
+}
+// Test 30: Test GET_PIU_HOUSEKEEPING_DATA_ENG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main30() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 30 GET_PIU_HOUSEKEEPING_DATA_ENG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_eng(wire,i2c_address);
+    EPS::print_piu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0xA3 && reply.stat == 0x80) {
+        Console::log("Test 30: PASS - GET_PIU_HOUSEKEEPING_DATA_ENG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 30: FAIL - GET_PIU_HOUSEKEEPING_DATA_ENG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 31: Test GET_PIU_HOUSEKEEPING_DATA_AVG command using EPS method
+// Returns: 1 on success, 0 on failure
+int main31() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 31 GET_PIU_HOUSEKEEPING_DATA_AVG starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_avg(wire,i2c_address);
+    EPS::print_piu_housekeeping_data_reply(reply);
+
+    if (!reply.error && reply.rc == 0xA5 && reply.stat == 0x80) {
+        Console::log("Test 31: PASS - GET_PIU_HOUSEKEEPING_DATA_AVG command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 31: FAIL - GET_PIU_HOUSEKEEPING_DATA_AVG command rejected");
+        return 0; // Failure
+    }
+}
+// Test 32G: Test GET_CONF_PARAM on TTC_WDG_TIMEOUT command using EPS method
+// Returns: 1 on success, 0 on failure
+int main32G() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 32G GET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply);
+
+    if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
+        Console::log("Test 32G: PASS - GET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 32G: FAIL - GET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        return 0; // Failure
+    }
+}
+// Test 32S: Test SET_CONF_PARAM on TTC_WDG_TIMEOUT command using EPS method
+// Returns: 1 on success, 0 on failure
+int main32S() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 32S SET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    ReturnType param_value{};
+    param_value.ui16 = 70;
+    EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
+    EPS::print_config_reply(reply);
+
+    if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
+        Console::log("Test 32S: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        //return 1; // Success
+    } else {
+        Console::log("Test 32S: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        return 0; // Failure
+    }
+
+    //try to get it:
+    EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply2);
+    if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply.par_value.ui16==70) {
+        Console::log("Test 32S: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
+        return 1; // Success
+    } else {
+        Console::log("Test 32S: FAIL - GET_CONF_PARAM (TTC_WDG_TIMEOUT) was not updated/read command rejected");
+        return 0; // Failure
+    }
+}
+// Test 32R: Test RESET_CONF_PARAM on TTC_WDG_TIMEOUT command using EPS method
+// Returns: 1 on success, 0 on failure
+int main32R() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 32R RESET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    ReturnType param_value{};
+    param_value.ui16 = 70;
+    EPS::config_reply reply = EPS::reset_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply);
+
+    if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
+        Console::log("Test 32R: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        //return 1; // Success
+    } else {
+        Console::log("Test 32R: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        return 0; // Failure
+    }
+
+    //try to see if it was reset:
+    EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply2);
+    //300 is the default value
+    if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply.par_value.ui16==300) {
+        Console::log("Test 32R: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
+        return 1; // Success
+    } else {
+        Console::log("Test 32R: FAIL - GET_CONF_PARAM (TTC_WDG_TIMEOUT) was not updated/read command rejected");
+        return 0; // Failure
+    }
+}

@@ -378,21 +378,21 @@ public:
     static overcurrent_reply get_overcurrent_fault_state(DWire &wire, uint8_t i2c_address);
     static pbu_abf_placed_state get_pbu_abf_placed_state(DWire &wire, uint8_t i2c_address);
     //Getting housekeeping data
-    static pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pdu_housekeeping_data_reply get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
-    static pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+    static pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
+    static pdu_housekeeping_data_reply get_pdu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address);
 
-    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
     static pbu_housekeeping_data_reply get_pbu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
-    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
+    static pbu_housekeeping_data_reply get_pbu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address);
 
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static pcu_housekeeping_data_reply get_pcu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
-    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+    static pcu_housekeeping_data_reply get_pcu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address);
 
     static piu_housekeeping_data_reply get_piu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address);
     static piu_housekeeping_data_reply get_piu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address);
-    static piu_housekeeping_data_reply get_piu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address);
+    static piu_housekeeping_data_reply get_piu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address);
 
     static standard_reply switch_safety_mode(DWire &wire, uint8_t i2c_address);
     static standard_reply switch_nominal_mode(DWire &wire, uint8_t i2c_address);
@@ -426,6 +426,13 @@ public:
 
     //printing methods for visualising data
     static void print_system_status(system_status_reply reply);
+    static void print_overcurrent_reply(EPS::overcurrent_reply reply);
+    static void print_pbu_abf_placed_state(EPS::pbu_abf_placed_state reply);
+    static void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply);
+    static void print_pcu_housekeeping_data_reply(EPS::pcu_housekeeping_data_reply reply);
+    static void print_pdu_housekeeping_data_reply(pdu_housekeeping_data_reply reply);
+    static void print_piu_housekeeping_data_reply(piu_housekeeping_data_reply reply);
+    static void print_config_reply(config_reply reply);
 };
 
 #endif //EPS_CONVERSION_EPS_H

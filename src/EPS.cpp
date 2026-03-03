@@ -690,7 +690,7 @@ EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint
     return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_ENG);
 }
 
-EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address) {
     return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_AVG);
 }
 
@@ -744,7 +744,7 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_eng(DWire &wire,
     return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_ENG);
 }
 
-EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address) {
     return get_pbu_housekeeping_data(wire, i2c_address, CommandCode::GET_PBU_HOUSEKEEPING_DATA_AVG);
 }
 
@@ -797,7 +797,7 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_eng(DWire &wire,
     return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_ENG);
 }
 
-EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address) {
     return get_pcu_housekeeping_data(wire, i2c_address, CommandCode::GET_PCU_HOUSEKEEPING_DATA_AVG);
 }
 
@@ -864,7 +864,7 @@ EPS::piu_housekeeping_data_reply EPS::get_piu_housekeeping_data_eng(DWire &wire,
     return get_piu_housekeeping_data(wire, i2c_address, CommandCode::GET_PIU_HOUSEKEEPING_DATA_ENG);
 }
 
-EPS::piu_housekeeping_data_reply EPS::get_piu_housekeeping_data_running_average(DWire &wire, uint8_t i2c_address) {
+EPS::piu_housekeeping_data_reply EPS::get_piu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address) {
     return get_piu_housekeeping_data(wire, i2c_address, CommandCode::GET_PIU_HOUSEKEEPING_DATA_AVG);
 }
 
