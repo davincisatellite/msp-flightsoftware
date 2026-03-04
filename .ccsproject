@@ -15,4 +15,5 @@
 	<templateProperties value="id=gettingStarted_msp432p401r.projectspec.application-template-msp432p401r,buildProfile=release,isHybrid=true"/>
 	<origin value="C:\Users\Dennis\Documents\application-template-msp432p401r\ccs\gettingStarted_msp432p401r.projectspec"/>
 	<filesToOpen value=""/>
+	<activeTargetConfiguration value="targetConfigs/MSP432P401R.ccxml"/>
 </projectOptions>
