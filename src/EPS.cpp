@@ -5,6 +5,7 @@
 #include <cstddef> //for size_t
 #include <cstring> //for memcpy
 #include "../src/Console.h"
+#include <cstdio>
 
 ParameterType EPS::getConfigParameterType(ConfigParameter conf_par) {
     uint16_t value = static_cast<uint16_t>(conf_par);
@@ -109,13 +110,13 @@ void EPS::writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode
     wire.endTransmission(true); //this is good, do not use false
 }
 void EPS::writeCommand5Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte) {
-  /*
-     Commands with 5 bytes, and what "fifthByte" means there:
-     - System Reset           (RST_KEY=0xA6)
-     - Output Bus Channel Off (CH_IDX)
-     - Reset Configuration    (CONF_KEY=0xA7)
-     - Load Configuration     (CONF_KEY=0xA7)
-   */
+    /*
+       Commands with 5 bytes, and what "fifthByte" means there:
+       - System Reset           (RST_KEY=0xA6)
+       - Output Bus Channel Off (CH_IDX)
+       - Reset Configuration    (CONF_KEY=0xA7)
+       - Load Configuration     (CONF_KEY=0xA7)
+     */
     wire.beginTransmission(i2c_address);
     wire.write(STID);
     wire.write(IVID);
@@ -125,14 +126,14 @@ void EPS::writeCommand5Bytes(DWire &wire, uint8_t i2c_address, CommandCode comma
     wire.endTransmission(true); //this is good, do not use false
 }
 void EPS::writeCommand6Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte, uint8_t sixthByte) {
-  /*
-     Commands with 6 bytes, and what "fifthByte" + "sixthByte" mean there:
-     - Output Bus Group On    (CH_BF, example: (0x03 0x05)=0x0503)
-     - Output Bus Group Off   (CH_BF, example: (0x03 0x05)=0x0503)
-     - Output Bus Group State (CH_BF, example: (0x03 0x05)=0x0503)
-     - Get Configuration Parameter   (PAR_ID, example: (0x00 0x20)=0x2000)
-     - Reset Configuration Parameter (PAR_ID, example: (0x00 0x20)=0x2000)
-   */
+    /*
+       Commands with 6 bytes, and what "fifthByte" + "sixthByte" mean there:
+       - Output Bus Group On    (CH_BF, example: (0x03 0x05)=0x0503)
+       - Output Bus Group Off   (CH_BF, example: (0x03 0x05)=0x0503)
+       - Output Bus Group State (CH_BF, example: (0x03 0x05)=0x0503)
+       - Get Configuration Parameter   (PAR_ID, example: (0x00 0x20)=0x2000)
+       - Reset Configuration Parameter (PAR_ID, example: (0x00 0x20)=0x2000)
+     */
     wire.beginTransmission(i2c_address);
     wire.write(STID);
     wire.write(IVID);
@@ -160,16 +161,16 @@ void writeCommandSetConfParam(DWire &wire, uint8_t i2c_address, ConfigParameter 
     wire.write(bytes[0]);
     //write the value
     for(uint8_t i = 0; i < param_length; i++) {
-      wire.write(bytePtr[i]);
+        wire.write(bytePtr[i]);
     }
     wire.endTransmission(true); //this is good, do not use false
 }
 void writeCommandSaveConfiguration(DWire &wire, uint8_t i2c_address, uint8_t CONF_KEY, uint16_t CHECKSUM) {
-  /*
-     Commands with 7 bytes
-     Checksum f:  f(x) = x16 + x12 + x5 + 1. The seed is 0xFFFF.
-     (To force save this value, set checksum to 0)
-   */
+    /*
+       Commands with 7 bytes
+       Checksum f:  f(x) = x16 + x12 + x5 + 1. The seed is 0xFFFF.
+       (To force save this value, set checksum to 0)
+     */
     uint8_t CHECKSUM_byte_1 = (uint8_t)(CHECKSUM & 0x00FF);
     uint8_t CHECKSUM_byte_2 = (uint8_t)((CHECKSUM >> 8) & 0x00FF);
 
@@ -215,7 +216,7 @@ void EPS::readCommand(DWire &wire, EPS::ReplyBase &reply) {
     reply.stat = wire.read();   // Status byte
     //Console::log("read: %d %d %d %d %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat);
 }
-bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
+bool EPS::read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
     //it is assumed you already called:  wire.requestFrom(i2c_address, n);
     //the first 5 bytes are STID, IVID, RC, BID, STAT
 
@@ -259,7 +260,7 @@ void fill_CCSD_variable(EPS::CCSD &ccsd, uint8_t *buf) {
 }
 void fill_conf_variable(union ReturnType &par_value, uint8_t *buf, uint8_t n, ParameterType type) {
     //copy n bytes of the buffer into par_value.
-	memset(&par_value, 0, sizeof(par_value));
+    memset(&par_value, 0, sizeof(par_value));
 //    memcpy(&par_value, buf, n);
     switch(type)
     {
@@ -293,7 +294,7 @@ void read_and_fill_conf_param(DWire &wire, uint8_t i2c_address, ConfigParameter 
 
     if (response == read_length) {
         uint8_t buffer[16];
-    	EPS::read_n_bytes(wire, buffer, read_length);
+        EPS::read_n_bytes(wire, buffer, read_length);
 
         reply.stid = buffer[0];
         reply.ivid = buffer[1];
@@ -307,13 +308,13 @@ void read_and_fill_conf_param(DWire &wire, uint8_t i2c_address, ConfigParameter 
 
         reply.error = false;
     } else
-      reply.error = true;
+        reply.error = true;
 }
 
 EPS::config_reply EPS::get_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
-  /*
-	Action: get the value of a configuration parameter.
-   */
+    /*
+      Action: get the value of a configuration parameter.
+     */
     EPS::config_reply reply;
 
     uint8_t bytes[2];
@@ -330,13 +331,13 @@ EPS::config_reply EPS::get_config_param(DWire &wire, uint8_t i2c_address, Config
 }
 
 EPS::config_reply EPS::set_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, ReturnType par_value) {
-  /*
-	Action: change a configuration parameter. The change will take effect immediately and any function using the parameter
-	will use the new value.
-	Note: certain parameters are read-only and the command will return an error if the user tries to change such a parameter. Also
-	certain parameters only allow specific settings or a reduced range. Updates outside of the allowed range will cause these
-	values to be clamped to the minimum/maximum allowable.
-   */
+    /*
+      Action: change a configuration parameter. The change will take effect immediately and any function using the parameter
+      will use the new value.
+      Note: certain parameters are read-only and the command will return an error if the user tries to change such a parameter. Also
+      certain parameters only allow specific settings or a reduced range. Updates outside of the allowed range will cause these
+      values to be clamped to the minimum/maximum allowable.
+     */
 
     EPS::config_reply reply;
 
@@ -354,10 +355,10 @@ EPS::config_reply EPS::set_config_param(DWire &wire, uint8_t i2c_address, Config
 }
 
 EPS::config_reply EPS::reset_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
-  /*
-    Action: reset a parameter to its default hard-coded value. All parameters have this value at system power-up or after the
-	software reset command.
-   */
+    /*
+      Action: reset a parameter to its default hard-coded value. All parameters have this value at system power-up or after the
+      software reset command.
+     */
     EPS::config_reply reply;
 
     uint8_t bytes[2];
@@ -374,13 +375,13 @@ EPS::config_reply EPS::reset_config_param(DWire &wire, uint8_t i2c_address, Conf
 }
 
 EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
-  /*
-	Action: performs a no-operation. This is useful to check the availability of the system, without changing anything about
-	the current configuration or operation. Response: {<STID> <IVID> 0x03 <BID> 0x80}
+    /*
+      Action: performs a no-operation. This is useful to check the availability of the system, without changing anything about
+      the current configuration or operation. Response: {<STID> <IVID> 0x03 <BID> 0x80}
 
-	Write length: 4 bytes.
-	Read length: 5 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::NO_OPERATION);
@@ -405,16 +406,16 @@ EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
 }
 
 EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: perform a software induced reset of the MCU.
-	Note: a reply to this command will not always be retrievable, given that the system will shut down the command interface
-	while preparing for the hard reset. After reset the reply will not be available anymore, instead having no response available
-	(i.e. returns 0xFF on READ)
+    /*
+      Action: perform a software induced reset of the MCU.
+      Note: a reply to this command will not always be retrievable, given that the system will shut down the command interface
+      while preparing for the hard reset. After reset the reply will not be available anymore, instead having no response available
+      (i.e. returns 0xFF on READ)
 
-	Write length: 5 bytes.
-	Read length: 5 bytes.
+      Write length: 5 bytes.
+      Read length: 5 bytes.
 
-   */
+     */
     standard_reply reply;
 
     /* Write command to EPS */
@@ -439,14 +440,14 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
 }
 
 EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
-  /*
-	Action: Switches off any command-enable output bus channels that have been switched on after the system powered up.
-	Only output bus channels that can be commanded off are affected.
-	All force-enable channels will remain enabled.
+    /*
+      Action: Switches off any command-enable output bus channels that have been switched on after the system powered up.
+      Only output bus channels that can be commanded off are affected.
+      All force-enable channels will remain enabled.
 
-	Write length: 4 bytes.
-	Read length: 5 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::CANCEL_OPERATION);
@@ -470,14 +471,14 @@ EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
 }
 
 EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
-  /*
-	Action: Resets the watchdog timer keeping the system from performing a reset.
-	Note that any traffic with the system implicitly performs a watchdog reset, hence periodic interaction with the system
-	through other commands removes the requirement on sending this particular command.
+    /*
+      Action: Resets the watchdog timer keeping the system from performing a reset.
+      Note that any traffic with the system implicitly performs a watchdog reset, hence periodic interaction with the system
+      through other commands removes the requirement on sending this particular command.
 
-	Write length: 4 bytes.
-	Read length: 5 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::WATCHDOG);
@@ -502,15 +503,15 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
 
 
 EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: move subsystem to safety mode. This switches off all non-auto-enable output bus channels. Auto-enable lines will
-	remain powered. Any commands to enable non-auto-enable channels will be rejected. Automatic transfer to safety mode
-	occurs when the PDU rail voltage level falls below the threshold set in the configuration parameter system.
-	Note: only applicable to PDU and PIU boards
+    /*
+      Action: move subsystem to safety mode. This switches off all non-auto-enable output bus channels. Auto-enable lines will
+      remain powered. Any commands to enable non-auto-enable channels will be rejected. Automatic transfer to safety mode
+      occurs when the PDU rail voltage level falls below the threshold set in the configuration parameter system.
+      Note: only applicable to PDU and PIU boards
 
-	Write length: 4 bytes.
-	Read length: 5 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::SWITCH_TO_SAFETY_MODE);
@@ -533,12 +534,12 @@ EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
 }
 
 EPS::system_status_reply EPS::get_system_status(DWire &wire, uint8_t i2c_address){
-  /*
-    Action: return system status information.
+    /*
+      Action: return system status information.
 
-  	Write length: 4 bytes.
-	Read length: 36 bytes.
-   */
+        Write length: 4 bytes.
+      Read length: 36 bytes.
+     */
     system_status_reply reply;
     EPS::writeCommand(wire, i2c_address, CommandCode::GET_SYSTEM_STATUS);
 
@@ -548,7 +549,7 @@ EPS::system_status_reply EPS::get_system_status(DWire &wire, uint8_t i2c_address
 
     if (response == 36) {
         uint8_t buffer[36];
-    	EPS::read_n_bytes(wire, buffer, 36);
+        EPS::read_n_bytes(wire, buffer, 36);
 
         reply.stid = buffer[0];
         reply.ivid = buffer[1];
@@ -578,15 +579,15 @@ EPS::system_status_reply EPS::get_system_status(DWire &wire, uint8_t i2c_address
 }
 
 EPS::overcurrent_reply EPS::get_overcurrent_fault_state(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: Prepare the response buffer with output bus over current events. Over current fault counters are incremented
-	each time a bus is latched off due to an overcurrent event
+    /*
+      Action: Prepare the response buffer with output bus over current events. Over current fault counters are incremented
+      each time a bus is latched off due to an overcurrent event
 
-	Note: only applicable to PDU/PIU boards. Specify it in STID
+      Note: only applicable to PDU/PIU boards. Specify it in STID
 
-	Write length: 4 bytes.
-	Read length: 42 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 42 bytes.
+     */
     overcurrent_reply reply;
     EPS::writeCommand(wire, i2c_address, CommandCode::GET_OVERCURRENT_FAULT_STATE);
 
@@ -596,7 +597,7 @@ EPS::overcurrent_reply EPS::get_overcurrent_fault_state(DWire &wire, uint8_t i2c
 
     if (response == 42) {
         uint8_t buffer[42];
-    	EPS::read_n_bytes(wire, buffer, 42);
+        EPS::read_n_bytes(wire, buffer, 42);
 
         reply.stid = buffer[0];
         reply.ivid = buffer[1];
@@ -608,7 +609,7 @@ EPS::overcurrent_reply EPS::get_overcurrent_fault_state(DWire &wire, uint8_t i2c
         reply.stat_ob_ocf = buffer[8]+(buffer[9]<<8);
 
         for (int i=0;i<16;i++)
-          reply.ocf_cnt_ch[i] = buffer[10+2*i]+(buffer[11+2*i]<<8);
+            reply.ocf_cnt_ch[i] = buffer[10+2*i]+(buffer[11+2*i]<<8);
 
         reply.error = false;
     } else {
@@ -619,17 +620,17 @@ EPS::overcurrent_reply EPS::get_overcurrent_fault_state(DWire &wire, uint8_t i2c
 }
 
 EPS::pbu_abf_placed_state EPS::get_pbu_abf_placed_state(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: Prepare the response buffer with ABF placed state information.
-    Note: only applicable to PBU boards
-	For the values of the abf_placed (one value, but redundant):
-    - 0xAB = ABF is placed
-    - 0x00 = ABF is not placed
-    - other values is invalid
+    /*
+      Action: Prepare the response buffer with ABF placed state information.
+      Note: only applicable to PBU boards
+      For the values of the abf_placed (one value, but redundant):
+      - 0xAB = ABF is placed
+      - 0x00 = ABF is not placed
+      - other values is invalid
 
-	Write length: 4 bytes.
-	Read length: 8 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 8 bytes.
+     */
     EPS::pbu_abf_placed_state reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::GET_PBU_ABF_PLACED_STATE);
@@ -640,7 +641,7 @@ EPS::pbu_abf_placed_state EPS::get_pbu_abf_placed_state(DWire &wire, uint8_t i2c
 
     if (response == 8) {
         uint8_t buffer[42];
-    	EPS::read_n_bytes(wire, buffer, 42);
+        EPS::read_n_bytes(wire, buffer, 42);
 
         reply.stid = buffer[0];
         reply.ivid = buffer[1];
@@ -660,15 +661,15 @@ EPS::pbu_abf_placed_state EPS::get_pbu_abf_placed_state(DWire &wire, uint8_t i2c
 }
 
 EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
-  /*
-    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering form.
-    Note: only applicable to PDU boards
-    Note: in the raw form, the temp and volt vars are "uint16_t". In eng form, they are "int16_t". We used "int16_t".
-    Consider this when you get the raw form (translate from int16 to uint16)
+    /*
+      Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering form.
+      Note: only applicable to PDU boards
+      Note: in the raw form, the temp and volt vars are "uint16_t". In eng form, they are "int16_t". We used "int16_t".
+      Consider this when you get the raw form (translate from int16 to uint16)
 
-    Write length: 4 bytes.
-    Read length: 158 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 158 bytes.
+     */
     EPS::pdu_housekeeping_data_reply reply;
 
     EPS::writeCommand(wire, i2c_address, commandCode);
@@ -719,13 +720,13 @@ EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_avg(DWire &wire, uint
 }
 
 EPS::pbu_housekeeping_data_reply get_pbu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
-  /*
-    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values.
-    Note: only applicable to PBU boards
+    /*
+      Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values.
+      Note: only applicable to PBU boards
 
-    Write length: 4 bytes.
-    Read length: 84 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 84 bytes.
+     */
     EPS::pbu_housekeeping_data_reply reply;
 
     EPS::writeCommand(wire, i2c_address, commandCode);
@@ -773,13 +774,13 @@ EPS::pbu_housekeeping_data_reply EPS::get_pbu_housekeeping_data_avg(DWire &wire,
 }
 
 EPS::pcu_housekeeping_data_reply get_pcu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
-  /*
-    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values.
-    Note: only applicable to PCU boards
+    /*
+      Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values.
+      Note: only applicable to PCU boards
 
-	Write length: 4 bytes.
-	Read length: 72 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 72 bytes.
+     */
     EPS::pcu_housekeeping_data_reply reply;
 
     EPS::writeCommand(wire, i2c_address, commandCode);
@@ -802,7 +803,7 @@ EPS::pcu_housekeeping_data_reply get_pcu_housekeeping_data(DWire &wire, uint8_t 
         reply.temp        = buffer[8]+(buffer[9]<<8);
         fill_VIPD_variable(reply.vip_output, buffer+10);
 
-		for(int i=0;i<4;i++)
+        for(int i=0;i<4;i++)
             fill_CCD_variable(reply.cc[i], buffer+16+i*14);
 
         reply.error = false;
@@ -827,14 +828,14 @@ EPS::pcu_housekeeping_data_reply EPS::get_pcu_housekeeping_data_avg(DWire &wire,
 
 
 EPS::piu_housekeeping_data_reply get_piu_housekeeping_data(DWire &wire, uint8_t i2c_address, CommandCode commandCode) {
-  /*
-    Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values
-    Note: only applicable to PIU boards
-    Note: this method assumes you do not have a daughterboard.
+    /*
+      Action: Prepare the response buffer with housekeeping data. The housekeeping data is returned in engineering values
+      Note: only applicable to PIU boards
+      Note: this method assumes you do not have a daughterboard.
 
-	Write length: 4 bytes.
-	Read length: 116 bytes w/o daughterboard (or 174 bytes with daughterboard).
-   */
+      Write length: 4 bytes.
+      Read length: 116 bytes w/o daughterboard (or 174 bytes with daughterboard).
+     */
     EPS::piu_housekeeping_data_reply reply;
 
     EPS::writeCommand(wire, i2c_address, commandCode);
@@ -863,13 +864,13 @@ EPS::piu_housekeeping_data_reply get_piu_housekeeping_data(DWire &wire, uint8_t 
         reply.bat_temp2   = buffer[28]+(buffer[29]<<8);
         reply.bat_temp3   = buffer[30]+(buffer[31]<<8);
 
-		for(int16_t i=0;i<3;i++)
-        	reply.volt_vd[i] = buffer[32+i*2]+(buffer[33+i*2]<<8);
+        for(int16_t i=0;i<3;i++)
+            reply.volt_vd[i] = buffer[32+i*2]+(buffer[33+i*2]<<8);
 
-		for(int i=0;i<9;i++)
-        	fill_VIPD_variable(reply.vip_ch[i], buffer+38+i*6);
+        for(int i=0;i<9;i++)
+            fill_VIPD_variable(reply.vip_ch[i], buffer+38+i*6);
 
-		for(int i=0;i<3;i++)
+        for(int i=0;i<3;i++)
             fill_CCSD_variable(reply.cc[i], buffer+92+i*8);
 
         reply.error = false;
@@ -893,15 +894,15 @@ EPS::piu_housekeeping_data_reply EPS::get_piu_housekeeping_data_avg(DWire &wire,
 }
 
 EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: move system to nominal mode. This provides full control of all output busses. The system automatically enters
-	nominal mode after startup mode or when the PDU system is in safety mode or emergency low power mode and the PDU
-	rail voltage exceeds their respective high threshold set in the configuration parameter system.
-	Note: only applicable to PDU and PIU boards
+    /*
+      Action: move system to nominal mode. This provides full control of all output busses. The system automatically enters
+      nominal mode after startup mode or when the PDU system is in safety mode or emergency low power mode and the PDU
+      rail voltage exceeds their respective high threshold set in the configuration parameter system.
+      Note: only applicable to PDU and PIU boards
 
-	Write length: 4 bytes.
-	Read length: 5 bytes.
-   */
+      Write length: 4 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     EPS::writeCommand(wire, i2c_address, CommandCode::SWITCH_NOMINAL_MODE);
@@ -924,14 +925,14 @@ EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
 
 }
 EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address, uint8_t ch_idx) {
-  /*
-    Action: Turn a single output bus channel on using the bus channel index. Index 0 represents channel 0 (CH0),
-    index 1represents channel 1 (CH1), etc.
-    Note: only applicable to PDU and PIU boards.
+    /*
+      Action: Turn a single output bus channel on using the bus channel index. Index 0 represents channel 0 (CH0),
+      index 1represents channel 1 (CH1), etc.
+      Note: only applicable to PDU and PIU boards.
 
-    Write length: 5 bytes.
-    Read length: 5 bytes.
-*/
+      Write length: 5 bytes.
+      Read length: 5 bytes.
+  */
     standard_reply reply;
     EPS::writeCommand5Bytes(wire, i2c_address, CommandCode::OUTPUT_BUS_CHANNEL_ON, ch_idx);
 
@@ -952,15 +953,15 @@ EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address,
     return reply;
 }
 EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address, uint8_t ch_idx) {
-   /*
-    Action: Turn a single output bus channel off using the bus channel index. Index 0 represents channel 0 (CH0),
-    index 1represents channel 1 (CH1), etc.
-    Note: only applicable to PDU and PIU boards.
-    Note: channels configured as permanent output channel cannot be turned off and commanding this will return an error.
+    /*
+     Action: Turn a single output bus channel off using the bus channel index. Index 0 represents channel 0 (CH0),
+     index 1represents channel 1 (CH1), etc.
+     Note: only applicable to PDU and PIU boards.
+     Note: channels configured as permanent output channel cannot be turned off and commanding this will return an error.
 
-    Write length: 5 bytes.
-    Read length: 5 bytes.
-*/
+     Write length: 5 bytes.
+     Read length: 5 bytes.
+ */
     standard_reply reply;
 
     EPS::writeCommand5Bytes(wire, i2c_address, CommandCode::OUTPUT_BUS_CHANNEL_OFF, ch_idx);
@@ -983,17 +984,17 @@ EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address
 
 }
 EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address, uint16_t bitflag) {
-  /*
-    Action: Turn-on bus channels that are marked with a 1-bit, turn-off bus channels that are not marked (i.e. 0-bit).
-	The leastsignificant bit corresponds to bus channel 0 (CH00), the next bit corresponds to channel 1 (CH01), etc.
-	For example, providing the flag field 0b00001010 (=0x0A, decimal 10) turns on bus channels 1 and 3, while turning off all
-	the other channels.
-	Note: only applicable to PDU and PIU boards.
-    Note that permanent (always powered, non-switchable) channels are ignored and will remain powered.
+    /*
+      Action: Turn-on bus channels that are marked with a 1-bit, turn-off bus channels that are not marked (i.e. 0-bit).
+      The leastsignificant bit corresponds to bus channel 0 (CH00), the next bit corresponds to channel 1 (CH01), etc.
+      For example, providing the flag field 0b00001010 (=0x0A, decimal 10) turns on bus channels 1 and 3, while turning off all
+      the other channels.
+      Note: only applicable to PDU and PIU boards.
+      Note that permanent (always powered, non-switchable) channels are ignored and will remain powered.
 
-    Write length: 6 bytes.
-    Read length: 5 bytes.
-   */
+      Write length: 6 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     uint8_t bytes[2];
@@ -1020,16 +1021,16 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
 
 }
 EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, uint16_t bitflag) {
-  /*
-    Action: Turn-off output bus channels that are marked with a 1-bit, leave bus channels that are not marked unaltered. The
-	least-significant bit corresponds to bus channel 0 (CH0), the next bit corresponds to channel 1 (CH1), etc.
-	For example, providing the flag field 0b00001010 (=0x0A, decimal 10) turns off bus channels 1 and 3, while leaving the
-	other channels unaltered.
-	Note: only applicable to PDU and PIU boards.
+    /*
+      Action: Turn-off output bus channels that are marked with a 1-bit, leave bus channels that are not marked unaltered. The
+      least-significant bit corresponds to bus channel 0 (CH0), the next bit corresponds to channel 1 (CH1), etc.
+      For example, providing the flag field 0b00001010 (=0x0A, decimal 10) turns off bus channels 1 and 3, while leaving the
+      other channels unaltered.
+      Note: only applicable to PDU and PIU boards.
 
-    Write length: 6 bytes.
-    Read length: 5 bytes.
-   */
+      Write length: 6 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     uint8_t bytes[2];
@@ -1057,16 +1058,16 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
 }
 
 EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, uint16_t bitflag) {
-  /*
-    Action: Turn-on output bus channels that are marked with a 1-bit, leave bus channels that are not marked unaltered. The
-	least-significant bit corresponds to bus channel 0 (CH0), the next bit corresponds to channel 1 (CH1), etc.
-	For example, providing the flag field 0b00001010 (=0x0A, decimal 10) turns on bus channels 1 and 3, while leaving the
-	other channels unaltered.
-	Note: only applicable to PDU and PIU boards.
+    /*
+      Action: Turn-on output bus channels that are marked with a 1-bit, leave bus channels that are not marked unaltered. The
+      least-significant bit corresponds to bus channel 0 (CH0), the next bit corresponds to channel 1 (CH1), etc.
+      For example, providing the flag field 0b00001010 (=0x0A, decimal 10) turns on bus channels 1 and 3, while leaving the
+      other channels unaltered.
+      Note: only applicable to PDU and PIU boards.
 
-    Write length: 6 bytes.
-    Read length: 5 bytes.
-   */
+      Write length: 6 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     uint8_t bytes[2];
@@ -1094,19 +1095,19 @@ EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, u
 }
 
 EPS::standard_reply EPS::reset_configuration(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: Reset all configuration parameters to hard-coded defaults, discarding any changes made, in volatile memory
-    (only!). This is performed automatically at system startup before an attempt to load a configuration is performed. If no
-    (valid) configuration is found that can be loaded, the system will use hard coded defaults.
+    /*
+      Action: Reset all configuration parameters to hard-coded defaults, discarding any changes made, in volatile memory
+      (only!). This is performed automatically at system startup before an attempt to load a configuration is performed. If no
+      (valid) configuration is found that can be loaded, the system will use hard coded defaults.
 
-    Write length: 5 bytes.
-    Read length: 5 bytes.
-   */
+      Write length: 5 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     EPS::writeCommand5Bytes(wire, i2c_address, CommandCode::RESET_CONFIGURATION, CONF_KEY);
 
-    delay_ms(20);
+    delay_ms(30);
 
     uint8_t response = wire.requestFrom(i2c_address, 5);
 
@@ -1122,19 +1123,19 @@ EPS::standard_reply EPS::reset_configuration(DWire &wire, uint8_t i2c_address) {
 }
 
 EPS::standard_reply EPS::load_configuration(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: Load all configuration parameters from non-volatile memory, discarding any changes made in volatile memory.
-    This is performed automatically at system startup if a valid load configuration is encountered in non-volatile memory. If
-    no (valid) configuration is found, the system will initialize using hard coded defaults.
+    /*
+      Action: Load all configuration parameters from non-volatile memory, discarding any changes made in volatile memory.
+      This is performed automatically at system startup if a valid load configuration is encountered in non-volatile memory. If
+      no (valid) configuration is found, the system will initialize using hard coded defaults.
 
-    Write length: 5 bytes.
-    Read length: 5 bytes.
-   */
+      Write length: 5 bytes.
+      Read length: 5 bytes.
+     */
     standard_reply reply;
 
     EPS::writeCommand5Bytes(wire, i2c_address, CommandCode::LOAD_CONFIGURATION, CONF_KEY);
 
-    delay_ms(20);
+    delay_ms(30);
 
     // request 5 bytes of data (i.e) the length of the response
     uint8_t response = wire.requestFrom(i2c_address, 5);
@@ -1149,17 +1150,17 @@ EPS::standard_reply EPS::load_configuration(DWire &wire, uint8_t i2c_address) {
     return reply;
 }
 EPS::standard_reply EPS::save_configuration(DWire &wire, uint8_t i2c_address) {
-  /*
-    Action: Commit all read/write configuration parameters kept in volatile memory to non-volatile memory.
-	Note: a checksum taken over all read/write configuration parameters ensures no inadvertent changes have occurred between
-	altering the volatile memory parameters and issuing the save command. Provide 0 as checksum to force-save without this
-	protection.
-   */
+    /*
+      Action: Commit all read/write configuration parameters kept in volatile memory to non-volatile memory.
+      Note: a checksum taken over all read/write configuration parameters ensures no inadvertent changes have occurred between
+      altering the volatile memory parameters and issuing the save command. Provide 0 as checksum to force-save without this
+      protection.
+     */
     standard_reply reply;
 
-    writeCommandSaveConfiguration(wire, i2c_address, CONF_KEY, 0);
+    writeCommandSaveConfiguration(wire, i2c_address, CONF_KEY, 0x0000);
 
-    delay_ms(20);
+    delay_ms(30);
 
     uint8_t response = wire.requestFrom(i2c_address, 5);
 
@@ -1226,7 +1227,7 @@ void print_CCSD_data(char* name, EPS::CCSD ccsd) {
     sprintf(buf2, "    VOLT_OUT_MPPT: %d V  |  CURR_OUT_MPPT: %d V", ccsd.volt_out_mppt, ccsd.curr_out_mppt);
     Console::log(buf2);
 }
-void print_command(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid) {
+void EPS::print_command(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid) {
     Console::log("--- Command Data ---");
     Console::log("STID: %x | IVID: %x | CC: %x | BID: %x", stid, ivid, cc, bid);
 }
@@ -1238,49 +1239,49 @@ void print_command_6_bytes(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid, 
     Console::log("--- Command Data ---");
     Console::log("STID: %x | IVID: %x | CC: %x | BID: %x | 5th byte: %x | 6th byte: %x", stid, ivid, cc, bid, fifth_byte, sixth_byte);
 }
-void print_standard_reply(EPS::standard_reply reply) {
+void EPS::print_standard_reply(EPS::standard_reply reply) {
     Console::log("--- Standard Reply Data ---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
 }
 
 
-void print_system_status(EPS::system_status_reply reply) {
+void EPS::print_system_status(EPS::system_status_reply reply) {
     Console::log("--- System status Data ---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
 
     //Console::log("MODE: %d", reply.mode);
     if (reply.mode==0)
         Console::log("MODE: 0 -> Startup");
-   	else if (reply.mode==1)
+    else if (reply.mode==1)
         Console::log("MODE: 1 -> Nominal");
-   	else if (reply.mode==2)
+    else if (reply.mode==2)
         Console::log("MODE: 2 -> Safety");
-   	else if (reply.mode==3)
+    else if (reply.mode==3)
         Console::log("MODE: 3 -> Emergency Low Power");
     else
-      	Console::log("MODE: %d -> Invalid mode", reply.mode);
+        Console::log("MODE: %d -> Invalid mode", reply.mode);
 
     //Console::log("CONF: %d", reply.conf);
     if (reply.conf==0)
         Console::log("CONF: 0 -> Parameters have NOT been altered since the last load/save.");
-   	else if (reply.conf==1)
+    else if (reply.conf==1)
         Console::log("CONF: 1 -> Parameters have been altered since the last load/save.");
     else
-      	Console::log("CONF: %d -> Invalid conf", reply.conf);
+        Console::log("CONF: %d -> Invalid conf", reply.conf);
 
     //Console::log("RESET_CAUSE:     %d", reply.reset_cause);
     if (reply.reset_cause==0)
-    	Console::log("RESET_CAUSE:     %d -> power-on; system returned from an unpowered state", reply.reset_cause);
-   	else if (reply.reset_cause==1)
-    	Console::log("RESET_CAUSE:     %d -> watchdog; system was reset due to watchdog timeout", reply.reset_cause);
-   	else if (reply.reset_cause==2)
-    	Console::log("RESET_CAUSE:     %d -> commanded; system was reset due a reset command", reply.reset_cause);
-   	else if (reply.reset_cause==3)
-    	Console::log("RESET_CAUSE:     %d -> control system reset; an upset in the EPS control system caused a reset", reply.reset_cause);
-   	else if (reply.reset_cause==4)
-    	Console::log("RESET_CAUSE:     %d -> emlopo; emergency, input voltage dropped below the threshold", reply.reset_cause);
-   	else
-    	Console::log("RESET_CAUSE:     %d -> invalid response", reply.reset_cause);
+        Console::log("RESET_CAUSE:     %d -> power-on; system returned from an unpowered state", reply.reset_cause);
+    else if (reply.reset_cause==1)
+        Console::log("RESET_CAUSE:     %d -> watchdog; system was reset due to watchdog timeout", reply.reset_cause);
+    else if (reply.reset_cause==2)
+        Console::log("RESET_CAUSE:     %d -> commanded; system was reset due a reset command", reply.reset_cause);
+    else if (reply.reset_cause==3)
+        Console::log("RESET_CAUSE:     %d -> control system reset; an upset in the EPS control system caused a reset", reply.reset_cause);
+    else if (reply.reset_cause==4)
+        Console::log("RESET_CAUSE:     %d -> emlopo; emergency, input voltage dropped below the threshold", reply.reset_cause);
+    else
+        Console::log("RESET_CAUSE:     %d -> invalid response", reply.reset_cause);
 
     Console::log("UPTIME:          %d s", reply.uptime);
     Console::log("(SYS) ERROR:     %d", reply.sys_error);
@@ -1308,15 +1309,15 @@ void print_pbu_abf_placed_state(EPS::pbu_abf_placed_state reply) {
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     Console::log("STAT_OB_ON: %x  |  STAT_OB_OCF: %x", reply.abf_placed_0, reply.abf_placed_1);
     if(reply.abf_placed_0==0xAB)
-    	Console::log("is ABD placed?: yes");
+        Console::log("is ABD placed?: yes");
     else if (reply.abf_placed_0==0x00)
-    	Console::log("is ABD placed?: no");
+        Console::log("is ABD placed?: no");
     else if(reply.abf_placed_1==0xAB)
-    	Console::log("is ABD placed?: yes, but abf_placed_0 is invalid");
+        Console::log("is ABD placed?: yes, but abf_placed_0 is invalid");
     else if (reply.abf_placed_1==0x00)
-    	Console::log("is ABD placed?: no, but abf_placed_0 is invalid");
+        Console::log("is ABD placed?: no, but abf_placed_0 is invalid");
     else
-    	Console::log("is ABD placed?: unknown, both abf_placed_0 and 1 are invalid");
+        Console::log("is ABD placed?: unknown, both abf_placed_0 and 1 are invalid");
 }
 void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply) {
     char buf1[60];
@@ -1379,7 +1380,9 @@ void print_piu_housekeeping_data_reply(EPS::piu_housekeeping_data_reply reply) {
     print_CCSD_data("CC2", reply.cc[1]);
     print_CCSD_data("CC3", reply.cc[2]);
 }
-void print_config_reply(EPS::config_reply reply) {
+void EPS::print_config_reply(EPS::config_reply reply) {
+
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     Console::log("Config Parameter ID: %x", reply.par_id);
     ParameterType p_type = EPS::getConfigParameterType(reply.par_id);
     AccessType access_type = EPS::getAccessType(reply.par_id);
@@ -1404,7 +1407,7 @@ void print_config_reply(EPS::config_reply reply) {
 //    	Console::log("Config Parameter Value: %d", reply.par_value);
 
     if(access_type==ReadWrite)
-    	Console::log("Parameter Length: %d  | Access type: ReadWrite", EPS::get_param_length(p_type));
+        Console::log("Parameter Length: %d  | Access type: ReadWrite", EPS::get_param_length(p_type));
     else
-    	Console::log("Parameter Length: %d  | Access type: Read Only", EPS::get_param_length(p_type));
+        Console::log("Parameter Length: %d  | Access type: Read Only", EPS::get_param_length(p_type));
 }

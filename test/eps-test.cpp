@@ -12,73 +12,73 @@
 bool test_getConfigParameterType() {
     int there_is_an_error=0;
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1000))!=Int8 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1A3C))!=Int8 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1FFF))!=Int8) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1A3C))!=Int8 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x1FFF))!=Int8) {
         Console::log("It fails on the ones with the top hex digit 1 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x2000))!=UInt8 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x203A))!=UInt8 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x2FFF))!=UInt8) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x203A))!=UInt8 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x2FFF))!=UInt8) {
         Console::log("It fails on the ones with the top hex digit 2 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x3000))!=Int16 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x33F7))!=Int16 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x3FFF))!=Int16) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x33F7))!=Int16 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x3FFF))!=Int16) {
         Console::log("It fails on the ones with the top hex digit 3 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4000))!=UInt16 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4D1A))!=UInt16 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4FFF))!=UInt16) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4D1A))!=UInt16 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x4FFF))!=UInt16) {
         Console::log("It fails on the ones with the top hex digit 4 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x5000))!=Int32 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x509D))!=Int32 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x5FFF))!=Int32) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x509D))!=Int32 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x5FFF))!=Int32) {
         Console::log("It fails on the ones with the top hex digit 5 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x6000))!=UInt32 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x663B))!=UInt32 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x6FFF))!=UInt32) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x663B))!=UInt32 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x6FFF))!=UInt32) {
         Console::log("It fails on the ones with the top hex digit 6 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x7000))!=Float ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x70AA))!=Float ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x7FFF))!=Float) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x70AA))!=Float ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x7FFF))!=Float) {
         Console::log("It fails on the ones with the top hex digit 7 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8000))!=Int64 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8D1A))!=Int64 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8FFF))!=Int64) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8D1A))!=Int64 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x8FFF))!=Int64) {
         Console::log("It fails on the ones with the top hex digit 8 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9000))!=UInt64 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9F61))!=UInt64 ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9FFF))!=UInt64) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9F61))!=UInt64 ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x9FFF))!=UInt64) {
         Console::log("It fails on the ones with the top hex digit 9 in getConfigParameterType");
         there_is_an_error=1;
     }
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0xA000))!=Double ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xA5E8))!=Double ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xAFFF))!=Double) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0xA5E8))!=Double ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0xAFFF))!=Double) {
         Console::log("It fails on the ones with the top hex digit A in getConfigParameterType");
         there_is_an_error=1;
     }
     //test some invalid values
     if (EPS::getConfigParameterType(static_cast<ConfigParameter>(0xB000))!=Invalid ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0x0))!=Invalid ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xFFF))!=Invalid ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xC068))!=Invalid ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xD3A2))!=Invalid ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xEF03))!=Invalid ||
-            EPS::getConfigParameterType(static_cast<ConfigParameter>(0xFFFF))!=Invalid) {
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0x0))!=Invalid ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0xFFF))!=Invalid ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0xC068))!=Invalid ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0xD3A2))!=Invalid ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0xEF03))!=Invalid ||
+        EPS::getConfigParameterType(static_cast<ConfigParameter>(0xFFFF))!=Invalid) {
         Console::log("It fails on the invalid values in getConfigParameterType");
         there_is_an_error=1;
     }
@@ -171,9 +171,9 @@ bool test_get_param_length() {
         EPS::get_param_length(UInt64) == 8 &&
         EPS::get_param_length(Double) == 8 &&
         EPS::get_param_length(Invalid) == 0) {
-            return true;
+        return true;
     }
-    Console::log("fail test_get_param_length");    
+    Console::log("fail test_get_param_length");
     return false;
 
 }
@@ -423,11 +423,11 @@ int main1() {
     // DelfiPQcore::initMCU(); // Initialize MCU for clock synchronization
 
     // delay_init(1)
-    
+
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
-    
+
     Console::log("Test 1: DWire initialized successfully");
     Console::log("Test 1: PASS - Basic initialization works");
     return 1; // Success
@@ -446,7 +446,7 @@ int main2() {
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
-    
+
     // Write a command to the buffer
     wire.beginTransmission(i2c_address);
     wire.write(0x00); // STID
@@ -468,12 +468,12 @@ int main3() {
 
     delay_ms(1000);
     Console::log("EPS Test 3 starting\n");
-    
+
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
-    
+
     // Write and end transmission
     wire.beginTransmission(i2c_address);
     wire.write(0x00); // STID
@@ -481,7 +481,7 @@ int main3() {
     wire.write(0x02); // NO_OPERATION
     wire.write(0x00); // BID
     bool result = wire.endTransmission(true);
-    
+
     if (result == false) {
         Console::log("Test 3: PASS - Transmission completed successfully");
         return 1; // Success
@@ -500,12 +500,12 @@ int main4() {
 
     delay_ms(1000);
     Console::log("EPS Test 4 starting\n");
-    
+
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
-    
+
     // Request 5 bytes from the slave even though we did not write anything
     uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
 
@@ -537,7 +537,7 @@ int main5() {
 
     delay_ms(1000);
     Console::log("EPS Test 5 starting\n");
-    
+
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
@@ -553,7 +553,7 @@ int main5() {
     // delay_ms(25); // not sure if we should wait
 
     uint8_t bytes_received = wire.requestFrom(i2c_address, 4);
-    
+
     if (bytes_received == 4) {
         uint8_t stid = wire.read();
         uint8_t ivid = wire.read();
@@ -561,7 +561,7 @@ int main5() {
         uint8_t bid = wire.read();
         // uint8_t stat = wire.read();
         Console::log("%d %d %d %d", stid, ivid,rc,bid);
-        
+
         // Verify response structure (STID=0x00, IVID=0x06, BID=0x00)
         if (stid == 0x00 && ivid == 0x06 && bid == 0x00) {
             Console::log("Test 5: PASS - Complete I2C cycle works, valid response received");
@@ -700,12 +700,12 @@ int main6() {
 
     delay_ms(1000);
     Console::log("EPS Test 6 starting\n");
-    
+
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
-    
+
     EPS::standard_reply reply = EPS::no_operation(wire, i2c_address);
     print_5_bytes_reply(reply);
     if (!reply.error && reply.rc == 0x03 && reply.stat == 0x80) {
@@ -858,7 +858,7 @@ int main9() {
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
-    
+
     EPS::standard_reply reply = EPS::watchdog(wire, i2c_address);
     print_5_bytes_reply(reply);
 
@@ -885,10 +885,10 @@ int main10() {
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
-    
+
     EPS::standard_reply reply = EPS::cancel_operation(wire, i2c_address);
     print_5_bytes_reply(reply);
-    
+
     if (!reply.error && reply.rc == 0x05 && reply.stat == 0x80) {
         Console::log("Test 10: PASS - CANCEL_OPERATION command works");
         return 1; // Success
@@ -1019,7 +1019,7 @@ int main13() {
     print_5_bytes_reply(reply2);
     if (!reply2.error && ((reply2.rc == 0xAB && reply2.stat == 0x80) || (reply2.rc==0xFF && reply2.stat == 0xFF))) {
         Console::log("Test 11: PASS - SYSTEM_RESET command works");
-       // return 1; // Success
+        // return 1; // Success
     } else {
         Console::log("Test 11: FAIL - SYSTEM_RESET returned error");
         //return 0; // Failure
@@ -1612,7 +1612,7 @@ int main32S() {
     wire.begin();
 
     ReturnType param_value{};
-    param_value.ui16 = 70;
+    param_value.ui16 = 100;
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
     EPS::print_config_reply(reply);
 
@@ -1627,7 +1627,7 @@ int main32S() {
     //try to get it:
     EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     EPS::print_config_reply(reply2);
-    if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply.par_value.ui16==70) {
+    if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==100) {
         Console::log("Test 32S: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
         return 1; // Success
     } else {
@@ -1650,12 +1650,10 @@ int main32R() {
     wire.setFastMode();
     wire.begin();
 
-    ReturnType param_value{};
-    param_value.ui16 = 70;
     EPS::config_reply reply = EPS::reset_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     EPS::print_config_reply(reply);
 
-    if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
+    if (!reply.error && reply.rc == 0x87 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
         Console::log("Test 32R: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
         //return 1; // Success
     } else {
@@ -1667,7 +1665,7 @@ int main32R() {
     EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     EPS::print_config_reply(reply2);
     //300 is the default value
-    if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply.par_value.ui16==300) {
+    if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==300) {
         Console::log("Test 32R: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
         return 1; // Success
     } else {
@@ -1677,7 +1675,7 @@ int main32R() {
 }
 // Test 33: Test SWITCH to safety mode command using EPS method
 // Returns: 1 on success, 0 on failure
-int main() {
+int main33() {
     DelfiPQcore::initMCU();
     delay_init();
     Console::init(9600);
@@ -1718,7 +1716,7 @@ int main34() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::standard_reply reply = EPS::switch_safety_mode(wire,i2c_address);
+    EPS::standard_reply reply = EPS::switch_nominal_mode(wire,i2c_address);
     EPS::print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x31 && reply.stat == 0x80) {
@@ -1835,7 +1833,7 @@ int mainC1() {
     param_value.ui16 = 200;
     EPS::config_reply reply2 = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
     EPS::print_config_reply(reply2);
-    if(reply2.error || reply2.rc!=0x83 || reply2.stat!=0x80){
+    if(reply2.error || reply2.rc!=0x85 || reply2.stat!=0x80){
         Console::log("Test C1: FAIL - set param command for watchdog failed");
         return 0; // Failure
     }
@@ -1851,7 +1849,7 @@ int mainC1() {
     EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
     EPS::print_standard_reply(reply4);
     if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
-        Console::log("Test C1: FAIL - save configuration command failed");
+        Console::log("Test C1: FAIL - load configuration command failed");
         return 0; // Failure
     }
     //final get
@@ -1862,5 +1860,345 @@ int mainC1() {
         return 0; // Failure
     }
     Console::log("Test C1: PASS - The parameter was successfully read,modified,saved,loaded and read");
+    return 1;
+}
+
+// Test C2: Try to turn on all the buses, switch to safety mode and see if the buses are off.
+// Returns: 1 on success, 0 on failure
+int mainC2() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Complex Test C2: Try to turn on all the buses, switch to safety mode and see if the buses are of\n");
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    //turn on the buses
+    EPS::standard_reply reply1 = EPS::output_bus_group_on(wire,i2c_address, 0x01FF);//0x00DC
+    print_5_bytes_reply(reply1);
+
+    if (reply1.error || reply1.rc != 0x11 || reply1.stat != 0x80){
+        Console::log("Test C2: FAIL - turning on buses failed");
+        return 0; // Failure
+    }
+
+    delay_ms(5000);
+    //go to safety
+    EPS::standard_reply reply2 = EPS::switch_safety_mode(wire,i2c_address);
+    EPS::print_standard_reply(reply2);
+
+    if (reply2.error | reply2.rc != 0x33 || reply2.stat != 0x80) {
+        Console::log("Test C2: FAIL - switching to safety failed");
+        return 0; // Failure
+    }
+    return 1;
+}
+// Test C3: Test SET_CONF_PARAM on TTC_WDG_TIMEOUT command using EPS method
+// Returns: 1 on success, 0 on failure
+int mainC3() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test C3. SET watchdog timer to 70 then turn on the buses then wait 70 seconds to see if they are off because of the watchdog\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    //set watchdog timer
+    ReturnType param_value{};
+    param_value.ui16 = 70;
+    EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
+    EPS::print_config_reply(reply);
+
+    if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
+        Console::log("Test C3: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        //return 1; // Success
+    } else {
+        Console::log("Test C3: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        return 0; // Failure
+    }
+    //turn on all buses
+    EPS::standard_reply reply2 = EPS::output_bus_group_on(wire,i2c_address, 0x01FF);//0x00DC
+    print_5_bytes_reply(reply2);
+
+    if (reply2.error || reply2.rc != 0x11 || reply.stat != 0x80){
+        Console::log("Test C3: FAIL - turning buses on failed");
+        return 0; // Failure
+    }
+    //wait 70 and see if they are off
+    return 1;
+}
+// Test C4: Fter TestC1, run this to reset_configuration instead of 300 and then save the config. load it and see if it was saved
+// Returns: 1 on success, 0 on failure
+int mainC4() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Complex Test c1: modify watchdog param, save it and load it starting\n");
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    //initial get
+    EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply1);
+    if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
+        Console::log("Test C4: FAIL - initial get param command for watchdog failed");
+        return 0; // Failure
+    }
+    //reset the configuration
+    EPS::standard_reply reply3 = EPS::reset_configuration(wire,i2c_address);
+    EPS::print_standard_reply(reply3);
+    if(reply3.error || reply3.rc!=0x91 || reply3.stat!=0x80){
+        Console::log("Test C4: FAIL - reset configuration command failed");
+        return 0; // Failure
+    }
+    delay_ms(1000);
+    //second get
+    EPS::config_reply reply35 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply35);
+    if(reply35.error || reply35.rc!=0x83 || reply35.stat!=0x80){
+        Console::log("Test C4: FAIL - second get param command for watchdog failed");
+        return 0; // Failure
+    }
+    //save to hard disk
+    // //save the configuration
+    // EPS::standard_reply reply41 = EPS::save_configuration(wire,i2c_address);
+    // EPS::print_standard_reply(reply41);
+    // if(reply41.error || reply41.rc!=0x95 || reply41.stat!=0x80){
+    //     Console::log("Test C4: FAIL - save configuration command failed");
+    //     return 0; // Failure
+    // }
+    // //third get
+    // EPS::config_reply reply351 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    // EPS::print_config_reply(reply351);
+    // if(reply351.error || reply351.rc!=0x83 || reply351.stat!=0x80){
+    //     Console::log("Test C4: FAIL - third get param command for watchdog failed");
+    //     return 0; // Failure
+    // }
+    //load the configuration
+    EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
+    EPS::print_standard_reply(reply4);
+    if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
+        Console::log("Test C4: FAIL - load configuration command failed");
+        return 0; // Failure
+    }
+    //final get
+    EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply5);
+    if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
+        Console::log("Test C4: FAIL - final get param command for watchdog failed");
+        return 0; // Failure
+    }
+    Console::log("Test C1: PASS - The parameter was successfully read,conf reset,saved,loaded and read");
+    return 1;
+}
+
+// Test 40S: Test SET_CONF_PARAM on a read only parameter command using EPS method
+// Returns: 1 on success, 0 on failure
+int main40S() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 40S SET_CONF_PARAM on RST_CNTR_PWRON starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    ReturnType param_value{};
+    param_value.ui16 = 70;
+    EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::RST_CNTR_PWRON, param_value);
+    EPS::print_config_reply(reply);
+
+    if (!reply.error && reply.rc == 0x85 && reply.stat == 0x84) {
+        Console::log("Test 32S: PASS - SET_CONF_PARAM on RST_CNTR_PWRON was rejected because we cannot write on read-only data");
+        //return 1; // Success
+    } else {
+        Console::log("Test 32S: FAIL - SET_CONF_PARAM on RST_CNTR_PWRON either worked when it should not, or there is another error, %d", reply.stat);
+        return 0; // Failure
+    }
+}
+struct ConfigEntry {
+    const char* name;
+    ConfigParameter value;
+};
+
+constexpr ConfigEntry configParamTable[] = {
+{"BOOT_RESUME_ENA       ", ConfigParameter::BOOT_RESUME_ENA},
+{"OBUS_VD1_ALWAYS_ENA   ", ConfigParameter::OBUS_VD1_ALWAYS_ENA},
+{"OBUS_VD2_ALWAYS_ENA   ", ConfigParameter::OBUS_VD2_ALWAYS_ENA},
+{"OBUS_VD1_ALWAYS_DISA  ", ConfigParameter::OBUS_VD1_ALWAYS_DISA},
+{"OBUS_VD2_ALWAYS_DISA  ", ConfigParameter::OBUS_VD2_ALWAYS_DISA},
+{"AUTO_HEAT_ENA_BP1     ", ConfigParameter::AUTO_HEAT_ENA_BP1},
+{"AUTO_HEAT_ENA_BP2     ", ConfigParameter::AUTO_HEAT_ENA_BP2},
+{"AUTO_HEAT_ENA_BP3     ", ConfigParameter::AUTO_HEAT_ENA_BP3},
+{"AUTO_BAL_ENA_BP1      ", ConfigParameter::AUTO_BAL_ENA_BP1},
+{"AUTO_BAL_ENA_BP2      ", ConfigParameter::AUTO_BAL_ENA_BP2},
+{"AUTO_BAL_ENA_BP3      ", ConfigParameter::AUTO_BAL_ENA_BP3},
+{"CONF_PARAM_CHANGED    ", ConfigParameter::CONF_PARAM_CHANGED},
+{"BOARD_IDENTIFIER      ", ConfigParameter::BOARD_IDENTIFIER},
+{"BOARD_IDENTIFIER_KEY  ", ConfigParameter::BOARD_IDENTIFIER_KEY},
+{"RAVG_STRENGTH_P2      ", ConfigParameter::RAVG_STRENGTH_P2},
+{"STID                  ", ConfigParameter::STID},
+{"IVID                  ", ConfigParameter::IVID},
+{"BID_USED              ", ConfigParameter::BID_USED},
+{"BOOT_RESUME_SHORT     ", ConfigParameter::BOOT_RESUME_SHORT},
+{"LOTHR_BAT_HEATER_01   ", ConfigParameter::LOTHR_BAT_HEATER_01},
+{"LOTHR_BAT_HEATER_02   ", ConfigParameter::LOTHR_BAT_HEATER_02},
+{"LOTHR_BAT_HEATER_03   ", ConfigParameter::LOTHR_BAT_HEATER_03},
+{"HITHR_BAT_HEATER_01   ", ConfigParameter::HITHR_BAT_HEATER_01},
+{"HITHR_BAT_HEATER_02   ", ConfigParameter::HITHR_BAT_HEATER_02},
+{"HITHR_BAT_HEATER_03   ", ConfigParameter::HITHR_BAT_HEATER_03},
+{"LOTHR_BMON_UNBAL_01   ", ConfigParameter::LOTHR_BMON_UNBAL_01},
+{"LOTHR_BMON_UNBAL_02   ", ConfigParameter::LOTHR_BMON_UNBAL_02},
+{"LOTHR_BMON_UNBAL_03   ", ConfigParameter::LOTHR_BMON_UNBAL_03},
+{"HITHR_BMON_UNBAL_01   ", ConfigParameter::HITHR_BMON_UNBAL_01},
+{"HITHR_BMON_UNBAL_02   ", ConfigParameter::HITHR_BMON_UNBAL_02},
+{"HITHR_BMON_UNBAL_03   ", ConfigParameter::HITHR_BMON_UNBAL_03},
+{"MCU_TEMP_BIAS         ", ConfigParameter::MCU_TEMP_BIAS},
+{"MCU_TEMP_PREMUL       ", ConfigParameter::MCU_TEMP_PREMUL},
+{"MCU_TEMP_POSDIV       ", ConfigParameter::MCU_TEMP_POSDIV},
+{"BP1_TEMP1_BIAS        ", ConfigParameter::BP1_TEMP1_BIAS},
+{"BP1_TEMP2_BIAS        ", ConfigParameter::BP1_TEMP2_BIAS},
+{"BP1_TEMP3_BIAS        ", ConfigParameter::BP1_TEMP3_BIAS},
+{"BP2_TEMP1_BIAS        ", ConfigParameter::BP2_TEMP1_BIAS},
+{"BP2_TEMP2_BIAS        ", ConfigParameter::BP2_TEMP2_BIAS},
+{"BP2_TEMP3_BIAS        ", ConfigParameter::BP2_TEMP3_BIAS},
+{"BP3_TEMP1_BIAS        ", ConfigParameter::BP3_TEMP1_BIAS},
+{"BP3_TEMP2_BIAS        ", ConfigParameter::BP3_TEMP2_BIAS},
+{"BP3_TEMP3_BIAS        ", ConfigParameter::BP3_TEMP3_BIAS},
+{"BP1_TEMP1_PREMUL      ", ConfigParameter::BP1_TEMP1_PREMUL},
+{"BP1_TEMP2_PREMUL      ", ConfigParameter::BP1_TEMP2_PREMUL},
+{"BP1_TEMP3_PREMUL      ", ConfigParameter::BP1_TEMP3_PREMUL},
+{"BP2_TEMP1_PREMUL      ", ConfigParameter::BP2_TEMP1_PREMUL},
+{"BP2_TEMP2_PREMUL      ", ConfigParameter::BP2_TEMP2_PREMUL},
+{"BP2_TEMP3_PREMUL      ", ConfigParameter::BP2_TEMP3_PREMUL},
+{"BP3_TEMP1_PREMUL      ", ConfigParameter::BP3_TEMP1_PREMUL},
+{"BP3_TEMP2_PREMUL      ", ConfigParameter::BP3_TEMP2_PREMUL},
+{"BP3_TEMP3_PREMUL      ", ConfigParameter::BP3_TEMP3_PREMUL},
+{"BP1_TEMP1_POSDIV      ", ConfigParameter::BP1_TEMP1_POSDIV},
+{"BP1_TEMP2_POSDIV      ", ConfigParameter::BP1_TEMP2_POSDIV},
+{"BP1_TEMP3_POSDIV      ", ConfigParameter::BP1_TEMP3_POSDIV},
+{"BP2_TEMP1_POSDIV      ", ConfigParameter::BP2_TEMP1_POSDIV},
+{"BP2_TEMP2_POSDIV      ", ConfigParameter::BP2_TEMP2_POSDIV},
+{"BP2_TEMP3_POSDIV      ", ConfigParameter::BP2_TEMP3_POSDIV},
+{"BP3_TEMP1_POSDIV      ", ConfigParameter::BP3_TEMP1_POSDIV},
+{"BP3_TEMP2_POSDIV      ", ConfigParameter::BP3_TEMP2_POSDIV},
+{"BP3_TEMP3_POSDIV      ", ConfigParameter::BP3_TEMP3_POSDIV},
+{"ADC_MCU_TEMP_V25T30   ", ConfigParameter::ADC_MCU_TEMP_V25T30},
+{"ADC_MCU_TEMP_V25T85   ", ConfigParameter::ADC_MCU_TEMP_V25T85},
+{"TTC_WDG_TIMEOUT       ", ConfigParameter::TTC_WDG_TIMEOUT},
+{"TTC_WDG_TIMEOUT_KEY   ", ConfigParameter::TTC_WDG_TIMEOUT_KEY},
+{"OBUS_STARTUP_ENA_BF   ", ConfigParameter::OBUS_STARTUP_ENA_BF},
+{"OBUS_STARTUP_KEY      ", ConfigParameter::OBUS_STARTUP_KEY},
+{"OBUS_LATCHOFF_ENA_BF  ", ConfigParameter::OBUS_LATCHOFF_ENA_BF},
+{"OBUS_LATCHOFF_KEY     ", ConfigParameter::OBUS_LATCHOFF_KEY},
+{"OBUS_STARTUP_DELAY_01 ", ConfigParameter::OBUS_STARTUP_DELAY_01},
+{"OBUS_STARTUP_DELAY_02 ", ConfigParameter::OBUS_STARTUP_DELAY_02},
+{"OBUS_STARTUP_DELAY_03 ", ConfigParameter::OBUS_STARTUP_DELAY_03},
+{"OBUS_STARTUP_DELAY_04 ", ConfigParameter::OBUS_STARTUP_DELAY_04},
+{"OBUS_STARTUP_DELAY_05 ", ConfigParameter::OBUS_STARTUP_DELAY_05},
+{"OBUS_STARTUP_DELAY_06 ", ConfigParameter::OBUS_STARTUP_DELAY_06},
+{"OBUS_STARTUP_DELAY_07 ", ConfigParameter::OBUS_STARTUP_DELAY_07},
+{"OBUS_STARTUP_DELAY_08 ", ConfigParameter::OBUS_STARTUP_DELAY_08},
+{"OBUS_STARTUP_DELAY_09 ", ConfigParameter::OBUS_STARTUP_DELAY_09},
+{"OBUS_STARTUP_DELAY_10 ", ConfigParameter::OBUS_STARTUP_DELAY_10},
+{"OBUS_STARTUP_DELAY_11 ", ConfigParameter::OBUS_STARTUP_DELAY_11},
+{"OBUS_STARTUP_DELAY_12 ", ConfigParameter::OBUS_STARTUP_DELAY_12},
+{"OBUS_STARTUP_DELAY_13 ", ConfigParameter::OBUS_STARTUP_DELAY_13},
+{"OBUS_STARTUP_DELAY_14 ", ConfigParameter::OBUS_STARTUP_DELAY_14},
+{"OBUS_STARTUP_DELAY_15 ", ConfigParameter::OBUS_STARTUP_DELAY_15},
+{"OBUS_STARTUP_DELAY_16 ", ConfigParameter::OBUS_STARTUP_DELAY_16},
+{"OBUS_LATCHOFF_DELAY_01", ConfigParameter::OBUS_LATCHOFF_DELAY_01},
+{"OBUS_LATCHOFF_DELAY_02", ConfigParameter::OBUS_LATCHOFF_DELAY_02},
+{"OBUS_LATCHOFF_DELAY_03", ConfigParameter::OBUS_LATCHOFF_DELAY_03},
+{"OBUS_LATCHOFF_DELAY_04", ConfigParameter::OBUS_LATCHOFF_DELAY_04},
+{"OBUS_LATCHOFF_DELAY_05", ConfigParameter::OBUS_LATCHOFF_DELAY_05},
+{"OBUS_LATCHOFF_DELAY_06", ConfigParameter::OBUS_LATCHOFF_DELAY_06},
+{"OBUS_LATCHOFF_DELAY_07", ConfigParameter::OBUS_LATCHOFF_DELAY_07},
+{"OBUS_LATCHOFF_DELAY_08", ConfigParameter::OBUS_LATCHOFF_DELAY_08},
+{"OBUS_LATCHOFF_DELAY_09", ConfigParameter::OBUS_LATCHOFF_DELAY_09},
+{"OBUS_LATCHOFF_DELAY_10", ConfigParameter::OBUS_LATCHOFF_DELAY_10},
+{"OBUS_LATCHOFF_DELAY_11", ConfigParameter::OBUS_LATCHOFF_DELAY_11},
+{"OBUS_LATCHOFF_DELAY_12", ConfigParameter::OBUS_LATCHOFF_DELAY_12},
+{"OBUS_LATCHOFF_DELAY_13", ConfigParameter::OBUS_LATCHOFF_DELAY_13},
+{"OBUS_LATCHOFF_DELAY_14", ConfigParameter::OBUS_LATCHOFF_DELAY_14},
+{"OBUS_LATCHOFF_DELAY_15", ConfigParameter::OBUS_LATCHOFF_DELAY_15},
+{"OBUS_LATCHOFF_DELAY_16", ConfigParameter::OBUS_LATCHOFF_DELAY_16},
+{"SAFETY_VOLT_LOTHR     ", ConfigParameter::SAFETY_VOLT_LOTHR},
+{"SAFETY_VOLT_HITHR     ", ConfigParameter::SAFETY_VOLT_HITHR},
+{"TTC_I2C_SLAVE_ADDR    ", ConfigParameter::TTC_I2C_SLAVE_ADDR},
+{"CONF_NVM_SAVE_CNTR    ", ConfigParameter::CONF_NVM_SAVE_CNTR},
+{"CONF_NVM_SAVE_CHKS    ", ConfigParameter::CONF_NVM_SAVE_CHKS},
+{"RST_CAUSE             ", ConfigParameter::RST_CAUSE},
+{"RST_CNTR_PWRON        ", ConfigParameter::RST_CNTR_PWRON},
+{"RST_CNTR_WDG          ", ConfigParameter::RST_CNTR_WDG},
+{"RST_CNTR_CMD          ", ConfigParameter::RST_CNTR_CMD},
+{"RST_CNTR_MCU          ", ConfigParameter::RST_CNTR_MCU},
+{"RST_CNTR_EMLOPO       ", ConfigParameter::RST_CNTR_EMLOPO},
+{"RST_CODE_MCU_RAW      ", ConfigParameter::RST_CODE_MCU_RAW},
+{"EMLOPO_VOLT_LOTHR     ", ConfigParameter::EMLOPO_VOLT_LOTHR},
+{"EMLOPO_VOLT_HITHR     ", ConfigParameter::EMLOPO_VOLT_HITHR},
+{"EMLOPO_PERIOD         ", ConfigParameter::EMLOPO_PERIOD},
+{"SAFETY_VOLT_LOTHR_USED", ConfigParameter::SAFETY_VOLT_LOTHR_USED},
+{"SAFETY_VOLT_HITHR_USED", ConfigParameter::SAFETY_VOLT_HITHR_USED},
+{"SAFETY_LINGER         ", ConfigParameter::SAFETY_LINGER},
+{"TTC_WDG_TIMOUT_USED   ", ConfigParameter::TTC_WDG_TIMOUT_USED},
+{"TTC_PREVCMD_ELAPSED   ", ConfigParameter::TTC_PREVCMD_ELAPSED}, //everythin after this param is not accessible
+{"OB_FORCE_ENA_USE_BF   ", ConfigParameter::OB_FORCE_ENA_USE_BF},
+{"OB_STARTUP_ENA_USE_BF ", ConfigParameter::OB_STARTUP_ENA_USE_BF},
+{"OB_LATCHOFF_ENA_USE_BF", ConfigParameter::OB_LATCHOFF_ENA_USE_BF},
+{"VD0_CH_BF             ", ConfigParameter::VD0_CH_BF},
+{"VD1_CH_BF             ", ConfigParameter::VD1_CH_BF},
+{"VD2_CH_BF             ", ConfigParameter::VD2_CH_BF},
+{"VD3_CH_BF             ", ConfigParameter::VD3_CH_BF},
+{"VD4_CH_BF             ", ConfigParameter::VD4_CH_BF},
+{"VD5_CH_BF             ", ConfigParameter::VD5_CH_BF},
+{"VD6_CH_BF             ", ConfigParameter::VD6_CH_BF}
+};
+//Test all 131 config params
+int main(){
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("\nEPS Test CP 131 GET_CONF_PARAM on all parameters starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    Console::log("Param -> Value:\n");
+    //OB_FORCE_ENA_USE_BF, OB_STARTUP_ENA_USE_BF, OB_LATCHOFF_ENA_USE_BF
+    for(uint8_t i = 0; i < 131; i++)
+    {
+        EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,configParamTable[i].value);
+        EPS::print_config_reply(reply);
+
+        Console::log("%s -> %d", configParamTable[i].name, configParamTable[i].value);
+        if (reply.error || reply.rc != 0x83 || reply.stat != 0x80 || reply.par_id!=configParamTable[i].value){
+            Console::log("!!!!!!!!!!!!! Test CP: FAIL - GET param %s, code: %d", configParamTable[i].name, configParamTable[i].value);
+            // return 0; // Failure
+        }
+        delay_ms(10);
+    }
+    Console::log("\nending\n");
     return 1;
 }

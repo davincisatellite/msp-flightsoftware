@@ -184,7 +184,7 @@ enum ParameterType {
     UInt64 = 0x9000, //note, not used
     Double = 0xA000, //note, not used
     Invalid
-    };
+};
 
 enum AccessType {
     ReadOnly,
