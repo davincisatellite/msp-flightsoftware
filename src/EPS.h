@@ -425,6 +425,8 @@ public:
     static config_reply read_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, config_reply &reply);
 
     //printing methods for visualising data
+    static void print_command(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid);
+    static void print_standard_reply(standard_reply reply);
     static void print_system_status(system_status_reply reply);
     static void print_overcurrent_reply(EPS::overcurrent_reply reply);
     static void print_pbu_abf_placed_state(EPS::pbu_abf_placed_state reply);

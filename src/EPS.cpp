@@ -213,7 +213,7 @@ void EPS::readCommand(DWire &wire, EPS::ReplyBase &reply) {
     reply.rc = wire.read();     // Response code
     reply.bid = wire.read();    // BID
     reply.stat = wire.read();   // Status byte
-    Console::log("read: %d %d %d %d %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat);
+    //Console::log("read: %d %d %d %d %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat);
 }
 bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
     //it is assumed you already called:  wire.requestFrom(i2c_address, n);
@@ -268,7 +268,7 @@ void read_and_fill_conf_param(DWire &wire, uint8_t i2c_address, ConfigParameter 
     uint8_t response = wire.requestFrom(i2c_address, read_length);
 
     if (response == read_length) {
-        uint8_t buffer[read_length];
+        uint8_t buffer[16];
     	EPS::read_n_bytes(wire, buffer, read_length);
 
         reply.stid = buffer[0];
@@ -919,7 +919,7 @@ EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address,
 
     // if response if 5 bytes long populate reply struct else mark error.
     if (response == 5) {
-        Console::log("5 bytes");
+//        Console::log("5 bytes");
         EPS::readCommand(wire, reply);
         reply.error = false;
     } else {
@@ -1149,33 +1149,36 @@ EPS::standard_reply EPS::save_configuration(DWire &wire, uint8_t i2c_address) {
     return reply;
 }
 // there are some methods to print the data on the screen
-void print_VIPD_data(char* spaces, char* name, EPS::VIPD vipd, int i=-1) {
+void print_array(uint8_)
+void print_VIPD_data(char* name, EPS::VIPD vipd, int i=-1) {
     if(i!=-1)
-    	Console::log("%s%s%d:   VOLT: %d.%03d V | CURR: %d.%03d A | POWER: %d.%02d W", i, spaces, name, vipd.volt/1000, vipd.volt%1000, vipd.curr/1000, vipd.curr%1000, vipd.power/100, vipd.power%100);
+    	Console::log("%s%d:   VOLT: %d V | CURR: %d A | POWER: %d W", name, i, vipd.volt, vipd.curr, vipd.power);
     else
-    	Console::log("%s%s:   VOLT: %d.%03d V | CURR: %d.%03d A | POWER: %d.%02d W", spaces, name, vipd.volt/1000, vipd.volt%1000, vipd.curr/1000, vipd.curr%1000, vipd.power/100, vipd.power%100);
-
+    	Console::log("%s:   VOLT: %d V | CURR: %d A | POWER: %d W", name, vipd.volt, vipd.curr, vipd.power);
 }
 void print_BPD_data(char* name, EPS::BPD bpd) {
     Console::log("%s:",name);
-    print_VIPD_data("    ", "VIP_BP_INPUT", bpd.vip_bp_input);
+    print_VIPD_data("    VIP_BP_INPUT", bpd.vip_bp_input);
     Console::log("    STAT_BP: %x", bpd.stat_bp);
-    Console::log("    VOLT_CELLS 1,2,3,4:  %d.%03d V | %d.%03d V |  %d.%03d V | %d.%03d V", bpd.volt_cell1/1000, bpd.volt_cell1%1000, bpd.volt_cell2/1000, bpd.volt_cell2%1000,
-                                                                                       bpd.volt_cell3/1000, bpd.volt_cell3%1000, bpd.volt_cell4/1000, bpd.volt_cell4%1000);
-    Console::log("    Internal temperature of battery:                 %d.%02d C", bpd.bat_temp1/100, bpd.bat_temp1%100);
-    Console::log("    Temperature in between the center battery cells: %d.%02d C", bpd.bat_temp2/100, bpd.bat_temp2%100);
-    Console::log("    Temperature on the front of the battery pack:    %d.%02d C", bpd.bat_temp3/100, bpd.bat_temp3%100);
+    Console::log("    VOLT_CELLS 1,2,3,4:  %d V | %d V |  %d V | %d V", bpd.volt_cell1, bpd.volt_cell2, bpd.volt_cell3, bpd.volt_cell4);
+    Console::log("    Internal temperature of battery:                 %d C", bpd.bat_temp1);
+    Console::log("    Temperature in between the center battery cells: %d C", bpd.bat_temp2);
+    Console::log("    Temperature on the front of the battery pack:    %d C", bpd.bat_temp3);
 }
 void print_CCD_data(char* name, EPS::CCD ccd) {
     Console::log("%s:",name);
-    print_VIPD_data("    ", "VIP_CC_OUTPUT", ccd.vip_cc_output);
-    Console::log("    VOLT_IN_MPPT:  %d.%03d V  |  CURR_IN_MPPT:  %d.%03d V", ccd.volt_in_mppt/1000, ccd.volt_in_mppt%1000, ccd.curr_in_mppt/1000, ccd.curr_in_mppt%1000);
-    Console::log("    VOLT_OUT_MPPT: %d.%03d V  |  CURR_OUT_MPPT: %d.%03d V", ccd.volt_out_mppt/1000, ccd.volt_out_mppt%1000, ccd.curr_out_mppt/1000, ccd.curr_out_mppt%1000);
+    print_VIPD_data("    VIP_CC_OUTPUT", ccd.vip_cc_output);
+    Console::log("    VOLT_IN_MPPT:  %d V  |  CURR_IN_MPPT:  %d V", ccd.volt_in_mppt, ccd.curr_in_mppt);
+    Console::log("    VOLT_OUT_MPPT: %d V  |  CURR_OUT_MPPT: %d V", ccd.volt_out_mppt, ccd.curr_out_mppt);
 }
 void print_CCSD_data(char* name, EPS::CCSD ccsd) {
     Console::log("%s:",name);
-    Console::log("    VOLT_IN_MPPT:  %d.%03d V  |  CURR_IN_MPPT:  %d.%03d V", ccsd.volt_in_mppt/1000, ccsd.volt_in_mppt%1000, ccsd.curr_in_mppt/1000, ccsd.curr_in_mppt%1000);
-    Console::log("    VOLT_OUT_MPPT: %d.%03d V  |  CURR_OUT_MPPT: %d.%03d V", ccsd.volt_out_mppt/1000, ccsd.volt_out_mppt%1000, ccsd.curr_out_mppt/1000, ccsd.curr_out_mppt%1000);
+    Console::log("    VOLT_IN_MPPT:  %d V  |  CURR_IN_MPPT:  %d V", ccsd.volt_in_mppt, ccsd.curr_in_mppt);
+    Console::log("    VOLT_OUT_MPPT: %d V  |  CURR_OUT_MPPT: %d V", ccsd.volt_out_mppt, ccsd.curr_out_mppt);
+}
+void print_command(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid) {
+    Console::log("--- Command Data ---");
+    Console::log("STID: %x | IVID: %x | CC: %x | BID: %x", stid, ivid, cc, bid);
 }
 void print_standard_reply(EPS::standard_reply reply) {
     Console::log("--- Standard Reply Data ---");
@@ -1257,9 +1260,14 @@ void print_pbu_abf_placed_state(EPS::pbu_abf_placed_state reply) {
 }
 void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply) {
     Console::log("--- PBU Housekeeping Data (engineering form)---");
+
+    uint8_t buffer[sizeof(pbu_housekeeping_data_reply)];
+    memcpy(buffer, &data, sizeof(pbu_housekeeping_data_reply));
+
+
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    Console::log("VOLT_BRDSUP: %d.%03d V  |  TEMP: %d.%02d C", reply.volt_brdsup/1000, reply.volt_brdsup%1000, reply.temp/100, reply.temp%100);
-    print_VIPD_data("", "VIP_INPUT", reply.vip_input);
+    Console::log("VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    print_VIPD_data("VIP_INPUT", reply.vip_input);
     Console::log("STAT_BU: %x", reply.stat_bu);
     print_BPD_data("BP1", reply.bp[0]);
     print_BPD_data("BP2", reply.bp[1]);
@@ -1269,8 +1277,8 @@ void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply) {
 void print_pcu_housekeeping_data_reply(EPS::pcu_housekeeping_data_reply reply) {
     Console::log("--- PCU Housekeeping Data (engineering form)---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    Console::log("VOLT_BRDSUP: %d.%03d V  |  TEMP: %d.%02d C", reply.volt_brdsup/1000, reply.volt_brdsup%1000, reply.temp/100, reply.temp%100);
-    print_VIPD_data("", "VIP_OUTPUT", reply.vip_output);
+    Console::log("VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    print_VIPD_data("VIP_OUTPUT", reply.vip_output);
     print_CCD_data("CC1", reply.cc[0]);
     print_CCD_data("CC2", reply.cc[1]);
     print_CCD_data("CC3", reply.cc[2]);
@@ -1280,27 +1288,25 @@ void print_pcu_housekeeping_data_reply(EPS::pcu_housekeeping_data_reply reply) {
 void print_pdu_housekeeping_data_reply(EPS::pdu_housekeeping_data_reply reply) {
     Console::log("--- PDU Housekeeping Data (engineering form)---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    Console::log("VOLT_BRDSUP: %d.%03d V  |  TEMP: %d.%02d C", reply.volt_brdsup/1000, reply.volt_brdsup%1000, reply.temp/100, reply.temp%100);
-    print_VIPD_data("", "VIP_INPUT", reply.vip_input);
+    Console::log("VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    print_VIPD_data("VIP_INPUT", reply.vip_input);
     Console::log("STAT_CH_ON: %x  |  STAT_CH_OCF: %x", reply.stat_ch_on, reply.stat_ch_ocf);
     for(int i=0;i<7;i++)
-        print_VIPD_data("", "VIP_VD", reply.vip_vd[i], i);
+        print_VIPD_data("VIP_VD", reply.vip_vd[i], i);
     for(int i=0;i<16;i++)
-        print_VIPD_data("", "VIP_CH", reply.vip_ch[i], i);
+        print_VIPD_data("VIP_CH", reply.vip_ch[i], i);
 }
 void print_piu_housekeeping_data_reply(EPS::piu_housekeeping_data_reply reply) {
     Console::log("--- PIU Housekeeping Data (engineering form)---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    Console::log("VOLT_BRDSUP: %d.%03d V  |  TEMP: %d.%02d C", reply.volt_brdsup/1000, reply.volt_brdsup%1000, reply.temp/100, reply.temp%100);
-    print_VIPD_data("", "VIP_DIST_INPUT", reply.vip_dist_input);
-    print_VIPD_data("", "VIP_BATT_INPUT", reply.vip_bat_input);
+    Console::log("VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    print_VIPD_data("VIP_DIST_INPUT", reply.vip_dist_input);
+    print_VIPD_data("VIP_BATT_INPUT", reply.vip_bat_input);
     Console::log("STAT_CH_ON: %x  |  STAT_CH_OCF: %x", reply.stat_ch_on, reply.stat_ch_ocf);
     Console::log("BAT_STAT: %x  |  BAT_TEMP2: %d  |  BAT_TEMP3: %d", reply.bat_stat, reply.bat_temp2, reply.bat_temp3);
-    Console::log("VOLT voltage domains 0,1,2:  %d.%03d V  |  %d.%03d V  |  %d.%03d V ", reply.volt_vd[0]/1000, reply.volt_vd[0]%1000,
-                                                                                        reply.volt_vd[1]/1000, reply.volt_vd[1]%1000,
-                                                                                        reply.volt_vd[2]/1000, reply.volt_vd[2]%1000);
+    Console::log("VOLT voltage domains 0,1,2:  %d V  |  %d V  |  %d V ", reply.volt_vd[0], reply.volt_vd[1], reply.volt_vd[2]);
     for(int i=0;i<9;i++)
-        print_VIPD_data("", "VIP_CH", reply.vip_ch[i], i);
+        print_VIPD_data("VIP_CH", reply.vip_ch[i], i);
     print_CCSD_data("CC1", reply.cc[0]);
     print_CCSD_data("CC2", reply.cc[1]);
     print_CCSD_data("CC3", reply.cc[2]);
@@ -1312,9 +1318,9 @@ void print_config_reply(EPS::config_reply reply) {
     if(p_type==Float || p_type==Double)
     	Console::log("Config Parameter Value: %f", reply.par_id);
     else if(p_type==UInt8 || p_type==UInt16 || p_type==UInt32 || p_type==UInt64)
-    	Console::log("Config Parameter Value: %ull", reply.par_id);
+    	Console::log("Config Parameter Value: %d", reply.par_id);
     else
-    	Console::log("Config Parameter Value: %ll", reply.par_value);
+    	Console::log("Config Parameter Value: %d", reply.par_value);
 
     if(access_type==ReadWrite)
     	Console::log("Parameter Length: %d  | Access type: ReadWrite", EPS::get_param_length(p_type));

@@ -1674,3 +1674,55 @@ int main32R() {
         return 0; // Failure
     }
 }
+// Test 33: Test SWITCH to safety mode command using EPS method
+// Returns: 1 on success, 0 on failure
+int main33() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 33 switch_safety_mode starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::standard_reply reply = EPS::switch_safety_mode(wire,i2c_address);
+    EPS::print_standard_reply(reply);
+
+    if (!reply.error && reply.rc == 0x33 && reply.stat == 0x80) {
+        Console::log("Test 33: PASS - switch_safety_mode command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 33: FAIL - switch_safety_mode command rejected");
+        return 0; // Failure
+    }
+}
+// Test 34: Test SWITCH to nominal mode command using EPS method
+// Returns: 1 on success, 0 on failure
+int main34() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 34 switch_nominal_mode starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::standard_reply reply = EPS::switch_safety_mode(wire,i2c_address);
+    EPS::print_standard_reply(reply);
+
+    if (!reply.error && reply.rc == 0x31 && reply.stat == 0x80) {
+        Console::log("Test 34: PASS - switch_nominal_mode command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 34: FAIL - switch_nominal_mode command rejected");
+        return 0; // Failure
+    }
+}
