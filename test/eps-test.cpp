@@ -4,6 +4,7 @@
 #include "../src/Console.h"
 #include "../src/DelfiPQcore.h"
 #include "../src/delay.h"
+#include <cstdio>
 
 /*
      For each config data type we will test the boundaries and a random value between them.
@@ -1096,7 +1097,7 @@ int main15() {
 
 // Test 16: Test Get PIU Housekeeping Data (eng) (old printing)
 // Returns: 1 on success, 0 on failure
-int main() {
+int main16() {
     DelfiPQcore::initMCU();
     delay_init();
     Console::init(9600);
@@ -1676,13 +1677,14 @@ int main32R() {
 }
 // Test 33: Test SWITCH to safety mode command using EPS method
 // Returns: 1 on success, 0 on failure
-int main33() {
+int main() {
     DelfiPQcore::initMCU();
     delay_init();
     Console::init(9600);
 
     delay_ms(1000);
     Console::log("EPS Test 33 switch_safety_mode starting\n");
+    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_TO_SAFETY_MODE),BID);
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1699,6 +1701,7 @@ int main33() {
         Console::log("Test 33: FAIL - switch_safety_mode command rejected");
         return 0; // Failure
     }
+    //use main17 to test system_status
 }
 // Test 34: Test SWITCH to nominal mode command using EPS method
 // Returns: 1 on success, 0 on failure
@@ -1709,7 +1712,7 @@ int main34() {
 
     delay_ms(1000);
     Console::log("EPS Test 34 switch_nominal_mode starting\n");
-
+    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_NOMINAL_MODE),BID);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
@@ -1725,4 +1728,139 @@ int main34() {
         Console::log("Test 34: FAIL - switch_nominal_mode command rejected");
         return 0; // Failure
     }
+    //use main17 to test system_status
+}
+// Test 35: Test load_configuration command to see if it is accepted
+// Returns: 1 on success, 0 on failure
+int main35() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 35 load_configuration starting\n");
+    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::LOAD_CONFIGURATION),BID);
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::standard_reply reply = EPS::load_configuration(wire,i2c_address);
+    EPS::print_standard_reply(reply);
+
+    if (!reply.error && reply.rc == 0x93 && reply.stat == 0x80) {
+        Console::log("Test 35: PASS - load_configuration command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 35: FAIL - load_configuration command rejected");
+        return 0; // Failure
+    }
+}
+// Test 36: Test reset_configuration command to see if it is accepted
+// Returns: 1 on success, 0 on failure
+int main36() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 36 reset_configuration starting\n");
+    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::RESET_CONFIGURATION),BID);
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::standard_reply reply = EPS::reset_configuration(wire,i2c_address);
+    EPS::print_standard_reply(reply);
+
+    if (!reply.error && reply.rc == 0x91 && reply.stat == 0x80) {
+        Console::log("Test 36: PASS - reset_configuration command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 36: FAIL - reset_configuration command rejected");
+        return 0; // Failure
+    }
+}
+// Test 37: Test save_configuration command to see if it is accepted
+// Returns: 1 on success, 0 on failure
+int main37() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Test 37 save_configuration starting\n");
+    Console::log("STID: %x | IVID: %x | CC: %x | BID: %x | CONF_KEY: %x | CHECKSUM_2_bytes: %x%x", STID, IVID, CommandCode::SAVE_CONFIGURATION, BID, CONF_KEY, 0,0);
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    EPS::standard_reply reply = EPS::save_configuration(wire,i2c_address);
+    EPS::print_standard_reply(reply);
+
+    if (!reply.error && reply.rc == 0x95 && reply.stat == 0x80) {
+        Console::log("Test 37: PASS - save_configuration command works");
+        return 1; // Success
+    } else {
+        Console::log("Test 37: FAIL - save_configuration command rejected");
+        return 0; // Failure
+    }
+}
+// Test C1: Try to modify the watchdog parameter to 200 instead of 300 and then save the config. load it and see if it was saved
+// Returns: 1 on success, 0 on failure
+int mainC1() {
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("EPS Complex Test c1: modify watchdog param, save it and load it starting\n");
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    //initial get
+    EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply1);
+    if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
+        Console::log("Test C1: FAIL - initial get param command for watchdog failed");
+        return 0; // Failure
+    }
+
+    //modify the param
+    ReturnType param_value{};
+    param_value.ui16 = 200;
+    EPS::config_reply reply2 = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
+    EPS::print_config_reply(reply2);
+    if(reply2.error || reply2.rc!=0x83 || reply2.stat!=0x80){
+        Console::log("Test C1: FAIL - set param command for watchdog failed");
+        return 0; // Failure
+    }
+    //save the configuration
+    EPS::standard_reply reply3 = EPS::save_configuration(wire,i2c_address);
+    EPS::print_standard_reply(reply3);
+    if(reply3.error || reply3.rc!=0x95 || reply3.stat!=0x80){
+        Console::log("Test C1: FAIL - save configuration command failed");
+        return 0; // Failure
+    }
+    delay_ms(1000);
+    //load the configuration
+    EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
+    EPS::print_standard_reply(reply4);
+    if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
+        Console::log("Test C1: FAIL - save configuration command failed");
+        return 0; // Failure
+    }
+    //final get
+    EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+    EPS::print_config_reply(reply5);
+    if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
+        Console::log("Test C1: FAIL - final get param command for watchdog failed");
+        return 0; // Failure
+    }
+    Console::log("Test C1: PASS - The parameter was successfully read,modified,saved,loaded and read");
+    return 1;
 }

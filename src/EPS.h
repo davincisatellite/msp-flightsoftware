@@ -426,6 +426,8 @@ public:
 
     //printing methods for visualising data
     static void print_command(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid);
+    static void print_command_5_bytes(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid, uint8_t fifth_byte);
+    static void print_command_6_bytes(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid, uint8_t fifth_byte, uint8_t sixth_byte);
     static void print_standard_reply(standard_reply reply);
     static void print_system_status(system_status_reply reply);
     static void print_overcurrent_reply(EPS::overcurrent_reply reply);
