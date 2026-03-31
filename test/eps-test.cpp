@@ -5,6 +5,7 @@
 #include "../src/DelfiPQcore.h"
 #include "../src/delay.h"
 #include <cstdio>
+#include "EPS_print.h.h"
 
 /*
      For each config data type we will test the boundaries and a random value between them.
@@ -178,28 +179,6 @@ bool test_get_param_length() {
 
 }
 
-//WriteCommand and ReadCommand are tested indirectly through all other tests
-// #include "DWire_test_examples.h"
-int mainnnn(void)//change name to mainnn
-{
-    //test the DWIRe first!!
-    // int r = mainnn();
-    // Console::log("DWire test result: ", r);
-    //
-    // if (r==0)//do not continue until we solved the DWire problem.
-    //     return -1;
-
-    //if the DWire tests were successful, then we continue
-
-    DWire wire = DWire();
-    uint8_t i2c_address = 0x20;
-    Console::init(9600);
-
-    int nr_of_errors=0;
-    return nr_of_errors;
-}
-
-
 
 // Each test is completely independent and can be compiled separately
 // I used i2c_address = 0x20, which seems to be ok.
@@ -239,9 +218,8 @@ void print_5_bytes_response(uint8_t stid, uint8_t ivid, uint8_t rc, uint8_t bid,
 void print_5_bytes_reply(EPS::standard_reply reply) {
     Console::log("Response: stid %x  ivid %x  rc %x  bid %x  stat %x  error %d\n",reply.stid,reply.ivid,reply.rc,reply.bid,reply.stat, reply.error);
 }
-// Test 5.3: Test No Operation using a delay.
-// If it fails, try with STID=0x1A and BID =0 or STID=0x12 and BID=0x01
-int main55() {
+// Test 5: Test No Operation using a delay.
+int main5() {
     DelfiPQcore::initMCU();
     delay_init();
     Console::init(9600);
@@ -804,7 +782,7 @@ int main17() {
     wire.begin();
 
     EPS::system_status_reply reply = EPS::get_system_status(wire,i2c_address);
-    EPS::print_system_status(reply);
+    print_system_status(reply);
 
     if (!reply.error && reply.rc == 0x41 && reply.stat == 0x80) {
         Console::log("Test 17: PASS - GET_SYSTEM_STATUS command works");
@@ -830,7 +808,7 @@ int main18() {
     wire.begin();
 
     EPS::overcurrent_reply reply = EPS::get_overcurrent_fault_state(wire,i2c_address);
-    EPS::print_overcurrent_reply(reply);
+    print_overcurrent_reply(reply);
 
     if (!reply.error && reply.rc == 0x43 && reply.stat == 0x80) {
         Console::log("Test 18: PASS - GET_OVERCURRENT_FAULT_STATE command works");
@@ -856,7 +834,7 @@ int main19() {
     wire.begin();
 
     EPS::pbu_abf_placed_state reply = EPS::get_pbu_abf_placed_state(wire,i2c_address);
-    EPS::print_pbu_abf_placed_state(reply);
+    print_pbu_abf_placed_state(reply);
 
     if (!reply.error && reply.rc == 0x45 && reply.stat == 0x80) {
         Console::log("Test 19: PASS - GET_PBU_ABF_PLACED_STATE command works");
@@ -882,7 +860,7 @@ int main20() {
     wire.begin();
 
     EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_raw(wire,i2c_address);
-    EPS::print_pdu_housekeeping_data_reply(reply);
+    print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x51 && reply.stat == 0x80) {
         Console::log("Test 20: PASS - GET_PDU_HOUSEKEEPING_DATA_RAW command works");
@@ -908,7 +886,7 @@ int main21() {
     wire.begin();
 
     EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_eng(wire,i2c_address);
-    EPS::print_pdu_housekeeping_data_reply(reply);
+    print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x53 && reply.stat == 0x80) {
         Console::log("Test 21: PASS - GET_PDU_HOUSEKEEPING_DATA_ENG command works");
@@ -934,7 +912,7 @@ int main22() {
     wire.begin();
 
     EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_avg(wire,i2c_address);
-    EPS::print_pdu_housekeeping_data_reply(reply);
+    print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x55 && reply.stat == 0x80) {
         Console::log("Test 22: PASS - GET_PDU_HOUSEKEEPING_DATA_AVG command works");
@@ -960,7 +938,7 @@ int main23() {
     wire.begin();
 
     EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_raw(wire,i2c_address);
-    EPS::print_pbu_housekeeping_data_reply(reply);
+    print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x61 && reply.stat == 0x80) {
         Console::log("Test 23: PASS - GET_PBU_HOUSEKEEPING_DATA_RAW command works");
@@ -986,7 +964,7 @@ int main24() {
     wire.begin();
 
     EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_eng(wire,i2c_address);
-    EPS::print_pbu_housekeeping_data_reply(reply);
+    print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x63 && reply.stat == 0x80) {
         Console::log("Test 24: PASS - GET_PBU_HOUSEKEEPING_DATA_ENG command works");
@@ -1012,7 +990,7 @@ int main25() {
     wire.begin();
 
     EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_avg(wire,i2c_address);
-    EPS::print_pbu_housekeeping_data_reply(reply);
+    print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x65 && reply.stat == 0x80) {
         Console::log("Test 25: PASS - GET_PBU_HOUSEKEEPING_DATA_AVG command works");
@@ -1038,7 +1016,7 @@ int main26() {
     wire.begin();
 
     EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_raw(wire,i2c_address);
-    EPS::print_pcu_housekeeping_data_reply(reply);
+    print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x71 && reply.stat == 0x80) {
         Console::log("Test 26: PASS - GET_PCU_HOUSEKEEPING_DATA_RAW command works");
@@ -1064,7 +1042,7 @@ int main27() {
     wire.begin();
 
     EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_eng(wire,i2c_address);
-    EPS::print_pcu_housekeeping_data_reply(reply);
+    print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x73 && reply.stat == 0x80) {
         Console::log("Test 27: PASS - GET_PCU_HOUSEKEEPING_DATA_ENG command works");
@@ -1090,7 +1068,7 @@ int main28() {
     wire.begin();
 
     EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_avg(wire,i2c_address);
-    EPS::print_pcu_housekeeping_data_reply(reply);
+    print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x75 && reply.stat == 0x80) {
         Console::log("Test 28: PASS - GET_PCU_HOUSEKEEPING_DATA_AVG command works");
@@ -1116,7 +1094,7 @@ int main29() {
     wire.begin();
 
     EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_raw(wire,i2c_address);
-    EPS::print_piu_housekeeping_data_reply(reply);
+    print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA1 && reply.stat == 0x80) {
         Console::log("Test 29: PASS - GET_PIU_HOUSEKEEPING_DATA_RAW command works");
@@ -1142,7 +1120,7 @@ int main30() {
     wire.begin();
 
     EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_eng(wire,i2c_address);
-    EPS::print_piu_housekeeping_data_reply(reply);
+    print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA3 && reply.stat == 0x80) {
         Console::log("Test 30: PASS - GET_PIU_HOUSEKEEPING_DATA_ENG command works");
@@ -1168,7 +1146,7 @@ int main31() {
     wire.begin();
 
     EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_avg(wire,i2c_address);
-    EPS::print_piu_housekeeping_data_reply(reply);
+    print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA5 && reply.stat == 0x80) {
         Console::log("Test 31: PASS - GET_PIU_HOUSEKEEPING_DATA_AVG command works");
@@ -1194,7 +1172,7 @@ int main32G() {
     wire.begin();
 
     EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply);
+    print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
         Console::log("Test 32G: PASS - GET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
@@ -1222,7 +1200,7 @@ int main32S() {
     ReturnType param_value{};
     param_value.ui16 = 100;
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
-    EPS::print_config_reply(reply);
+    print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
         Console::log("Test 32S: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
@@ -1234,7 +1212,7 @@ int main32S() {
 
     //try to get it:
     EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply2);
+    print_config_reply(reply2);
     if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==100) {
         Console::log("Test 32S: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
         return 1; // Success
@@ -1259,7 +1237,7 @@ int main32R() {
     wire.begin();
 
     EPS::config_reply reply = EPS::reset_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply);
+    print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x87 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
         Console::log("Test 32R: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
@@ -1271,7 +1249,7 @@ int main32R() {
 
     //try to see if it was reset:
     EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply2);
+    print_config_reply(reply2);
     //300 is the default value
     if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==300) {
         Console::log("Test 32R: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
@@ -1290,7 +1268,7 @@ int main33() {
 
     delay_ms(1000);
     Console::log("EPS Test 33 switch_safety_mode starting\n");
-    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_TO_SAFETY_MODE),BID);
+    print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_TO_SAFETY_MODE),BID);
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1298,7 +1276,7 @@ int main33() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::switch_safety_mode(wire,i2c_address);
-    EPS::print_standard_reply(reply);
+    print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x33 && reply.stat == 0x80) {
         Console::log("Test 33: PASS - switch_safety_mode command works");
@@ -1318,14 +1296,14 @@ int main34() {
 
     delay_ms(1000);
     Console::log("EPS Test 34 switch_nominal_mode starting\n");
-    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_NOMINAL_MODE),BID);
+    print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_NOMINAL_MODE),BID);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
 
     EPS::standard_reply reply = EPS::switch_nominal_mode(wire,i2c_address);
-    EPS::print_standard_reply(reply);
+    print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x31 && reply.stat == 0x80) {
         Console::log("Test 34: PASS - switch_nominal_mode command works");
@@ -1345,14 +1323,14 @@ int main35() {
 
     delay_ms(1000);
     Console::log("EPS Test 35 load_configuration starting\n");
-    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::LOAD_CONFIGURATION),BID);
+    print_command(STID,IVID,static_cast<uint16_t>(CommandCode::LOAD_CONFIGURATION),BID);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
 
     EPS::standard_reply reply = EPS::load_configuration(wire,i2c_address);
-    EPS::print_standard_reply(reply);
+    print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x93 && reply.stat == 0x80) {
         Console::log("Test 35: PASS - load_configuration command works");
@@ -1371,14 +1349,14 @@ int main36() {
 
     delay_ms(1000);
     Console::log("EPS Test 36 reset_configuration starting\n");
-    EPS::print_command(STID,IVID,static_cast<uint16_t>(CommandCode::RESET_CONFIGURATION),BID);
+    print_command(STID,IVID,static_cast<uint16_t>(CommandCode::RESET_CONFIGURATION),BID);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
     wire.begin();
 
     EPS::standard_reply reply = EPS::reset_configuration(wire,i2c_address);
-    EPS::print_standard_reply(reply);
+    print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x91 && reply.stat == 0x80) {
         Console::log("Test 36: PASS - reset_configuration command works");
@@ -1404,7 +1382,7 @@ int main37() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::save_configuration(wire,i2c_address);
-    EPS::print_standard_reply(reply);
+    print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x95 && reply.stat == 0x80) {
         Console::log("Test 37: PASS - save_configuration command works");
@@ -1430,7 +1408,7 @@ int mainC1() {
 
     //initial get
     EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply1);
+    print_config_reply(reply1);
     if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
         Console::log("Test C1: FAIL - initial get param command for watchdog failed");
         return 0; // Failure
@@ -1440,14 +1418,14 @@ int mainC1() {
     ReturnType param_value{};
     param_value.ui16 = 200;
     EPS::config_reply reply2 = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
-    EPS::print_config_reply(reply2);
+    print_config_reply(reply2);
     if(reply2.error || reply2.rc!=0x85 || reply2.stat!=0x80){
         Console::log("Test C1: FAIL - set param command for watchdog failed");
         return 0; // Failure
     }
     //save the configuration
     EPS::standard_reply reply3 = EPS::save_configuration(wire,i2c_address);
-    EPS::print_standard_reply(reply3);
+    print_standard_reply(reply3);
     if(reply3.error || reply3.rc!=0x95 || reply3.stat!=0x80){
         Console::log("Test C1: FAIL - save configuration command failed");
         return 0; // Failure
@@ -1455,14 +1433,14 @@ int mainC1() {
     delay_ms(1000);
     //load the configuration
     EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
-    EPS::print_standard_reply(reply4);
+    print_standard_reply(reply4);
     if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
         Console::log("Test C1: FAIL - load configuration command failed");
         return 0; // Failure
     }
     //final get
     EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply5);
+    print_config_reply(reply5);
     if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
         Console::log("Test C1: FAIL - final get param command for watchdog failed");
         return 0; // Failure
@@ -1497,7 +1475,7 @@ int mainC2() {
     delay_ms(5000);
     //go to safety
     EPS::standard_reply reply2 = EPS::switch_safety_mode(wire,i2c_address);
-    EPS::print_standard_reply(reply2);
+    print_standard_reply(reply2);
 
     if (reply2.error | reply2.rc != 0x33 || reply2.stat != 0x80) {
         Console::log("Test C2: FAIL - switching to safety failed");
@@ -1524,7 +1502,7 @@ int mainC3() {
     ReturnType param_value{};
     param_value.ui16 = 70;
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
-    EPS::print_config_reply(reply);
+    print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
         Console::log("Test C3: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
@@ -1560,14 +1538,14 @@ int mainC4() {
 
     //initial get
     EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply1);
+    print_config_reply(reply1);
     if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
         Console::log("Test C4: FAIL - initial get param command for watchdog failed");
         return 0; // Failure
     }
     //reset the configuration
     EPS::standard_reply reply3 = EPS::reset_configuration(wire,i2c_address);
-    EPS::print_standard_reply(reply3);
+    print_standard_reply(reply3);
     if(reply3.error || reply3.rc!=0x91 || reply3.stat!=0x80){
         Console::log("Test C4: FAIL - reset configuration command failed");
         return 0; // Failure
@@ -1575,7 +1553,7 @@ int mainC4() {
     delay_ms(1000);
     //second get
     EPS::config_reply reply35 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply35);
+    print_config_reply(reply35);
     if(reply35.error || reply35.rc!=0x83 || reply35.stat!=0x80){
         Console::log("Test C4: FAIL - second get param command for watchdog failed");
         return 0; // Failure
@@ -1583,28 +1561,28 @@ int mainC4() {
     //save to hard disk
     // //save the configuration
     // EPS::standard_reply reply41 = EPS::save_configuration(wire,i2c_address);
-    // EPS::print_standard_reply(reply41);
+    // print_standard_reply(reply41);
     // if(reply41.error || reply41.rc!=0x95 || reply41.stat!=0x80){
     //     Console::log("Test C4: FAIL - save configuration command failed");
     //     return 0; // Failure
     // }
     // //third get
     // EPS::config_reply reply351 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    // EPS::print_config_reply(reply351);
+    // print_config_reply(reply351);
     // if(reply351.error || reply351.rc!=0x83 || reply351.stat!=0x80){
     //     Console::log("Test C4: FAIL - third get param command for watchdog failed");
     //     return 0; // Failure
     // }
     //load the configuration
     EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
-    EPS::print_standard_reply(reply4);
+    print_standard_reply(reply4);
     if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
         Console::log("Test C4: FAIL - load configuration command failed");
         return 0; // Failure
     }
     //final get
     EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
-    EPS::print_config_reply(reply5);
+    print_config_reply(reply5);
     if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
         Console::log("Test C4: FAIL - final get param command for watchdog failed");
         return 0; // Failure
@@ -1631,7 +1609,7 @@ int main40S() {
     ReturnType param_value{};
     param_value.ui16 = 70;
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::RST_CNTR_PWRON, param_value);
-    EPS::print_config_reply(reply);
+    print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x84) {
         Console::log("Test 32S: PASS - SET_CONF_PARAM on RST_CNTR_PWRON was rejected because we cannot write on read-only data");
@@ -1767,7 +1745,7 @@ constexpr ConfigEntry configParamTable[] = {
 {"SAFETY_VOLT_HITHR_USED", ConfigParameter::SAFETY_VOLT_HITHR_USED},
 {"SAFETY_LINGER         ", ConfigParameter::SAFETY_LINGER},
 {"TTC_WDG_TIMOUT_USED   ", ConfigParameter::TTC_WDG_TIMOUT_USED},
-{"TTC_PREVCMD_ELAPSED   ", ConfigParameter::TTC_PREVCMD_ELAPSED}, //everythin after this param is not accessible
+{"TTC_PREVCMD_ELAPSED   ", ConfigParameter::TTC_PREVCMD_ELAPSED}, //everything after this param is not accessible
 {"OB_FORCE_ENA_USE_BF   ", ConfigParameter::OB_FORCE_ENA_USE_BF},
 {"OB_STARTUP_ENA_USE_BF ", ConfigParameter::OB_STARTUP_ENA_USE_BF},
 {"OB_LATCHOFF_ENA_USE_BF", ConfigParameter::OB_LATCHOFF_ENA_USE_BF},
@@ -1798,7 +1776,7 @@ int main(){
     for(uint8_t i = 0; i < 131; i++)
     {
         EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,configParamTable[i].value);
-        EPS::print_config_reply(reply);
+        print_config_reply(reply);
 
         Console::log("%s -> %d", configParamTable[i].name, configParamTable[i].value);
         if (reply.error || reply.rc != 0x83 || reply.stat != 0x80 || reply.par_id!=configParamTable[i].value){
