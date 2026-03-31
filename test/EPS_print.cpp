@@ -18,7 +18,7 @@ void print_array(uint8_t *v, uint8_t n) {
     Console::log("Raw bytes: %d bytes", n);
     Console::log(buf);
 }
-void print_VIPD_data(char* name, EPS::VIPD vipd, int i=-1) {
+void print_VIPD_data(char* name, EPS::VIPD vipd, int i) {
     char buf1[70];
     if(i!=-1)
         sprintf(buf1, "%s%d:   VOLT: %d V | CURR: %d A | POWER: %d W", name, i, vipd.volt, vipd.curr, vipd.power);

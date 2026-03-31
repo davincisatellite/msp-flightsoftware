@@ -5,7 +5,7 @@
 #include "../src/DelfiPQcore.h"
 #include "../src/delay.h"
 #include <cstdio>
-#include "EPS_print.h.h"
+#include "EPS_print.h"
 
 /*
      For each config data type we will test the boundaries and a random value between them.
@@ -577,7 +577,7 @@ int main12() {
         }
         Console::log("Re reading...\n");
         print_5_bytes_response(stid,ivid,rc,bid,stat);
-        Console::log("Test 12: Pass\n")
+        Console::log("Test 12: Pass\n");
         return 1;
 
     }
@@ -1762,7 +1762,7 @@ constexpr ConfigEntry configParamTable[] = {
 {"VD6_CH_BF             ", ConfigParameter::VD6_CH_BF}
 };
 //Test all 131 config params
-int main(){
+int mainCP131(){
     DelfiPQcore::initMCU();
     delay_init();
     Console::init(9600);
@@ -1793,7 +1793,7 @@ int main(){
     return 1;
 }
 //Test all the last 11 config params
-int mainCP11(){
+int main(){
     DelfiPQcore::initMCU();
     delay_init();
     Console::init(9600);

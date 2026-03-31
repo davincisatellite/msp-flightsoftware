@@ -1,8 +1,9 @@
 #ifndef EPS_PRINT_H
 #define EPS_PRINT_H
 #include <cstdio>
+#include "../src/EPS.h"
 
-void print_array(uint8_t *v, uint8_t n);
+static void print_array(uint8_t *v, uint8_t n);
 void print_VIPD_data(char* name, EPS::VIPD vipd, int i=-1);
 void print_BPD_data(char* name, EPS::BPD bpd);
 void print_CCD_data(char* name, EPS::CCD ccd);

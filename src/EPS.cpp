@@ -319,7 +319,7 @@ void read_and_fill_conf_param(DWire &wire, uint8_t i2c_address, ConfigParameter 
     } else
         reply.error = true;
 }
-void check_EPS_response(ReplyBase &reply, CommandCode expected_command_code, uint8_t expected_response_length) {
+void check_EPS_response(EPS::ReplyBase &reply, uint8_t expected_command_code) {
     /*
       This method checks the validity of a response from the EPS. It checks:
       -first 4 bits of the reply.error (0xX_) indicates the type of error.
@@ -327,16 +327,14 @@ void check_EPS_response(ReplyBase &reply, CommandCode expected_command_code, uin
       No error means reply.error == 0
      */
     reply.error = 0;
-    if (response != expected_response_length)
-        reply.error = (reply.error | (0x10));// response too short, mark 5th bit
 
-    if (reply.rc != expected_command_code)
+    if (reply.rc != static_cast<uint8_t>(expected_command_code))
         reply.error = (reply.error | (0x20));// incorrect response code received, mark 6th bit
 
     if (reply.stat != 0x80 && reply.stat != 0x00) //we accept it if it is a "re read"
         reply.error = (reply.error | (0x40));// incorrect status byte received. See reply.stat. mark 7th bit
 
-    reply.error = (reply.error | (reply.stat & 0x0F)) //copy the last 4 bits of stat, which contain the error code if the command was rejected.
+    reply.error = (reply.error | (reply.stat & 0x0F)); //copy the last 4 bits of stat, which contain the error code if the command was rejected.
     //if it is 0x00 at the end, then it is valid.
 }
 EPS::config_reply EPS::get_config_param(DWire &wire, uint8_t i2c_address, ConfigParameter par_id) {
@@ -423,7 +421,7 @@ EPS::standard_reply EPS::no_operation(DWire &wire, uint8_t i2c_address) {
 
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::NO_OPERATION | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::NO_OPERATION) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -457,7 +455,7 @@ EPS::standard_reply EPS::system_reset(DWire &wire, uint8_t i2c_address) {
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::SYSTEM_RESET | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::SYSTEM_RESET) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -489,7 +487,7 @@ EPS::standard_reply EPS::cancel_operation(DWire &wire, uint8_t i2c_address) {
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::CANCEL_OPERATION | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::CANCEL_OPERATION) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -521,7 +519,7 @@ EPS::standard_reply EPS::watchdog(DWire &wire, uint8_t i2c_address) {
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::WATCHDOG | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::WATCHDOG) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -555,7 +553,7 @@ EPS::standard_reply EPS::switch_safety_mode(DWire &wire, uint8_t i2c_address) {
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::SWITCH_TO_SAFETY_MODE | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::SWITCH_TO_SAFETY_MODE) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -601,7 +599,7 @@ EPS::system_status_reply EPS::get_system_status(DWire &wire, uint8_t i2c_address
         reply.prevcmd_elapsed = buffer[24]+(buffer[25]<<8);
         //the other 10 bytes are reserved.
 
-        check_EPS_response(reply, CommandCode::GET_SYSTEM_STATUS | 0x01, 36);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::GET_SYSTEM_STATUS) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -643,7 +641,7 @@ EPS::overcurrent_reply EPS::get_overcurrent_fault_state(DWire &wire, uint8_t i2c
         for (int i=0;i<16;i++)
             reply.ocf_cnt_ch[i] = buffer[10+2*i]+(buffer[11+2*i]<<8);
 
-        check_EPS_response(reply, CommandCode::GET_OVERCURRENT_FAULT_STATE | 0x01, 42);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::GET_OVERCURRENT_FAULT_STATE) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -685,7 +683,7 @@ EPS::pbu_abf_placed_state EPS::get_pbu_abf_placed_state(DWire &wire, uint8_t i2c
         reply.abf_placed_0  = buffer[6];
         reply.abf_placed_1 = buffer[7];
 
-        check_EPS_response(reply, CommandCode::GET_PBU_ABF_PLACED_STATE | 0x01, 8);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::GET_PBU_ABF_PLACED_STATE) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -734,7 +732,7 @@ EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data(DWire &wire, uint8_t 
         for(int i=0;i<16;i++)
             fill_VIPD_variable(reply.vip_ch[i], buffer+62+i*6);
 
-        check_EPS_response(reply, commandCode | 0x01, 158);
+        check_EPS_response(reply, static_cast<uint8_t>(commandCode) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -788,7 +786,7 @@ EPS::pbu_housekeeping_data_reply get_pbu_housekeeping_data(DWire &wire, uint8_t 
         for(int i=0;i<3;i++)
             fill_BPD_variable(reply.bp[i], buffer+18+i*22);
 
-        check_EPS_response(reply, commandCode | 0x01, 84);
+        check_EPS_response(reply, static_cast<uint8_t>(commandCode) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -842,7 +840,7 @@ EPS::pcu_housekeeping_data_reply get_pcu_housekeeping_data(DWire &wire, uint8_t 
         for(int i=0;i<4;i++)
             fill_CCD_variable(reply.cc[i], buffer+16+i*14);
 
-        check_EPS_response(reply, commandCode | 0x01, 72);
+        check_EPS_response(reply, static_cast<uint8_t>(commandCode) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -910,7 +908,7 @@ EPS::piu_housekeeping_data_reply get_piu_housekeeping_data(DWire &wire, uint8_t 
         for(int i=0;i<3;i++)
             fill_CCSD_variable(reply.cc[i], buffer+92+i*8);
 
-        check_EPS_response(reply, commandCode | 0x01, 116);
+        check_EPS_response(reply, static_cast<uint8_t>(commandCode) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -954,7 +952,7 @@ EPS::standard_reply EPS::switch_nominal_mode(DWire &wire, uint8_t i2c_address) {
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::SWITCH_NOMINAL_MODE | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::SWITCH_NOMINAL_MODE) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -984,7 +982,7 @@ EPS::standard_reply EPS::output_bus_channel_on(DWire &wire, uint8_t i2c_address,
     // if response is 5 bytes long populate reply struct else mark error.
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::OUTPUT_BUS_CHANNEL_ON | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::OUTPUT_BUS_CHANNEL_ON) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -1014,7 +1012,7 @@ EPS::standard_reply EPS::output_bus_channel_off(DWire &wire, uint8_t i2c_address
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::OUTPUT_BUS_CHANNEL_OFF | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::OUTPUT_BUS_CHANNEL_OFF) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -1052,7 +1050,7 @@ EPS::standard_reply EPS::output_bus_group_state(DWire &wire, uint8_t i2c_address
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::OUTPUT_BUS_GROUP_STATE | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::OUTPUT_BUS_GROUP_STATE) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -1089,7 +1087,7 @@ EPS::standard_reply EPS::output_bus_group_off(DWire &wire, uint8_t i2c_address, 
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::OUTPUT_BUS_GROUP_OFF | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::OUTPUT_BUS_GROUP_OFF) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -1127,7 +1125,7 @@ EPS::standard_reply EPS::output_bus_group_on(DWire &wire, uint8_t i2c_address, u
     // if response is 5 bytes long populate reply struct else mark error
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::OUTPUT_BUS_GROUP_ON | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::OUTPUT_BUS_GROUP_ON) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -1156,7 +1154,7 @@ EPS::standard_reply EPS::reset_configuration(DWire &wire, uint8_t i2c_address) {
 
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::RESET_CONFIGURATION | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::RESET_CONFIGURATION) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -1186,7 +1184,7 @@ EPS::standard_reply EPS::load_configuration(DWire &wire, uint8_t i2c_address) {
 
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::LOAD_CONFIGURATION | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::LOAD_CONFIGURATION) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
@@ -1215,7 +1213,7 @@ EPS::standard_reply EPS::save_configuration(DWire &wire, uint8_t i2c_address) {
 
     if (response == 5) {
         EPS::readCommand(wire, reply);
-        check_EPS_response(reply, CommandCode::SAVE_CONFIGURATION | 0x01, 5);
+        check_EPS_response(reply, static_cast<uint8_t>(CommandCode::SAVE_CONFIGURATION) | 0x01);
     } else {
         reply.error = (reply.error | (0x10)); // response too short, mark 5th bit
     }
