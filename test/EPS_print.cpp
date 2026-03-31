@@ -5,7 +5,7 @@
 
 // there are some methods to print the data on the screen
 void print_array(uint8_t *v, uint8_t n) {
-    char buf[200];
+    char buf[1000];
     int offset = 0;
     for(uint8_t i=0;i<n;i++)
     {
@@ -21,9 +21,9 @@ void print_array(uint8_t *v, uint8_t n) {
 void print_VIPD_data(char* name, EPS::VIPD vipd, int i) {
     char buf1[70];
     if(i!=-1)
-        sprintf(buf1, "%s%d:   VOLT: %d V | CURR: %d A | POWER: %d W", name, i, vipd.volt, vipd.curr, vipd.power);
+        sprintf(buf1, "%s%d:   VOLT: %d mV | CURR: %d mA | POWER: %d cW", name, i, vipd.volt, vipd.curr, vipd.power);
     else
-        sprintf(buf1, "%s:   VOLT: %d V | CURR: %d A | POWER: %d W", name, vipd.volt, vipd.curr, vipd.power);
+        sprintf(buf1, "%s:   VOLT: %d mV | CURR: %d mA | POWER: %d cW", name, vipd.volt, vipd.curr, vipd.power);
     Console::log(buf1);
 }
 void print_BPD_data(char* name, EPS::BPD bpd) {
@@ -31,10 +31,10 @@ void print_BPD_data(char* name, EPS::BPD bpd) {
     Console::log("%s:",name);
     print_VIPD_data("    VIP_BP_INPUT", bpd.vip_bp_input);
     Console::log("    STAT_BP: %x", bpd.stat_bp);
-    sprintf(buf1, "    VOLT_CELLS 1,2,3,4:  %d V | %d V |  %d V | %d V", bpd.volt_cell1, bpd.volt_cell2, bpd.volt_cell3, bpd.volt_cell4);
-    sprintf(buf2, "    Internal temperature of battery:                 %d C", bpd.bat_temp1);
-    sprintf(buf3, "    Temperature in between the center battery cells: %d C", bpd.bat_temp2);
-    sprintf(buf4, "    Temperature on the front of the battery pack:    %d C", bpd.bat_temp3);
+    sprintf(buf1, "    VOLT_CELLS 1,2,3,4:  %d mV | %d mV |  %d mV | %d mV", bpd.volt_cell1, bpd.volt_cell2, bpd.volt_cell3, bpd.volt_cell4);
+    sprintf(buf2, "    Internal temperature of battery:                 %d cC", bpd.bat_temp1);
+    sprintf(buf3, "    Temperature in between the center battery cells: %d cC", bpd.bat_temp2);
+    sprintf(buf4, "    Temperature on the front of the battery pack:    %d cC", bpd.bat_temp3);
     Console::log(buf1);
     Console::log(buf2);
     Console::log(buf3);
@@ -44,17 +44,17 @@ void print_CCD_data(char* name, EPS::CCD ccd) {
     char buf1[60],buf2[60];
     Console::log("%s:",name);
     print_VIPD_data("    VIP_CC_OUTPUT", ccd.vip_cc_output);
-    sprintf(buf1, "    VOLT_IN_MPPT:  %d V  |  CURR_IN_MPPT:  %d V", ccd.volt_in_mppt, ccd.curr_in_mppt);
+    sprintf(buf1, "    VOLT_IN_MPPT:  %d mV  |  CURR_IN_MPPT:  %d mV", ccd.volt_in_mppt, ccd.curr_in_mppt);
     Console::log(buf1);
-    sprintf(buf2, "    VOLT_OUT_MPPT: %d V  |  CURR_OUT_MPPT: %d V", ccd.volt_out_mppt, ccd.curr_out_mppt);
+    sprintf(buf2, "    VOLT_OUT_MPPT: %d mV  |  CURR_OUT_MPPT: %d mV", ccd.volt_out_mppt, ccd.curr_out_mppt);
     Console::log(buf2);
 }
 void print_CCSD_data(char* name, EPS::CCSD ccsd) {
     char buf1[60],buf2[60];
     Console::log("%s:",name);
-    sprintf(buf1, "    VOLT_IN_MPPT:  %d V  |  CURR_IN_MPPT:  %d V", ccsd.volt_in_mppt, ccsd.curr_in_mppt);
+    sprintf(buf1, "    VOLT_IN_MPPT:  %d mV  |  CURR_IN_MPPT:  %d mV", ccsd.volt_in_mppt, ccsd.curr_in_mppt);
     Console::log(buf1);
-    sprintf(buf2, "    VOLT_OUT_MPPT: %d V  |  CURR_OUT_MPPT: %d V", ccsd.volt_out_mppt, ccsd.curr_out_mppt);
+    sprintf(buf2, "    VOLT_OUT_MPPT: %d mV  |  CURR_OUT_MPPT: %d mV", ccsd.volt_out_mppt, ccsd.curr_out_mppt);
     Console::log(buf2);
 }
 void print_command(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid) {
@@ -156,7 +156,7 @@ void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply) {
 
 
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    sprintf(buf1, "VOLT_BRDSUP: %d mV  |  TEMP: %d cC", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_INPUT", reply.vip_input);
     Console::log("STAT_BU: %x", reply.stat_bu);
@@ -169,7 +169,7 @@ void print_pcu_housekeeping_data_reply(EPS::pcu_housekeeping_data_reply reply) {
     char buf1[60];
     Console::log("--- PCU Housekeeping Data (engineering form)---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    sprintf(buf1, "VOLT_BRDSUP: %d mV  |  TEMP: %d cC", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_OUTPUT", reply.vip_output);
     print_CCD_data("CC1", reply.cc[0]);
@@ -182,7 +182,7 @@ void print_pdu_housekeeping_data_reply(EPS::pdu_housekeeping_data_reply reply) {
     char buf1[60];
     Console::log("--- PDU Housekeeping Data (engineering form)---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    sprintf(buf1, "VOLT_BRDSUP: %d mV  |  TEMP: %d cC", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_INPUT", reply.vip_input);
     Console::log("STAT_CH_ON: %x  |  STAT_CH_OCF: %x", reply.stat_ch_on, reply.stat_ch_ocf);
@@ -195,14 +195,14 @@ void print_piu_housekeeping_data_reply(EPS::piu_housekeeping_data_reply reply) {
     char buf1[60],buf2[70],buf3[70];
     Console::log("--- PIU Housekeeping Data (engineering form)---");
     Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
-    sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
+    sprintf(buf1, "VOLT_BRDSUP: %d mV  |  TEMP: %d cC", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_DIST_INPUT", reply.vip_dist_input);
     print_VIPD_data("VIP_BATT_INPUT", reply.vip_bat_input);
     Console::log("STAT_CH_ON: %x  |  STAT_CH_OCF: %x", reply.stat_ch_on, reply.stat_ch_ocf);
     sprintf(buf2, "BAT_STAT: %x  |  BAT_TEMP2: %d  |  BAT_TEMP3: %d", reply.bat_stat, reply.bat_temp2, reply.bat_temp3);
     Console::log(buf2);
-    sprintf(buf3, "VOLT voltage domains 0,1,2:  %d V  |  %d V  |  %d V ", reply.volt_vd[0], reply.volt_vd[1], reply.volt_vd[2]);
+    sprintf(buf3, "VOLT voltage domains 0,1,2:  %d mV  |  %d mV  |  %d mV ", reply.volt_vd[0], reply.volt_vd[1], reply.volt_vd[2]);
     Console::log(buf3);
     for(int i=0;i<9;i++)
         print_VIPD_data("VIP_CH", reply.vip_ch[i], i);

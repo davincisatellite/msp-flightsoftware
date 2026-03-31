@@ -3,8 +3,7 @@
 //
 #include "EPS.h"
 #include <cstddef> //for size_t
-#include <cstring> //for memcpy
-#include "../src/Console.h"
+#include <cstring> //for memcset
 #include <cstdio>
 
 ParameterType EPS::getConfigParameterType(ConfigParameter conf_par) {
@@ -234,6 +233,10 @@ bool EPS::read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n) {
     }
     return true;
 }
+void EPS::get_EPS_buffer(DWire &wire, uint8_t i2c_address, uint8_t *buffer, uint8_t buffer_length) {
+    uint8_t response = wire.requestFrom(i2c_address, buffer_length);
+    EPS::read_n_bytes(wire, buffer, buffer_length);
+}
 void fill_VIPD_variable(EPS::VIPD &vipd, uint8_t *buf) {
     //it is assumed that buf has at least 6 spaces (it should have exactly 6 spaces)
     vipd.volt  = buf[0]+(buf[1]<<8);
@@ -270,7 +273,6 @@ void fill_CCSD_variable(EPS::CCSD &ccsd, uint8_t *buf) {
 void fill_conf_variable(union ReturnType &par_value, uint8_t *buf, uint8_t n, ParameterType type) {
     //copy n bytes of the buffer into par_value.
     memset(&par_value, 0, sizeof(par_value));
-//    memcpy(&par_value, buf, n);
     switch(type)
     {
         case ParameterType::Int8:

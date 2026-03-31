@@ -218,65 +218,7 @@ void print_5_bytes_response(uint8_t stid, uint8_t ivid, uint8_t rc, uint8_t bid,
 void print_5_bytes_reply(EPS::standard_reply reply) {
     Console::log("Response: stid %x  ivid %x  rc %x  bid %x  stat %x  error %d\n",reply.stid,reply.ivid,reply.rc,reply.bid,reply.stat, reply.error);
 }
-// Test 5: Test No Operation using a delay.
-int main5() {
-    DelfiPQcore::initMCU();
-    delay_init();
-    Console::init(9600);
 
-    delay_ms(1000);
-    Console::log("\nEPS Test 5 starting\n");
-
-    uint8_t i2c_address = 0x20;
-    DWire wire = DWire();
-    wire.setFastMode();
-    wire.begin();
-
-    print_4_bytes_command(0x00,0x06,0x02,0x00);
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00); // STID
-    wire.write(0x06); // IVID
-    wire.write(0x02); // NO_OPERATION (cc)
-    wire.write(0x00); // BID
-    bool writing = wire.endTransmission(true);
-    if (writing) {
-        Console::log("Test 5: FAIL - I2C write failed / NAK\n");
-        return 0;
-    }
-
-    delay_ms(20); //important
-
-    uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
-    if (bytes_received == 5) {
-        uint8_t stid = wire.read();
-        uint8_t ivid = wire.read();
-        uint8_t rc = wire.read();
-        uint8_t bid = wire.read();
-        uint8_t stat = wire.read();
-        print_5_bytes_response(stid,ivid,rc,bid,stat);
-        //safety check
-        if (stid == 0xFF || rc == 0xFF) {
-            Console::log("No valid response yet (0xFF). Waiting 100ms.");
-            delay_ms(100);
-        }
-        Console::log("Re reading...\n");
-        print_5_bytes_response(stid,ivid,rc,bid,stat);
-        if (rc == 0x03 && (stat == 0x80 || stat == 0x00)){
-            //0x80 is better, but 0x00 is also correct
-            Console::log("Test 5: PASS - Command accepted\n");
-            return 1;
-        }
-        else {
-            Console::log("Test 5: FAIL - Invalid response structure\n");
-            return 0;
-        }
-
-    }
-    else {
-        Console::log("Test 5.3: FAIL - Too few Bytes received: %d\n", bytes_received);
-        return 0;
-    }
-}
 // Test 6: Test NO_OPERATION command using EPS function
 // Returns: 1 on success, 0 on failure
 int main6() {
@@ -293,6 +235,12 @@ int main6() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::no_operation(wire, i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
     if (!reply.error && reply.rc == 0x03 && reply.stat == 0x80) {
         Console::log("Test 6: PASS - NO_OPERATION command works\n");
@@ -302,7 +250,8 @@ int main6() {
         return 0; // Failure
     }
 }
-// Test 7: Test OUTPUT_BUS_CHANNEL_ON command using raw write, read methods
+
+// Test 7: Test OUTPUT_BUS_CHANNEL_ON command using EPS method
 // Returns: 1 on success, 0 on failure
 int main7() {
     DelfiPQcore::initMCU();
@@ -317,54 +266,25 @@ int main7() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::writeCommand5Bytes(wire,i2c_address,CommandCode::OUTPUT_BUS_CHANNEL_ON, 0x03);
-    delay_ms(20);
-    EPS::standard_reply reply;
-    uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
-
-    if (bytes_received == 5) {
-        EPS::readCommand(wire,reply);
-        print_5_bytes_reply(reply);
-        if (!reply.error && reply.rc == 0x17 && reply.stat == 0x80) {
-            Console::log("Test 7: PASS - OUTPUT_BUS_CHANNEL_ON command on index 1 works\n");
-            return 1; // Success
-        } else {
-            Console::log("Test 7: FAIL - OUTPUT_BUS_CHANNEL_ON command rejected\n");
-            return 0; // Failure
-        }
-    }
-    else {
-        Console::log("Test 7: FAIL - Too few Bytes received: %d\n", bytes_received);
-        return 0;
-    }
-}
-// Test 7.2: Test OUTPUT_BUS_CHANNEL_ON command using EPS method
-// Returns: 1 on success, 0 on failure
-int main7_2() {
-    DelfiPQcore::initMCU();
-    delay_init();
-    Console::init(9600);
-
-    delay_ms(1000);
-    Console::log("\nEPS Test 7_2 OUTPUT_BUS_CHANNEL_ON starting\n");
-
-    uint8_t i2c_address = 0x20;
-    DWire wire = DWire();
-    wire.setFastMode();
-    wire.begin();
-
     EPS::standard_reply reply = EPS::output_bus_channel_on(wire,i2c_address, 0x03);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x17 && reply.stat == 0x80) {
-        Console::log("Test 7_2: PASS - OUTPUT_BUS_CHANNEL_ON command on index 3 works\n");
+        Console::log("Test 7: PASS - OUTPUT_BUS_CHANNEL_ON command on index 3 works\n");
         return 1; // Success
     } else {
-        Console::log("Test 7_2: FAIL - OUTPUT_BUS_CHANNEL_ON command rejected\n");
+        Console::log("Test 7: FAIL - OUTPUT_BUS_CHANNEL_ON command rejected\n");
         return 0; // Failure
     }
 }
-// Test 8: Test OUTPUT_BUS_CHANNEL_OFF command using raw write, read methods
+
+// Test 8: Test OUTPUT_BUS_CHANNEL_OFF command using EPS method
 // Returns: 1 on success, 0 on failure
 int main8() {
     DelfiPQcore::initMCU();
@@ -379,50 +299,20 @@ int main8() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::writeCommand5Bytes(wire,i2c_address,CommandCode::OUTPUT_BUS_CHANNEL_OFF, 0x03);
-    delay_ms(20);
-    EPS::standard_reply reply;
-    uint8_t bytes_received = wire.requestFrom(i2c_address, 5);
-
-    if (bytes_received == 5) {
-        EPS::readCommand(wire,reply);
-        print_5_bytes_reply(reply);
-        if (!reply.error && reply.rc == 0x19 && reply.stat == 0x80) {
-            Console::log("Test 8: PASS - OUTPUT_BUS_CHANNEL_OFF command on index 1 works\n");
-            return 1; // Success
-        } else {
-            Console::log("Test 8: FAIL - OUTPUT_BUS_CHANNEL_OFF command rejected\n");
-            return 0; // Failure
-        }
-    }
-    else {
-        Console::log("Test 8: FAIL - Too few Bytes received: %d\n", bytes_received);
-        return 0;
-    }
-}
-// Test 8.2: Test OUTPUT_BUS_CHANNEL_OFF command using EPS method
-// Returns: 1 on success, 0 on failure
-int main8_2() {
-    DelfiPQcore::initMCU();
-    delay_init();
-    Console::init(9600);
-
-    delay_ms(1000);
-    Console::log("\nEPS Test 8_2 OUTPUT_BUS_CHANNEL_OFF starting\n");
-
-    uint8_t i2c_address = 0x20;
-    DWire wire = DWire();
-    wire.setFastMode();
-    wire.begin();
-
     EPS::standard_reply reply = EPS::output_bus_channel_off(wire,i2c_address, 0x03);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x19 && reply.stat == 0x80) {
-        Console::log("Test 8_2: PASS - OUTPUT_BUS_CHANNEL_OFF command on index 1 works\n");
+        Console::log("Test 8: PASS - OUTPUT_BUS_CHANNEL_OFF command on index 1 works\n");
         return 1; // Success
     } else {
-        Console::log("Test 8_2: FAIL - OUTPUT_BUS_CHANNEL_OFF command rejected\n");
+        Console::log("Test 8: FAIL - OUTPUT_BUS_CHANNEL_OFF command rejected\n");
         return 0; // Failure
     }
 }
@@ -446,6 +336,12 @@ int main9() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::watchdog(wire, i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x07) {
@@ -473,6 +369,12 @@ int main10() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::cancel_operation(wire, i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x05 && reply.stat == 0x80) {
@@ -500,6 +402,12 @@ int main11() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::system_reset(wire, i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     //in case we don't manage to read the response, we should take a look at the output (we should see 0xFF values)
@@ -527,12 +435,21 @@ int main11_2(){
 
     //turn on channel 3
     EPS::standard_reply reply2 = EPS::output_bus_channel_on(wire,i2c_address, 0x03);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply2);
 
     delay_ms(2000);
     Console::log("...\n");
 
     EPS::standard_reply reply = EPS::system_reset(wire, i2c_address);
+
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
 
     print_5_bytes_reply(reply);
     if (!reply.error && ((reply.rc == 0xAB && reply.stat == 0x80) || (reply.rc==0xFF && reply.stat == 0xFF))) {
@@ -604,6 +521,12 @@ int main13() {
     wire.begin();
 
     EPS::standard_reply reply2 = EPS::system_reset(wire, i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply2);
     if (!reply2.error && ((reply2.rc == 0xAB && reply2.stat == 0x80) || (reply2.rc==0xFF && reply2.stat == 0xFF))) {
         Console::log("Test 13: update: SYSTEM_RESET command worked");
@@ -617,6 +540,11 @@ int main13() {
 
     //0b00000001 11111111 -> is good
     EPS::standard_reply reply = EPS::output_bus_group_on(wire,i2c_address, 0x01FF);//0x00DC
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x11 && reply.stat == 0x80) {
@@ -645,6 +573,12 @@ int main14() {
 
     //0b00000001 11011100 -> is good
     EPS::standard_reply reply = EPS::output_bus_group_off(wire,i2c_address, 0x01DC);//0x00DC
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x13 && reply.stat == 0x80) {
@@ -672,6 +606,12 @@ int main15() {
 
     //0b00000001 01100111 -> 0,1,2,5,6,8 are on and 3,4 7 are off
     EPS::standard_reply reply = EPS::output_bus_group_state(wire,i2c_address, 0x0167);//0x0167
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x15 && reply.stat == 0x80) {
@@ -680,77 +620,6 @@ int main15() {
     } else {
         Console::log("Test 15: FAIL - OUTPUT_BUS_GROUP_STATE command rejected\n");
         return 0; // Failure
-    }
-}
-
-// Test 16: Test Get PIU Housekeeping Data (eng) (old printing)
-// Returns: 1 on success, 0 on failure
-int main16() {
-    DelfiPQcore::initMCU();
-    delay_init();
-    Console::init(9600);
-
-    delay_ms(1000);
-    Console::log("\n Test 16 Get PIU Housekeeping Data starting\n");
-
-    uint8_t i2c_address = 0x20;
-    DWire wire = DWire();
-    wire.setFastMode();
-    wire.begin();
-
-    print_4_bytes_command(0x00,0x06,0x62,0x00);
-    wire.beginTransmission(i2c_address);
-    wire.write(0x00); // STID
-    wire.write(0x06); // IVID
-    wire.write(0x62); // Get PIU Housekeeping Data
-    wire.write(0x00); // BID
-    bool writing = wire.endTransmission(true);
-    // if (writing) {
-    //     Console::log("Test 16: FAIL - I2C write failed / NAK");
-    //     return 0;
-    // }
-
-    delay_ms(20); //important
-
-    uint8_t bytes_received = wire.requestFrom(i2c_address, 84);
-    if (bytes_received == 84) {
-        uint8_t stid = wire.read();
-        uint8_t ivid = wire.read();
-        uint8_t rc = wire.read();
-        uint8_t bid = wire.read();
-        uint8_t stat = wire.read();
-        print_5_bytes_response(stid,ivid,rc,bid,stat);
-        //we still have 111 bytes to print
-        uint8_t buff[84];
-
-        // uint8_t n=111;
-        buff[0]=stid;
-        buff[1]=ivid;
-        buff[2]=rc;
-        buff[3]=bid;
-        buff[4]=stat;
-        for (uint8_t i = 0; i < 79; i++) {
-            buff[i+5] = wire.read();
-        }
-
-        if (rc == 0x63 && stat == 0x80){
-            //0x80 is better, but 0x00 is also correct
-            Console::log("Test 16: PASS - Command accepted\n");
-            // print_uint8_array_bytes(buff,116);
-//            for (uint8_t i = 0; i < 84; i++) {
-//                Console::log("%d) %x", i, buff[i]);
-//            }
-            return 1;
-        }
-        else {
-            Console::log("Test 16: FAIL - Invalid response structure\n");
-            return 0;
-        }
-
-    }
-    else {
-        Console::log("Test 16: FAIL - Too few Bytes received: %d\n", bytes_received);
-        return 0;
     }
 }
 /*
@@ -783,6 +652,12 @@ int main17() {
     wire.begin();
 
     EPS::system_status_reply reply = EPS::get_system_status(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[36];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,36);
+    print_array(eps_buffer, 36);
+
     print_system_status(reply);
 
     if (!reply.error && reply.rc == 0x41 && reply.stat == 0x80) {
@@ -835,6 +710,12 @@ int main19() {
     wire.begin();
 
     EPS::pbu_abf_placed_state reply = EPS::get_pbu_abf_placed_state(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[8];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 8);
+    print_array(eps_buffer, 8);
+
     print_pbu_abf_placed_state(reply);
 
     if (!reply.error && reply.rc == 0x45 && reply.stat == 0x80) {
@@ -861,6 +742,12 @@ int main20() {
     wire.begin();
 
     EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_raw(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[158];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 158);
+    print_array(eps_buffer, 158);
+
     print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x51 && reply.stat == 0x80) {
@@ -887,6 +774,12 @@ int main21() {
     wire.begin();
 
     EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_eng(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[158];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 158);
+    print_array(eps_buffer, 158);
+
     print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x53 && reply.stat == 0x80) {
@@ -913,6 +806,12 @@ int main22() {
     wire.begin();
 
     EPS::pdu_housekeeping_data_reply reply = EPS::get_pdu_housekeeping_data_avg(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[158];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 158);
+    print_array(eps_buffer, 158);
+
     print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x55 && reply.stat == 0x80) {
@@ -939,6 +838,12 @@ int main23() {
     wire.begin();
 
     EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_raw(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[84];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 84);
+    print_array(eps_buffer, 84);
+
     print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x61 && reply.stat == 0x80) {
@@ -965,6 +870,12 @@ int main24() {
     wire.begin();
 
     EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_eng(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[84];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 84);
+    print_array(eps_buffer, 84);
+
     print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x63 && reply.stat == 0x80) {
@@ -991,6 +902,12 @@ int main25() {
     wire.begin();
 
     EPS::pbu_housekeeping_data_reply reply = EPS::get_pbu_housekeeping_data_avg(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[84];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 84);
+    print_array(eps_buffer, 84);
+
     print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x65 && reply.stat == 0x80) {
@@ -1017,6 +934,12 @@ int main26() {
     wire.begin();
 
     EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_raw(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[72];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 72);
+    print_array(eps_buffer, 72);
+
     print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x71 && reply.stat == 0x80) {
@@ -1043,6 +966,12 @@ int main27() {
     wire.begin();
 
     EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_eng(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[72];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 72);
+    print_array(eps_buffer, 72);
+
     print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x73 && reply.stat == 0x80) {
@@ -1069,6 +998,12 @@ int main28() {
     wire.begin();
 
     EPS::pcu_housekeeping_data_reply reply = EPS::get_pcu_housekeeping_data_avg(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[72];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 72);
+    print_array(eps_buffer, 72);
+
     print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x75 && reply.stat == 0x80) {
@@ -1095,6 +1030,12 @@ int main29() {
     wire.begin();
 
     EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_raw(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[116];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,116);
+    print_array(eps_buffer, 116);
+
     print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA1 && reply.stat == 0x80) {
@@ -1121,6 +1062,12 @@ int main30() {
     wire.begin();
 
     EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_eng(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[116];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,116);
+    print_array(eps_buffer, 116);
+
     print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA3 && reply.stat == 0x80) {
@@ -1147,6 +1094,12 @@ int main31() {
     wire.begin();
 
     EPS::piu_housekeeping_data_reply reply = EPS::get_piu_housekeeping_data_avg(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[116];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,116);
+    print_array(eps_buffer, 116);
+
     print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA5 && reply.stat == 0x80) {
@@ -1173,6 +1126,12 @@ int main32G() {
     wire.begin();
 
     EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
@@ -1201,6 +1160,12 @@ int main32S() {
     ReturnType param_value{};
     param_value.ui16 = 100;
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
@@ -1213,6 +1178,11 @@ int main32S() {
 
     //try to get it:
     EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply2);
     if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==100) {
         Console::log("Test 32S: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT\n");
@@ -1238,6 +1208,12 @@ int main32R() {
     wire.begin();
 
     EPS::config_reply reply = EPS::reset_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x87 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
@@ -1250,6 +1226,11 @@ int main32R() {
 
     //try to see if it was reset:
     EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply2);
     //300 is the default value
     if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==300) {
@@ -1277,6 +1258,12 @@ int main33() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::switch_safety_mode(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x33 && reply.stat == 0x80) {
@@ -1304,6 +1291,12 @@ int main34() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::switch_nominal_mode(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x31 && reply.stat == 0x80) {
@@ -1331,6 +1324,12 @@ int main35() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::load_configuration(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x93 && reply.stat == 0x80) {
@@ -1357,6 +1356,12 @@ int main36() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::reset_configuration(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x91 && reply.stat == 0x80) {
@@ -1383,6 +1388,12 @@ int main37() {
     wire.begin();
 
     EPS::standard_reply reply = EPS::save_configuration(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x95 && reply.stat == 0x80) {
@@ -1409,6 +1420,12 @@ int mainC1() {
 
     //initial get
     EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply1);
     if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
         Console::log("Test C1: FAIL - initial get param command for watchdog failed\n");
@@ -1419,6 +1436,11 @@ int mainC1() {
     ReturnType param_value{};
     param_value.ui16 = 200;
     EPS::config_reply reply2 = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply2);
     if(reply2.error || reply2.rc!=0x85 || reply2.stat!=0x80){
         Console::log("Test C1: FAIL - set param command for watchdog failed\n");
@@ -1426,6 +1448,11 @@ int mainC1() {
     }
     //save the configuration
     EPS::standard_reply reply3 = EPS::save_configuration(wire,i2c_address);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_standard_reply(reply3);
     if(reply3.error || reply3.rc!=0x95 || reply3.stat!=0x80){
         Console::log("Test C1: FAIL - save configuration command failed\n");
@@ -1434,6 +1461,11 @@ int mainC1() {
     delay_ms(1000);
     //load the configuration
     EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_standard_reply(reply4);
     if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
         Console::log("Test C1: FAIL - load configuration command failed\n");
@@ -1441,6 +1473,11 @@ int mainC1() {
     }
     //final get
     EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply5);
     if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
         Console::log("Test C1: FAIL - final get param command for watchdog failed\n");
@@ -1466,6 +1503,12 @@ int mainC2() {
 
     //turn on the buses
     EPS::standard_reply reply1 = EPS::output_bus_group_on(wire,i2c_address, 0x01FF);//0x00DC
+
+    delay_ms(50);
+    uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply1);
 
     if (reply1.error || reply1.rc != 0x11 || reply1.stat != 0x80){
@@ -1476,6 +1519,11 @@ int mainC2() {
     delay_ms(5000);
     //go to safety
     EPS::standard_reply reply2 = EPS::switch_safety_mode(wire,i2c_address);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply2);
 
     if (reply2.error | reply2.rc != 0x33 || reply2.stat != 0x80) {
@@ -1503,6 +1551,12 @@ int mainC3() {
     ReturnType param_value{};
     param_value.ui16 = 70;
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
@@ -1514,6 +1568,11 @@ int mainC3() {
     }
     //turn on all buses
     EPS::standard_reply reply2 = EPS::output_bus_group_on(wire,i2c_address, 0x01FF);//0x00DC
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_5_bytes_reply(reply2);
 
     if (reply2.error || reply2.rc != 0x11 || reply.stat != 0x80){
@@ -1542,6 +1601,12 @@ int mainC4() {
 
     //initial get
     EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply1);
     if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
         Console::log("Test C4: FAIL - initial get param command for watchdog failed\n");
@@ -1549,6 +1614,11 @@ int mainC4() {
     }
     //reset the configuration
     EPS::standard_reply reply3 = EPS::reset_configuration(wire,i2c_address);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply3);
     if(reply3.error || reply3.rc!=0x91 || reply3.stat!=0x80){
         Console::log("Test C4: FAIL - reset configuration command failed\n");
@@ -1557,6 +1627,11 @@ int mainC4() {
     delay_ms(1000);
     //second get
     EPS::config_reply reply35 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply35);
     if(reply35.error || reply35.rc!=0x83 || reply35.stat!=0x80){
         Console::log("Test C4: FAIL - second get param command for watchdog failed\n");
@@ -1579,6 +1654,11 @@ int mainC4() {
     // }
     //load the configuration
     EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,5);
+    print_array(eps_buffer, 5);
+
     print_standard_reply(reply4);
     if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
         Console::log("Test C4: FAIL - load configuration command failed\n");
@@ -1586,6 +1666,11 @@ int mainC4() {
     }
     //final get
     EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply5);
     if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
         Console::log("Test C4: FAIL - final get param command for watchdog failed\n");
@@ -1613,6 +1698,12 @@ int main40S() {
     ReturnType param_value{};
     param_value.ui16 = 70;
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::RST_CNTR_PWRON, param_value);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x84) {
@@ -1775,11 +1866,20 @@ int mainCP131(){
     wire.setFastMode();
     wire.begin();
 
+    delay_ms(50);
+    uint8_t eps_buffer[16];
+
     Console::log("Param -> Value:\n");
     //OB_FORCE_ENA_USE_BF, OB_STARTUP_ENA_USE_BF, OB_LATCHOFF_ENA_USE_BF
     for(uint8_t i = 0; i < 131; i++)
     {
+        uint8_t param_l = EPS::get_param_length(EPS::getConfigParameterType(configParamTable[i].value));
         EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,configParamTable[i].value);
+
+        delay_ms(50);
+        EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, param_l);
+        print_array(eps_buffer, param_l);
+
         print_config_reply(reply);
 
         Console::log("%s -> %d", configParamTable[i].name, configParamTable[i].value);
@@ -1806,11 +1906,18 @@ int main(){
     wire.setFastMode();
     wire.begin();
 
+    uint8_t eps_buffer[16];
     Console::log("Param -> Value:\n");
     //OB_FORCE_ENA_USE_BF, OB_STARTUP_ENA_USE_BF, OB_LATCHOFF_ENA_USE_BF
     for(uint8_t i = 121; i < 131; i++)
     {
+        uint8_t param_l = EPS::get_param_length(EPS::getConfigParameterType(configParamTable[i].value));
         EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,configParamTable[i].value);
+
+        delay_ms(50);
+        EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, param_l);
+        print_array(eps_buffer, param_l);
+
         print_config_reply(reply);
 
         Console::log("%s -> %d", configParamTable[i].name, configParamTable[i].value);

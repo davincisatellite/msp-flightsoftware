@@ -427,25 +427,11 @@ public:
     static void writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode);
     static void writeCommand5Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte);
     static void writeCommand6Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte, uint8_t sixthByte);
-    // static void writeCommandSaveConfiguration(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t CONF_KEY, uint16_t CHECKSUM);
     static void readCommand(DWire &wire, EPS::ReplyBase &reply);
     static bool read_n_bytes(DWire &wire, uint8_t *buf, uint8_t n);
     static bool write_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, CommandCode commandCode);
     static config_reply read_config_params(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, config_reply &reply);
-
-    //printing methods for visualising data
-//    static void print_command(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid);
-//    static void print_command_5_bytes(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid, uint8_t fifth_byte);
-//    static void print_command_6_bytes(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid, uint8_t fifth_byte, uint8_t sixth_byte);
-//    static void print_standard_reply(standard_reply reply);
-//    static void print_system_status(system_status_reply reply);
-//    static void print_overcurrent_reply(EPS::overcurrent_reply reply);
-//    static void print_pbu_abf_placed_state(EPS::pbu_abf_placed_state reply);
-//    static void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply);
-//    static void print_pcu_housekeeping_data_reply(EPS::pcu_housekeeping_data_reply reply);
-//    static void print_pdu_housekeeping_data_reply(pdu_housekeeping_data_reply reply);
-//    static void print_piu_housekeeping_data_reply(piu_housekeeping_data_reply reply);
-//    static void print_config_reply(config_reply reply);
+    static void get_EPS_buffer(DWire &wire, uint8_t i2c_address, uint8_t *buffer, uint8_t buffer_length);
 };
 
 #endif //EPS_CONVERSION_EPS_H
