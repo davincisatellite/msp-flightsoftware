@@ -71,13 +71,13 @@ void print_command_6_bytes(uint8_t stid, uint8_t ivid, uint8_t cc, uint8_t bid, 
 }
 void print_standard_reply(EPS::standard_reply reply) {
     Console::log("--- Standard Reply Data ---");
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
 }
 
 
 void print_system_status(EPS::system_status_reply reply) {
     Console::log("--- System status Data ---");
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
 
     //Console::log("MODE: %d", reply.mode);
     if (reply.mode==0)
@@ -125,7 +125,7 @@ void print_system_status(EPS::system_status_reply reply) {
 
 void print_overcurrent_reply(EPS::overcurrent_reply reply) {
     Console::log("--- PIU Overcurrent Reply Data ---");
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     Console::log("STAT_OB_ON: %x  |  STAT_OB_OCF: %x", reply.stat_ob_on, reply.stat_ob_ocf);
     Console::log("Overcurrent fault count of output bus channels:");
     for(int i=0;i<8;i++) {
@@ -136,7 +136,7 @@ void print_overcurrent_reply(EPS::overcurrent_reply reply) {
 }
 void print_pbu_abf_placed_state(EPS::pbu_abf_placed_state reply) {
     Console::log("--- PBU ABF Placed State Reply Data ---");
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     Console::log("STAT_OB_ON: %x  |  STAT_OB_OCF: %x", reply.abf_placed_0, reply.abf_placed_1);
     if(reply.abf_placed_0==0xAB)
         Console::log("is ABD placed?: yes");
@@ -155,7 +155,7 @@ void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply) {
 
 
 
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_INPUT", reply.vip_input);
@@ -168,7 +168,7 @@ void print_pbu_housekeeping_data_reply(EPS::pbu_housekeeping_data_reply reply) {
 void print_pcu_housekeeping_data_reply(EPS::pcu_housekeeping_data_reply reply) {
     char buf1[60];
     Console::log("--- PCU Housekeeping Data (engineering form)---");
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_OUTPUT", reply.vip_output);
@@ -181,7 +181,7 @@ void print_pcu_housekeeping_data_reply(EPS::pcu_housekeeping_data_reply reply) {
 void print_pdu_housekeeping_data_reply(EPS::pdu_housekeeping_data_reply reply) {
     char buf1[60];
     Console::log("--- PDU Housekeeping Data (engineering form)---");
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_INPUT", reply.vip_input);
@@ -194,7 +194,7 @@ void print_pdu_housekeeping_data_reply(EPS::pdu_housekeeping_data_reply reply) {
 void print_piu_housekeeping_data_reply(EPS::piu_housekeeping_data_reply reply) {
     char buf1[60],buf2[70],buf3[70];
     Console::log("--- PIU Housekeeping Data (engineering form)---");
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     sprintf(buf1, "VOLT_BRDSUP: %d V  |  TEMP: %d C", reply.volt_brdsup, reply.temp);
     Console::log(buf1);
     print_VIPD_data("VIP_DIST_INPUT", reply.vip_dist_input);
@@ -212,7 +212,7 @@ void print_piu_housekeeping_data_reply(EPS::piu_housekeeping_data_reply reply) {
 }
 void print_config_reply(EPS::config_reply reply) {
 
-    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %d", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
+    Console::log("STID: %x | IVID: %x | RC: %x | BID: %x | STAT: %x | Error: %x", reply.stid, reply.ivid, reply.rc, reply.bid, reply.stat, reply.error);
     Console::log("Config Parameter ID: %x", reply.par_id);
     ParameterType p_type = EPS::getConfigParameterType(reply.par_id);
     AccessType access_type = EPS::getAccessType(reply.par_id);

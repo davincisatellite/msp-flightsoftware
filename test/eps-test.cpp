@@ -225,7 +225,7 @@ int main5() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 5.3 starting\n");
+    Console::log("\nEPS Test 5 starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -240,7 +240,7 @@ int main5() {
     wire.write(0x00); // BID
     bool writing = wire.endTransmission(true);
     if (writing) {
-        Console::log("Test 5.3: FAIL - I2C write failed / NAK");
+        Console::log("Test 5: FAIL - I2C write failed / NAK\n");
         return 0;
     }
 
@@ -263,17 +263,17 @@ int main5() {
         print_5_bytes_response(stid,ivid,rc,bid,stat);
         if (rc == 0x03 && (stat == 0x80 || stat == 0x00)){
             //0x80 is better, but 0x00 is also correct
-            Console::log("Test 5.3: PASS - Command accepted");
+            Console::log("Test 5: PASS - Command accepted\n");
             return 1;
         }
         else {
-            Console::log("Test 5.3: FAIL - Invalid response structure");
+            Console::log("Test 5: FAIL - Invalid response structure\n");
             return 0;
         }
 
     }
     else {
-        Console::log("Test 5.3: FAIL - Too few Bytes received: %d", bytes_received);
+        Console::log("Test 5.3: FAIL - Too few Bytes received: %d\n", bytes_received);
         return 0;
     }
 }
@@ -285,7 +285,7 @@ int main6() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 6 starting\n");
+    Console::log("\nEPS Test 6 starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -295,10 +295,10 @@ int main6() {
     EPS::standard_reply reply = EPS::no_operation(wire, i2c_address);
     print_5_bytes_reply(reply);
     if (!reply.error && reply.rc == 0x03 && reply.stat == 0x80) {
-        Console::log("Test 6: PASS - NO_OPERATION command works");
+        Console::log("Test 6: PASS - NO_OPERATION command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 6: FAIL - NO_OPERATION returned error or wrong values");
+        Console::log("Test 6: FAIL - NO_OPERATION returned error or wrong values\n");
         return 0; // Failure
     }
 }
@@ -310,7 +310,7 @@ int main7() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 7 OUTPUT_BUS_CHANNEL_ON starting\n");
+    Console::log("\nEPS Test 7 OUTPUT_BUS_CHANNEL_ON starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -326,15 +326,15 @@ int main7() {
         EPS::readCommand(wire,reply);
         print_5_bytes_reply(reply);
         if (!reply.error && reply.rc == 0x17 && reply.stat == 0x80) {
-            Console::log("Test 7: PASS - OUTPUT_BUS_CHANNEL_ON command on index 1 works");
+            Console::log("Test 7: PASS - OUTPUT_BUS_CHANNEL_ON command on index 1 works\n");
             return 1; // Success
         } else {
-            Console::log("Test 7: FAIL - OUTPUT_BUS_CHANNEL_ON command rejected");
+            Console::log("Test 7: FAIL - OUTPUT_BUS_CHANNEL_ON command rejected\n");
             return 0; // Failure
         }
     }
     else {
-        Console::log("Test 7: FAIL - Too few Bytes received: %d", bytes_received);
+        Console::log("Test 7: FAIL - Too few Bytes received: %d\n", bytes_received);
         return 0;
     }
 }
@@ -346,7 +346,7 @@ int main7_2() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 7.2 OUTPUT_BUS_CHANNEL_ON starting\n");
+    Console::log("\nEPS Test 7_2 OUTPUT_BUS_CHANNEL_ON starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -357,10 +357,10 @@ int main7_2() {
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x17 && reply.stat == 0x80) {
-        Console::log("Test 7.2: PASS - OUTPUT_BUS_CHANNEL_ON command on index 3 works");
+        Console::log("Test 7_2: PASS - OUTPUT_BUS_CHANNEL_ON command on index 3 works\n");
         return 1; // Success
     } else {
-        Console::log("Test 7.2: FAIL - OUTPUT_BUS_CHANNEL_ON command rejected");
+        Console::log("Test 7_2: FAIL - OUTPUT_BUS_CHANNEL_ON command rejected\n");
         return 0; // Failure
     }
 }
@@ -372,7 +372,7 @@ int main8() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 8 OUTPUT_BUS_CHANNEL_OFF starting\n");
+    Console::log("\nEPS Test 8 OUTPUT_BUS_CHANNEL_OFF starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -388,15 +388,15 @@ int main8() {
         EPS::readCommand(wire,reply);
         print_5_bytes_reply(reply);
         if (!reply.error && reply.rc == 0x19 && reply.stat == 0x80) {
-            Console::log("Test 8: PASS - OUTPUT_BUS_CHANNEL_OFF command on index 1 works");
+            Console::log("Test 8: PASS - OUTPUT_BUS_CHANNEL_OFF command on index 1 works\n");
             return 1; // Success
         } else {
-            Console::log("Test 8: FAIL - OUTPUT_BUS_CHANNEL_OFF command rejected");
+            Console::log("Test 8: FAIL - OUTPUT_BUS_CHANNEL_OFF command rejected\n");
             return 0; // Failure
         }
     }
     else {
-        Console::log("Test 8: FAIL - Too few Bytes received: %d", bytes_received);
+        Console::log("Test 8: FAIL - Too few Bytes received: %d\n", bytes_received);
         return 0;
     }
 }
@@ -408,7 +408,7 @@ int main8_2() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 8.2 OUTPUT_BUS_CHANNEL_OFF starting\n");
+    Console::log("\nEPS Test 8_2 OUTPUT_BUS_CHANNEL_OFF starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -419,10 +419,10 @@ int main8_2() {
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x19 && reply.stat == 0x80) {
-        Console::log("Test 8.2: PASS - OUTPUT_BUS_CHANNEL_OFF command on index 1 works");
+        Console::log("Test 8_2: PASS - OUTPUT_BUS_CHANNEL_OFF command on index 1 works\n");
         return 1; // Success
     } else {
-        Console::log("Test 8.2: FAIL - OUTPUT_BUS_CHANNEL_OFF command rejected");
+        Console::log("Test 8_2: FAIL - OUTPUT_BUS_CHANNEL_OFF command rejected\n");
         return 0; // Failure
     }
 }
@@ -438,7 +438,7 @@ int main9() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 9 WATCHDOG starting\n");
+    Console::log("\nEPS Test 9 WATCHDOG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -449,10 +449,10 @@ int main9() {
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x07) {
-        Console::log("Test 9: PASS - WATCHDOG command works");
+        Console::log("Test 9: PASS - WATCHDOG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 9: FAIL - WATCHDOG returned error or wrong RC");
+        Console::log("Test 9: FAIL - WATCHDOG returned error or wrong RC\n");
         return 0; // Failure
     }
 }
@@ -476,10 +476,10 @@ int main10() {
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x05 && reply.stat == 0x80) {
-        Console::log("Test 10: PASS - CANCEL_OPERATION command works");
+        Console::log("Test 10: PASS - CANCEL_OPERATION command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 10: FAIL - CANCEL_OPERATION returned error");
+        Console::log("Test 10: FAIL - CANCEL_OPERATION returned error\n");
         return 0; // Failure
     }
 }
@@ -492,7 +492,7 @@ int main11() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 11 SYSTEM_RESET starting\n");
+    Console::log("\nEPS Test 11 SYSTEM_RESET starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -504,10 +504,10 @@ int main11() {
 
     //in case we don't manage to read the response, we should take a look at the output (we should see 0xFF values)
     if (!reply.error && ((reply.rc == 0xAB && reply.stat == 0x80) || (reply.rc==0xFF && reply.stat == 0xFF))) {
-        Console::log("Test 11: PASS - SYSTEM_RESET command works");
+        Console::log("Test 11: PASS - SYSTEM_RESET command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 11: FAIL - SYSTEM_RESET returned error");
+        Console::log("Test 11: FAIL - SYSTEM_RESET returned error\n");
         return 0; // Failure
     }
 }
@@ -518,7 +518,7 @@ int main11_2(){
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 11 SYSTEM_RESET starting\n");
+    Console::log("\nEPS Test 11_2 SYSTEM_RESET starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -536,10 +536,10 @@ int main11_2(){
 
     print_5_bytes_reply(reply);
     if (!reply.error && ((reply.rc == 0xAB && reply.stat == 0x80) || (reply.rc==0xFF && reply.stat == 0xFF))) {
-        Console::log("Test 11: PASS - SYSTEM_RESET command works");
+        Console::log("Test 11_2: PASS - SYSTEM_RESET command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 11: FAIL - SYSTEM_RESET returned error");
+        Console::log("Test 11_2: FAIL - SYSTEM_RESET returned error\n");
         return 0; // Failure
     }
 }
@@ -552,7 +552,7 @@ int main12() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test Checking EPS State starting\n");
+    Console::log("\nEPS Test Checking EPS State starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -577,10 +577,12 @@ int main12() {
         }
         Console::log("Re reading...\n");
         print_5_bytes_response(stid,ivid,rc,bid,stat);
+        Console::log("Test 12: Pass\n")
+        return 1;
 
     }
     else {
-        Console::log("Test 12: Too few Bytes received: %d", bytes_received);
+        Console::log("Test 12: Fail Too few Bytes received: %d\n", bytes_received);
         return 0;
     }
 }
@@ -594,7 +596,7 @@ int main13() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 13 OUTPUT_BUS_GROUP_ON starting\n");
+    Console::log("\nEPS Test 13 OUTPUT_BUS_GROUP_ON starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -604,24 +606,24 @@ int main13() {
     EPS::standard_reply reply2 = EPS::system_reset(wire, i2c_address);
     print_5_bytes_reply(reply2);
     if (!reply2.error && ((reply2.rc == 0xAB && reply2.stat == 0x80) || (reply2.rc==0xFF && reply2.stat == 0xFF))) {
-        Console::log("Test 11: PASS - SYSTEM_RESET command works");
+        Console::log("Test 13: update: SYSTEM_RESET command worked");
         // return 1; // Success
     } else {
-        Console::log("Test 11: FAIL - SYSTEM_RESET returned error");
-        //return 0; // Failure
+        Console::log("Test 13: FAIL in the middle of the test: SYSTEM_RESET returned error");
+        return 0; // Failure
     }
-    delay_ms(3000);
     Console::log("...\n");
+    delay_ms(3000);
 
     //0b00000001 11111111 -> is good
     EPS::standard_reply reply = EPS::output_bus_group_on(wire,i2c_address, 0x01FF);//0x00DC
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x11 && reply.stat == 0x80) {
-        Console::log("Test 13: PASS - OUTPUT_BUS_GROUP_ON command works");
+        Console::log("Test 13: PASS - OUTPUT_BUS_GROUP_ON command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 13: FAIL - OUTPUT_BUS_GROUP_ON command rejected");
+        Console::log("Test 13: FAIL - OUTPUT_BUS_GROUP_ON command rejected\n");
         return 0; // Failure
     }
 }
@@ -634,7 +636,7 @@ int main14() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 14 OUTPUT_BUS_GROUP_OFF starting\n");
+    Console::log("\nEPS Test 14 OUTPUT_BUS_GROUP_OFF starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -646,10 +648,10 @@ int main14() {
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x13 && reply.stat == 0x80) {
-        Console::log("Test 14: PASS - OUTPUT_BUS_GROUP_OFF command works");
+        Console::log("Test 14: PASS - OUTPUT_BUS_GROUP_OFF command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 14: FAIL - OUTPUT_BUS_GROUP_OFF command rejected");
+        Console::log("Test 14: FAIL - OUTPUT_BUS_GROUP_OFF command rejected\n");
         return 0; // Failure
     }
 }
@@ -661,7 +663,7 @@ int main15() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 15 OUTPUT_BUS_GROUP_STATE starting\n");
+    Console::log("\nEPS Test 15 OUTPUT_BUS_GROUP_STATE starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -673,10 +675,10 @@ int main15() {
     print_5_bytes_reply(reply);
 
     if (!reply.error && reply.rc == 0x15 && reply.stat == 0x80) {
-        Console::log("Test 15: PASS - OUTPUT_BUS_GROUP_STATE command works");
+        Console::log("Test 15: PASS - OUTPUT_BUS_GROUP_STATE command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 15: FAIL - OUTPUT_BUS_GROUP_STATE command rejected");
+        Console::log("Test 15: FAIL - OUTPUT_BUS_GROUP_STATE command rejected\n");
         return 0; // Failure
     }
 }
@@ -689,7 +691,7 @@ int main16() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("Get PIU Housekeeping Data starting\n");
+    Console::log("\n Test 16 Get PIU Housekeeping Data starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -733,24 +735,23 @@ int main16() {
 
         if (rc == 0x63 && stat == 0x80){
             //0x80 is better, but 0x00 is also correct
-            Console::log("Test 16: PASS - Command accepted");
+            Console::log("Test 16: PASS - Command accepted\n");
             // print_uint8_array_bytes(buff,116);
-            for (uint8_t i = 0; i < 84; i++) {
-                Console::log("%d) %x", i, buff[i]);
-            }
+//            for (uint8_t i = 0; i < 84; i++) {
+//                Console::log("%d) %x", i, buff[i]);
+//            }
             return 1;
         }
         else {
-            Console::log("Test 16: FAIL - Invalid response structure");
+            Console::log("Test 16: FAIL - Invalid response structure\n");
             return 0;
         }
 
     }
     else {
-        Console::log("Test 5.3: FAIL - Too few Bytes received: %d", bytes_received);
+        Console::log("Test 16: FAIL - Too few Bytes received: %d\n", bytes_received);
         return 0;
     }
-    return 0;
 }
 /*
 
@@ -774,7 +775,7 @@ int main17() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 17 GET_SYSTEM_STATUS starting\n");
+    Console::log("\nEPS Test 17 GET_SYSTEM_STATUS starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -785,10 +786,10 @@ int main17() {
     print_system_status(reply);
 
     if (!reply.error && reply.rc == 0x41 && reply.stat == 0x80) {
-        Console::log("Test 17: PASS - GET_SYSTEM_STATUS command works");
+        Console::log("Test 17: PASS - GET_SYSTEM_STATUS command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 17: FAIL - GET_SYSTEM_STATUS command rejected");
+        Console::log("Test 17: FAIL - GET_SYSTEM_STATUS command rejected\n");
         return 0; // Failure
     }
 }
@@ -800,7 +801,7 @@ int main18() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 18 GET_OVERCURRENT_FAULT_STATE starting\n");
+    Console::log("\nEPS Test 18 GET_OVERCURRENT_FAULT_STATE starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -811,10 +812,10 @@ int main18() {
     print_overcurrent_reply(reply);
 
     if (!reply.error && reply.rc == 0x43 && reply.stat == 0x80) {
-        Console::log("Test 18: PASS - GET_OVERCURRENT_FAULT_STATE command works");
+        Console::log("Test 18: PASS - GET_OVERCURRENT_FAULT_STATE command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 18: FAIL - GET_OVERCURRENT_FAULT_STATE command rejected");
+        Console::log("Test 18: FAIL - GET_OVERCURRENT_FAULT_STATE command rejected\n");
         return 0; // Failure
     }
 }
@@ -826,7 +827,7 @@ int main19() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 19 GET_PBU_ABF_PLACED_STATE starting\n");
+    Console::log("\nEPS Test 19 GET_PBU_ABF_PLACED_STATE starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -837,10 +838,10 @@ int main19() {
     print_pbu_abf_placed_state(reply);
 
     if (!reply.error && reply.rc == 0x45 && reply.stat == 0x80) {
-        Console::log("Test 19: PASS - GET_PBU_ABF_PLACED_STATE command works");
+        Console::log("Test 19: PASS - GET_PBU_ABF_PLACED_STATE command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 19: FAIL - GET_PBU_ABF_PLACED_STATE command rejected");
+        Console::log("Test 19: FAIL - GET_PBU_ABF_PLACED_STATE command rejected\n");
         return 0; // Failure
     }
 }
@@ -852,7 +853,7 @@ int main20() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 20 GET_PDU_HOUSEKEEPING_DATA_RAW starting\n");
+    Console::log("\nEPS Test 20 GET_PDU_HOUSEKEEPING_DATA_RAW starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -863,10 +864,10 @@ int main20() {
     print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x51 && reply.stat == 0x80) {
-        Console::log("Test 20: PASS - GET_PDU_HOUSEKEEPING_DATA_RAW command works");
+        Console::log("Test 20: PASS - GET_PDU_HOUSEKEEPING_DATA_RAW command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 20: FAIL - GET_PDU_HOUSEKEEPING_DATA_RAW command rejected");
+        Console::log("Test 20: FAIL - GET_PDU_HOUSEKEEPING_DATA_RAW command rejected\n");
         return 0; // Failure
     }
 }
@@ -878,7 +879,7 @@ int main21() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 21 GET_PDU_HOUSEKEEPING_DATA_ENG starting\n");
+    Console::log("\nEPS Test 21 GET_PDU_HOUSEKEEPING_DATA_ENG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -889,10 +890,10 @@ int main21() {
     print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x53 && reply.stat == 0x80) {
-        Console::log("Test 21: PASS - GET_PDU_HOUSEKEEPING_DATA_ENG command works");
+        Console::log("Test 21: PASS - GET_PDU_HOUSEKEEPING_DATA_ENG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 21: FAIL - GET_PDU_HOUSEKEEPING_DATA_ENG command rejected");
+        Console::log("Test 21: FAIL - GET_PDU_HOUSEKEEPING_DATA_ENG command rejected\n");
         return 0; // Failure
     }
 }
@@ -904,7 +905,7 @@ int main22() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 22 GET_PDU_HOUSEKEEPING_DATA_AVG starting\n");
+    Console::log("\nEPS Test 22 GET_PDU_HOUSEKEEPING_DATA_AVG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -915,10 +916,10 @@ int main22() {
     print_pdu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x55 && reply.stat == 0x80) {
-        Console::log("Test 22: PASS - GET_PDU_HOUSEKEEPING_DATA_AVG command works");
+        Console::log("Test 22: PASS - GET_PDU_HOUSEKEEPING_DATA_AVG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 22: FAIL - GET_PDU_HOUSEKEEPING_DATA_AVG command rejected");
+        Console::log("Test 22: FAIL - GET_PDU_HOUSEKEEPING_DATA_AVG command rejected\n");
         return 0; // Failure
     }
 }
@@ -930,7 +931,7 @@ int main23() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 23 GET_PBU_HOUSEKEEPING_DATA_RAW starting\n");
+    Console::log("\nEPS Test 23 GET_PBU_HOUSEKEEPING_DATA_RAW starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -941,10 +942,10 @@ int main23() {
     print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x61 && reply.stat == 0x80) {
-        Console::log("Test 23: PASS - GET_PBU_HOUSEKEEPING_DATA_RAW command works");
+        Console::log("Test 23: PASS - GET_PBU_HOUSEKEEPING_DATA_RAW command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 23: FAIL - GET_PBU_HOUSEKEEPING_DATA_RAW command rejected");
+        Console::log("Test 23: FAIL - GET_PBU_HOUSEKEEPING_DATA_RAW command rejected\n");
         return 0; // Failure
     }
 }
@@ -956,7 +957,7 @@ int main24() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 24 GET_PBU_HOUSEKEEPING_DATA_ENG starting\n");
+    Console::log("\nEPS Test 24 GET_PBU_HOUSEKEEPING_DATA_ENG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -967,10 +968,10 @@ int main24() {
     print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x63 && reply.stat == 0x80) {
-        Console::log("Test 24: PASS - GET_PBU_HOUSEKEEPING_DATA_ENG command works");
+        Console::log("Test 24: PASS - GET_PBU_HOUSEKEEPING_DATA_ENG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 24: FAIL - GET_PBU_HOUSEKEEPING_DATA_ENG command rejected");
+        Console::log("Test 24: FAIL - GET_PBU_HOUSEKEEPING_DATA_ENG command rejected\n");
         return 0; // Failure
     }
 }
@@ -982,7 +983,7 @@ int main25() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 25 GET_PBU_HOUSEKEEPING_DATA_AVG starting\n");
+    Console::log("\nEPS Test 25 GET_PBU_HOUSEKEEPING_DATA_AVG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -993,10 +994,10 @@ int main25() {
     print_pbu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x65 && reply.stat == 0x80) {
-        Console::log("Test 25: PASS - GET_PBU_HOUSEKEEPING_DATA_AVG command works");
+        Console::log("Test 25: PASS - GET_PBU_HOUSEKEEPING_DATA_AVG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 25: FAIL - GET_PBU_HOUSEKEEPING_DATA_AVG command rejected");
+        Console::log("Test 25: FAIL - GET_PBU_HOUSEKEEPING_DATA_AVG command rejected\n");
         return 0; // Failure
     }
 }
@@ -1008,7 +1009,7 @@ int main26() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 26 GET_PCU_HOUSEKEEPING_DATA_RAW starting\n");
+    Console::log("\nEPS Test 26 GET_PCU_HOUSEKEEPING_DATA_RAW starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1019,10 +1020,10 @@ int main26() {
     print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x71 && reply.stat == 0x80) {
-        Console::log("Test 26: PASS - GET_PCU_HOUSEKEEPING_DATA_RAW command works");
+        Console::log("Test 26: PASS - GET_PCU_HOUSEKEEPING_DATA_RAW command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 26: FAIL - GET_PCU_HOUSEKEEPING_DATA_RAW command rejected");
+        Console::log("Test 26: FAIL - GET_PCU_HOUSEKEEPING_DATA_RAW command rejected\n");
         return 0; // Failure
     }
 }
@@ -1034,7 +1035,7 @@ int main27() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 27 GET_PCU_HOUSEKEEPING_DATA_ENG starting\n");
+    Console::log("\nEPS Test 27 GET_PCU_HOUSEKEEPING_DATA_ENG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1045,10 +1046,10 @@ int main27() {
     print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x73 && reply.stat == 0x80) {
-        Console::log("Test 27: PASS - GET_PCU_HOUSEKEEPING_DATA_ENG command works");
+        Console::log("Test 27: PASS - GET_PCU_HOUSEKEEPING_DATA_ENG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 27: FAIL - GET_PCU_HOUSEKEEPING_DATA_ENG command rejected");
+        Console::log("Test 27: FAIL - GET_PCU_HOUSEKEEPING_DATA_ENG command rejected\n");
         return 0; // Failure
     }
 }
@@ -1060,7 +1061,7 @@ int main28() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 28 GET_PCU_HOUSEKEEPING_DATA_AVG starting\n");
+    Console::log("\nEPS Test 28 GET_PCU_HOUSEKEEPING_DATA_AVG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1071,10 +1072,10 @@ int main28() {
     print_pcu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0x75 && reply.stat == 0x80) {
-        Console::log("Test 28: PASS - GET_PCU_HOUSEKEEPING_DATA_AVG command works");
+        Console::log("Test 28: PASS - GET_PCU_HOUSEKEEPING_DATA_AVG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 28: FAIL - GET_PCU_HOUSEKEEPING_DATA_AVG command rejected");
+        Console::log("Test 28: FAIL - GET_PCU_HOUSEKEEPING_DATA_AVG command rejected\n");
         return 0; // Failure
     }
 }
@@ -1086,7 +1087,7 @@ int main29() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 29 GET_PIU_HOUSEKEEPING_DATA_RAW starting\n");
+    Console::log("\nEPS Test 29 GET_PIU_HOUSEKEEPING_DATA_RAW starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1097,10 +1098,10 @@ int main29() {
     print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA1 && reply.stat == 0x80) {
-        Console::log("Test 29: PASS - GET_PIU_HOUSEKEEPING_DATA_RAW command works");
+        Console::log("Test 29: PASS - GET_PIU_HOUSEKEEPING_DATA_RAW command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 29: FAIL - GET_PIU_HOUSEKEEPING_DATA_RAW command rejected");
+        Console::log("Test 29: FAIL - GET_PIU_HOUSEKEEPING_DATA_RAW command rejected\n");
         return 0; // Failure
     }
 }
@@ -1112,7 +1113,7 @@ int main30() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 30 GET_PIU_HOUSEKEEPING_DATA_ENG starting\n");
+    Console::log("\nEPS Test 30 GET_PIU_HOUSEKEEPING_DATA_ENG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1123,10 +1124,10 @@ int main30() {
     print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA3 && reply.stat == 0x80) {
-        Console::log("Test 30: PASS - GET_PIU_HOUSEKEEPING_DATA_ENG command works");
+        Console::log("Test 30: PASS - GET_PIU_HOUSEKEEPING_DATA_ENG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 30: FAIL - GET_PIU_HOUSEKEEPING_DATA_ENG command rejected");
+        Console::log("Test 30: FAIL - GET_PIU_HOUSEKEEPING_DATA_ENG command rejected\n");
         return 0; // Failure
     }
 }
@@ -1138,7 +1139,7 @@ int main31() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 31 GET_PIU_HOUSEKEEPING_DATA_AVG starting\n");
+    Console::log("\nEPS Test 31 GET_PIU_HOUSEKEEPING_DATA_AVG starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1149,10 +1150,10 @@ int main31() {
     print_piu_housekeeping_data_reply(reply);
 
     if (!reply.error && reply.rc == 0xA5 && reply.stat == 0x80) {
-        Console::log("Test 31: PASS - GET_PIU_HOUSEKEEPING_DATA_AVG command works");
+        Console::log("Test 31: PASS - GET_PIU_HOUSEKEEPING_DATA_AVG command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 31: FAIL - GET_PIU_HOUSEKEEPING_DATA_AVG command rejected");
+        Console::log("Test 31: FAIL - GET_PIU_HOUSEKEEPING_DATA_AVG command rejected\n");
         return 0; // Failure
     }
 }
@@ -1164,7 +1165,7 @@ int main32G() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 32G GET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
+    Console::log("\nEPS Test 32G GET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1175,10 +1176,10 @@ int main32G() {
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x83 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
-        Console::log("Test 32G: PASS - GET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        Console::log("Test 32G: PASS - GET_CONF_PARAM on TTC_WDG_TIMEOUT command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 32G: FAIL - GET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        Console::log("Test 32G: FAIL - GET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected\n");
         return 0; // Failure
     }
 }
@@ -1190,7 +1191,7 @@ int main32S() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 32S SET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
+    Console::log("\nEPS Test 32S SET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1203,10 +1204,10 @@ int main32S() {
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
-        Console::log("Test 32S: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        Console::log("Test 32S: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works\n");
         //return 1; // Success
     } else {
-        Console::log("Test 32S: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        Console::log("Test 32S: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected\n");
         return 0; // Failure
     }
 
@@ -1214,10 +1215,10 @@ int main32S() {
     EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     print_config_reply(reply2);
     if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==100) {
-        Console::log("Test 32S: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
+        Console::log("Test 32S: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT\n");
         return 1; // Success
     } else {
-        Console::log("Test 32S: FAIL - GET_CONF_PARAM (TTC_WDG_TIMEOUT) was not updated/read command rejected");
+        Console::log("Test 32S: FAIL - GET_CONF_PARAM (TTC_WDG_TIMEOUT) was not updated/read command rejected\n");
         return 0; // Failure
     }
 }
@@ -1229,7 +1230,7 @@ int main32R() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 32R RESET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
+    Console::log("\nEPS Test 32R RESET_CONF_PARAM on TTC_WDG_TIMEOUT starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1240,10 +1241,10 @@ int main32R() {
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x87 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
-        Console::log("Test 32R: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        Console::log("Test 32R: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works\n");
         //return 1; // Success
     } else {
-        Console::log("Test 32R: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        Console::log("Test 32R: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected\n");
         return 0; // Failure
     }
 
@@ -1252,10 +1253,10 @@ int main32R() {
     print_config_reply(reply2);
     //300 is the default value
     if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==300) {
-        Console::log("Test 32R: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT");
+        Console::log("Test 32R: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT\n");
         return 1; // Success
     } else {
-        Console::log("Test 32R: FAIL - GET_CONF_PARAM (TTC_WDG_TIMEOUT) was not updated/read command rejected");
+        Console::log("Test 32R: FAIL - GET_CONF_PARAM (TTC_WDG_TIMEOUT) was not updated/read command rejected\n");
         return 0; // Failure
     }
 }
@@ -1267,7 +1268,7 @@ int main33() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 33 switch_safety_mode starting\n");
+    Console::log("\nEPS Test 33 switch_safety_mode starting\n");
     print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_TO_SAFETY_MODE),BID);
 
     uint8_t i2c_address = 0x20;
@@ -1279,10 +1280,10 @@ int main33() {
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x33 && reply.stat == 0x80) {
-        Console::log("Test 33: PASS - switch_safety_mode command works");
+        Console::log("Test 33: PASS - switch_safety_mode command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 33: FAIL - switch_safety_mode command rejected");
+        Console::log("Test 33: FAIL - switch_safety_mode command rejected\n");
         return 0; // Failure
     }
     //use main17 to test system_status
@@ -1295,7 +1296,7 @@ int main34() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 34 switch_nominal_mode starting\n");
+    Console::log("\nEPS Test 34 switch_nominal_mode starting\n");
     print_command(STID,IVID,static_cast<uint16_t>(CommandCode::SWITCH_NOMINAL_MODE),BID);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1306,10 +1307,10 @@ int main34() {
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x31 && reply.stat == 0x80) {
-        Console::log("Test 34: PASS - switch_nominal_mode command works");
+        Console::log("Test 34: PASS - switch_nominal_mode command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 34: FAIL - switch_nominal_mode command rejected");
+        Console::log("Test 34: FAIL - switch_nominal_mode command rejected\n");
         return 0; // Failure
     }
     //use main17 to test system_status
@@ -1322,7 +1323,7 @@ int main35() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 35 load_configuration starting\n");
+    Console::log("\nEPS Test 35 load_configuration starting\n");
     print_command(STID,IVID,static_cast<uint16_t>(CommandCode::LOAD_CONFIGURATION),BID);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1333,10 +1334,10 @@ int main35() {
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x93 && reply.stat == 0x80) {
-        Console::log("Test 35: PASS - load_configuration command works");
+        Console::log("Test 35: PASS - load_configuration command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 35: FAIL - load_configuration command rejected");
+        Console::log("Test 35: FAIL - load_configuration command rejected\n");
         return 0; // Failure
     }
 }
@@ -1348,7 +1349,7 @@ int main36() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 36 reset_configuration starting\n");
+    Console::log("\nEPS Test 36 reset_configuration starting\n");
     print_command(STID,IVID,static_cast<uint16_t>(CommandCode::RESET_CONFIGURATION),BID);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1359,10 +1360,10 @@ int main36() {
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x91 && reply.stat == 0x80) {
-        Console::log("Test 36: PASS - reset_configuration command works");
+        Console::log("Test 36: PASS - reset_configuration command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 36: FAIL - reset_configuration command rejected");
+        Console::log("Test 36: FAIL - reset_configuration command rejected\n");
         return 0; // Failure
     }
 }
@@ -1374,7 +1375,7 @@ int main37() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 37 save_configuration starting\n");
+    Console::log("\nEPS Test 37 save_configuration starting\n");
     Console::log("STID: %x | IVID: %x | CC: %x | BID: %x | CONF_KEY: %x | CHECKSUM_2_bytes: %x%x", STID, IVID, CommandCode::SAVE_CONFIGURATION, BID, CONF_KEY, 0,0);
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1385,10 +1386,10 @@ int main37() {
     print_standard_reply(reply);
 
     if (!reply.error && reply.rc == 0x95 && reply.stat == 0x80) {
-        Console::log("Test 37: PASS - save_configuration command works");
+        Console::log("Test 37: PASS - save_configuration command works\n");
         return 1; // Success
     } else {
-        Console::log("Test 37: FAIL - save_configuration command rejected");
+        Console::log("Test 37: FAIL - save_configuration command rejected\n");
         return 0; // Failure
     }
 }
@@ -1400,7 +1401,7 @@ int mainC1() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Complex Test c1: modify watchdog param, save it and load it starting\n");
+    Console::log("\nEPS Complex Test c1: modify watchdog param, save it and load it starting\n");
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
@@ -1410,7 +1411,7 @@ int mainC1() {
     EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     print_config_reply(reply1);
     if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
-        Console::log("Test C1: FAIL - initial get param command for watchdog failed");
+        Console::log("Test C1: FAIL - initial get param command for watchdog failed\n");
         return 0; // Failure
     }
 
@@ -1420,14 +1421,14 @@ int mainC1() {
     EPS::config_reply reply2 = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
     print_config_reply(reply2);
     if(reply2.error || reply2.rc!=0x85 || reply2.stat!=0x80){
-        Console::log("Test C1: FAIL - set param command for watchdog failed");
+        Console::log("Test C1: FAIL - set param command for watchdog failed\n");
         return 0; // Failure
     }
     //save the configuration
     EPS::standard_reply reply3 = EPS::save_configuration(wire,i2c_address);
     print_standard_reply(reply3);
     if(reply3.error || reply3.rc!=0x95 || reply3.stat!=0x80){
-        Console::log("Test C1: FAIL - save configuration command failed");
+        Console::log("Test C1: FAIL - save configuration command failed\n");
         return 0; // Failure
     }
     delay_ms(1000);
@@ -1435,17 +1436,17 @@ int mainC1() {
     EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
     print_standard_reply(reply4);
     if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
-        Console::log("Test C1: FAIL - load configuration command failed");
+        Console::log("Test C1: FAIL - load configuration command failed\n");
         return 0; // Failure
     }
     //final get
     EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     print_config_reply(reply5);
     if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
-        Console::log("Test C1: FAIL - final get param command for watchdog failed");
+        Console::log("Test C1: FAIL - final get param command for watchdog failed\n");
         return 0; // Failure
     }
-    Console::log("Test C1: PASS - The parameter was successfully read,modified,saved,loaded and read");
+    Console::log("Test C1: PASS - The parameter was successfully read,modified,saved,loaded and read\n");
     return 1;
 }
 
@@ -1457,7 +1458,7 @@ int mainC2() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Complex Test C2: Try to turn on all the buses, switch to safety mode and see if the buses are of\n");
+    Console::log("\nEPS Complex Test C2: Try to turn on all the buses, switch to safety mode and see if the buses are of\n");
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
@@ -1468,7 +1469,7 @@ int mainC2() {
     print_5_bytes_reply(reply1);
 
     if (reply1.error || reply1.rc != 0x11 || reply1.stat != 0x80){
-        Console::log("Test C2: FAIL - turning on buses failed");
+        Console::log("Test C2: FAIL - turning on buses failed\n");
         return 0; // Failure
     }
 
@@ -1478,7 +1479,7 @@ int mainC2() {
     print_standard_reply(reply2);
 
     if (reply2.error | reply2.rc != 0x33 || reply2.stat != 0x80) {
-        Console::log("Test C2: FAIL - switching to safety failed");
+        Console::log("Test C2: FAIL - switching to safety failed\n");
         return 0; // Failure
     }
     return 1;
@@ -1491,7 +1492,7 @@ int mainC3() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test C3. SET watchdog timer to 70 then turn on the buses then wait 70 seconds to see if they are off because of the watchdog\n");
+    Console::log("\nEPS Test C3. SET watchdog timer to 70 then turn on the buses then wait 70 seconds to see if they are off because of the watchdog\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1505,10 +1506,10 @@ int mainC3() {
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::TTC_WDG_TIMEOUT) {
-        Console::log("Test C3: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works");
+        Console::log("Test C3: PASS - SET_CONF_PARAM on TTC_WDG_TIMEOUT command works\n");
         //return 1; // Success
     } else {
-        Console::log("Test C3: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected");
+        Console::log("Test C3: FAIL - SET_CONF_PARAM on TTC_WDG_TIMEOUT command rejected\n");
         return 0; // Failure
     }
     //turn on all buses
@@ -1516,10 +1517,13 @@ int mainC3() {
     print_5_bytes_reply(reply2);
 
     if (reply2.error || reply2.rc != 0x11 || reply.stat != 0x80){
-        Console::log("Test C3: FAIL - turning buses on failed");
+        Console::log("Test C3: FAIL - turning buses on failed\n");
         return 0; // Failure
     }
+    Console::log("Test C3: waiting 70 seconds - check bus channels!");
     //wait 70 and see if they are off
+    delay_ms(70000);
+    Console::log("Test C3: PASS - check bus channels!\n");
     return 1;
 }
 // Test C4: Fter TestC1, run this to reset_configuration instead of 300 and then save the config. load it and see if it was saved
@@ -1530,7 +1534,7 @@ int mainC4() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Complex Test c1: modify watchdog param, save it and load it starting\n");
+    Console::log("\nEPS Complex Test c1: modify watchdog param, save it and load it starting\n");
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
@@ -1540,14 +1544,14 @@ int mainC4() {
     EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     print_config_reply(reply1);
     if(reply1.error || reply1.rc!=0x83 || reply1.stat!=0x80){
-        Console::log("Test C4: FAIL - initial get param command for watchdog failed");
+        Console::log("Test C4: FAIL - initial get param command for watchdog failed\n");
         return 0; // Failure
     }
     //reset the configuration
     EPS::standard_reply reply3 = EPS::reset_configuration(wire,i2c_address);
     print_standard_reply(reply3);
     if(reply3.error || reply3.rc!=0x91 || reply3.stat!=0x80){
-        Console::log("Test C4: FAIL - reset configuration command failed");
+        Console::log("Test C4: FAIL - reset configuration command failed\n");
         return 0; // Failure
     }
     delay_ms(1000);
@@ -1555,7 +1559,7 @@ int mainC4() {
     EPS::config_reply reply35 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     print_config_reply(reply35);
     if(reply35.error || reply35.rc!=0x83 || reply35.stat!=0x80){
-        Console::log("Test C4: FAIL - second get param command for watchdog failed");
+        Console::log("Test C4: FAIL - second get param command for watchdog failed\n");
         return 0; // Failure
     }
     //save to hard disk
@@ -1577,17 +1581,17 @@ int mainC4() {
     EPS::standard_reply reply4 = EPS::load_configuration(wire,i2c_address);
     print_standard_reply(reply4);
     if(reply4.error || reply4.rc!=0x93 || reply4.stat!=0x80){
-        Console::log("Test C4: FAIL - load configuration command failed");
+        Console::log("Test C4: FAIL - load configuration command failed\n");
         return 0; // Failure
     }
     //final get
     EPS::config_reply reply5 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
     print_config_reply(reply5);
     if(reply5.error || reply5.rc!=0x83 || reply5.stat!=0x80){
-        Console::log("Test C4: FAIL - final get param command for watchdog failed");
+        Console::log("Test C4: FAIL - final get param command for watchdog failed\n");
         return 0; // Failure
     }
-    Console::log("Test C1: PASS - The parameter was successfully read,conf reset,saved,loaded and read");
+    Console::log("Test C1: PASS - The parameter was successfully read,conf reset,saved,loaded and read\n");
     return 1;
 }
 
@@ -1599,7 +1603,7 @@ int main40S() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("EPS Test 40S SET_CONF_PARAM on RST_CNTR_PWRON starting\n");
+    Console::log("\nEPS Test 40S SET_CONF_PARAM on RST_CNTR_PWRON starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1612,10 +1616,10 @@ int main40S() {
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x84) {
-        Console::log("Test 32S: PASS - SET_CONF_PARAM on RST_CNTR_PWRON was rejected because we cannot write on read-only data");
+        Console::log("Test 32S: PASS - SET_CONF_PARAM on RST_CNTR_PWRON was rejected because we cannot write on read-only data\n");
         //return 1; // Success
     } else {
-        Console::log("Test 32S: FAIL - SET_CONF_PARAM on RST_CNTR_PWRON either worked when it should not, or there is another error, %d", reply.stat);
+        Console::log("Test 32S: FAIL - SET_CONF_PARAM on RST_CNTR_PWRON either worked when it should not, or there is another error, %d\n", reply.stat);
         return 0; // Failure
     }
 }
@@ -1764,7 +1768,7 @@ int main(){
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("\nEPS Test CP 131 GET_CONF_PARAM on all parameters starting\n");
+    Console::log("\nEPS Test CP131 GET_CONF_PARAM on all parameters starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -1780,7 +1784,38 @@ int main(){
 
         Console::log("%s -> %d", configParamTable[i].name, configParamTable[i].value);
         if (reply.error || reply.rc != 0x83 || reply.stat != 0x80 || reply.par_id!=configParamTable[i].value){
-            Console::log("!!!!!!!!!!!!! Test CP: FAIL - GET param %s, code: %d", configParamTable[i].name, configParamTable[i].value);
+            Console::log("!!!!!!!!!!!!! Test CP131: FAIL - GET param %s, code: %d", configParamTable[i].name, configParamTable[i].value);
+            // return 0; // Failure
+        }
+        delay_ms(10);
+    }
+    Console::log("\nending\n");
+    return 1;
+}
+//Test all the last 11 config params
+int mainCP11(){
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("\nEPS Test CP11 GET_CONF_PARAM on all parameters starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    Console::log("Param -> Value:\n");
+    //OB_FORCE_ENA_USE_BF, OB_STARTUP_ENA_USE_BF, OB_LATCHOFF_ENA_USE_BF
+    for(uint8_t i = 121; i < 131; i++)
+    {
+        EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,configParamTable[i].value);
+        print_config_reply(reply);
+
+        Console::log("%s -> %d", configParamTable[i].name, configParamTable[i].value);
+        if (reply.error || reply.rc != 0x83 || reply.stat != 0x80 || reply.par_id!=configParamTable[i].value){
+            Console::log("!!!!!!!!!!!!! Test CP11: FAIL - GET param %s, code: %d", configParamTable[i].name, configParamTable[i].value);
             // return 0; // Failure
         }
         delay_ms(10);

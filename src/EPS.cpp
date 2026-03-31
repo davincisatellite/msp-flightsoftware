@@ -108,6 +108,7 @@ void EPS::writeCommand(DWire &wire, uint8_t i2c_address, CommandCode commandCode
     wire.write(static_cast<uint8_t>(commandCode));
     wire.write(BID);
     wire.endTransmission(true); //this is good, do not use false
+//    Console::log("Command Raw bytes: %x, %x, %x, %x", STID, IVID, static_cast<uint8_t>(commandCode), BID);
 }
 void EPS::writeCommand5Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte) {
     /*
@@ -124,6 +125,7 @@ void EPS::writeCommand5Bytes(DWire &wire, uint8_t i2c_address, CommandCode comma
     wire.write(BID);
     wire.write(fifthByte);
     wire.endTransmission(true); //this is good, do not use false
+//    Console::log("Command Raw bytes: %x, %x, %x, %x, %x", STID, IVID, static_cast<uint8_t>(commandCode), BID, fifthByte);
 }
 void EPS::writeCommand6Bytes(DWire &wire, uint8_t i2c_address, CommandCode commandCode, uint8_t fifthByte, uint8_t sixthByte) {
     /*
@@ -142,6 +144,7 @@ void EPS::writeCommand6Bytes(DWire &wire, uint8_t i2c_address, CommandCode comma
     wire.write(fifthByte);
     wire.write(sixthByte);
     wire.endTransmission(true); //this is good, do not use false
+//    Console::log("Command Raw bytes: %x, %x, %x, %x, %x, %x", STID, IVID, static_cast<uint8_t>(commandCode), BID, fifthByte, sixthByte);
 }
 void writeCommandSetConfParam(DWire &wire, uint8_t i2c_address, ConfigParameter par_id, ReturnType par_value) {
     uint8_t param_length = EPS::get_param_length(EPS::getConfigParameterType(par_id));
@@ -164,6 +167,11 @@ void writeCommandSetConfParam(DWire &wire, uint8_t i2c_address, ConfigParameter 
         wire.write(bytePtr[i]);
     }
     wire.endTransmission(true); //this is good, do not use false
+//    Console::log("Command Raw bytes: %x, %x, %x, %x, %x, %x", STID, IVID, static_cast<uint8_t>(CommandCode::SET_CONF_PARAM), BID, bytes[1], bytes[0]);
+//    if (param_length==1)
+//    Console::log("%x", bytePtr[0]);
+//    if (param_length>1)
+//    Console::log("%x, %x", bytePtr[0], bytePtr[1]);
 }
 void writeCommandSaveConfiguration(DWire &wire, uint8_t i2c_address, uint8_t CONF_KEY, uint16_t CHECKSUM) {
     /*
@@ -183,6 +191,7 @@ void writeCommandSaveConfiguration(DWire &wire, uint8_t i2c_address, uint8_t CON
     wire.write(CHECKSUM_byte_1);
     wire.write(CHECKSUM_byte_2);
     wire.endTransmission(true); //this is good, do not use false
+//    Console::log("Command Raw bytes: %x, %x, %x, %x, %x, %x, %x", STID, IVID, static_cast<uint8_t>(commandCode), BID, CONF_KEY, CHECKSUM_byte_1, CHECKSUM_byte_2);
 }
 //Set Configuration Parameter has 6+ bytes.
 

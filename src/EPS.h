@@ -252,7 +252,16 @@ enum ResetKey {
     CONF_KEY_RESET_CONFIGURATION = 0xA7,              // reference: page 66 of 87 (ICD)
     CONF_KEY = 0xA7                                   // reference: page 66 of 87 (ICD)
 };
-
+enum BusChannel { //TODO rename them
+    b1 = 0,
+    b2 = 1,
+    b3 = 2,
+    b4 = 3,
+    b5 = 4,
+    b6 = 5,
+    b7 = 6,
+    b8 = 7
+};
 class EPS {
 public:
     struct VIPD {
