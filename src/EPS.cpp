@@ -321,16 +321,26 @@ void read_and_fill_conf_param(DWire &wire, uint8_t i2c_address, ConfigParameter 
     } else
         reply.error = true;
 }
-void check_EPS_response(EPS::ReplyBase &reply, uint8_t expected_command_code) {
+void check_EPS_response(EPS::ReplyBase &reply, uint8_t expected_response_code) {
     /*
       This method checks the validity of a response from the EPS. It checks:
       -first 4 bits of the reply.error (0xX_) indicates the type of error.
       -the last 4 bits (0x_X) copy the error code from the stat byte, which is only relevant if the command was rejected.
       No error means reply.error == 0
+
+      expected_response_code means response code
      */
     reply.error = 0;
+    if (expected_response_code== 0xAB)//reset function, this would give us FF
+    {
+        if (reply.rc != static_cast<uint8_t>(expected_response_code) && reply.rc !=0xFF)
+            reply.error = (reply.error | (0x20));
+        if (reply.stat != 0x80 && reply.stat != 0x00 && reply.stat !=0xFF)
+            reply.error = (reply.error | (0x40));
+        return;
+    }
 
-    if (reply.rc != static_cast<uint8_t>(expected_command_code))
+    if (reply.rc != static_cast<uint8_t>(expected_response_code))
         reply.error = (reply.error | (0x20));// incorrect response code received, mark 6th bit
 
     if (reply.stat != 0x80 && reply.stat != 0x00) //we accept it if it is a "re read"
@@ -741,15 +751,15 @@ EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data(DWire &wire, uint8_t 
 
     return reply;
 }
-EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
+EPS::pdu_housekeeping_data_reply EPS::get_pdu_housekeeping_data_raw(DWire &wire, uint8_t i2c_address) {
     return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_RAW);
 }
 
-EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
+EPS::pdu_housekeeping_data_reply EPS::get_pdu_housekeeping_data_eng(DWire &wire, uint8_t i2c_address) {
     return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_ENG);
 }
 
-EPS::pdu_housekeeping_data_reply get_pdu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address) {
+EPS::pdu_housekeeping_data_reply EPS::get_pdu_housekeeping_data_avg(DWire &wire, uint8_t i2c_address) {
     return get_pdu_housekeeping_data(wire, i2c_address, CommandCode::GET_PDU_HOUSEKEEPING_DATA_AVG);
 }
 

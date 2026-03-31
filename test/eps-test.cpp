@@ -216,7 +216,7 @@ void print_5_bytes_response(uint8_t stid, uint8_t ivid, uint8_t rc, uint8_t bid,
     Console::log("Response: stid %x  ivid %x  rc %x  bid %x  stat %x\n",stid,ivid,rc,bid,stat);
 }
 void print_5_bytes_reply(EPS::standard_reply reply) {
-    Console::log("Response: stid %x  ivid %x  rc %x  bid %x  stat %x  error %d\n",reply.stid,reply.ivid,reply.rc,reply.bid,reply.stat, reply.error);
+    Console::log("Response: stid %x  ivid %x  rc %x  bid %x  stat %x  error %x\n",reply.stid,reply.ivid,reply.rc,reply.bid,reply.stat, reply.error);
 }
 
 // Test 6: Test NO_OPERATION command using EPS function
@@ -227,7 +227,7 @@ int main6() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("\nEPS Test 6 starting\n");
+    Console::log("\nEPS Test 6 NO_OPERATION starting\n");
 
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
@@ -299,10 +299,18 @@ int main8() {
     wire.setFastMode();
     wire.begin();
 
-    EPS::standard_reply reply = EPS::output_bus_channel_off(wire,i2c_address, 0x03);
+    EPS::standard_reply reply0 = EPS::output_bus_channel_on(wire,i2c_address, 0x03);
 
     delay_ms(50);
     uint8_t eps_buffer[5];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
+    print_array(eps_buffer, 5);
+
+    delay_ms(3000);
+
+    EPS::standard_reply reply = EPS::output_bus_channel_off(wire,i2c_address, 0x03);
+
+    delay_ms(50);
     EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 5);
     print_array(eps_buffer, 5);
 
@@ -684,6 +692,11 @@ int main18() {
     wire.begin();
 
     EPS::overcurrent_reply reply = EPS::get_overcurrent_fault_state(wire,i2c_address);
+
+    delay_ms(50);
+    uint8_t eps_buffer[42];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, 42);
+    print_array(eps_buffer, 42);
     print_overcurrent_reply(reply);
 
     if (!reply.error && reply.rc == 0x43 && reply.stat == 0x80) {
@@ -1158,7 +1171,7 @@ int main32S() {
     wire.begin();
 
     ReturnType param_value{};
-    param_value.ui16 = 100;
+    param_value.ui16 = 21600;//6hours
     EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT, param_value);
 
     delay_ms(50);
@@ -1184,7 +1197,7 @@ int main32S() {
     print_array(eps_buffer, 10);
 
     print_config_reply(reply2);
-    if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==100) {
+    if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::TTC_WDG_TIMEOUT && reply2.par_value.ui16==21600) {
         Console::log("Test 32S: PASS - GET_CONF_PARAM correctly updated TTC_WDG_TIMEOUT\n");
         return 1; // Success
     } else {
@@ -1422,7 +1435,7 @@ int mainC1() {
     EPS::config_reply reply1 = EPS::get_config_param(wire,i2c_address,ConfigParameter::TTC_WDG_TIMEOUT);
 
     delay_ms(50);
-    uint8_t eps_buffer[10];
+    uint8_t eps_buffer[16];
     EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
     print_array(eps_buffer, 10);
 
@@ -1449,7 +1462,7 @@ int mainC1() {
     //save the configuration
     EPS::standard_reply reply3 = EPS::save_configuration(wire,i2c_address);
 
-    delay_ms(50);
+    delay_ms(100);
     EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
     print_array(eps_buffer, 10);
 
@@ -1593,7 +1606,7 @@ int mainC4() {
     Console::init(9600);
 
     delay_ms(1000);
-    Console::log("\nEPS Complex Test c1: modify watchdog param, save it and load it starting\n");
+    Console::log("\nEPS Complex Test c4: modify watchdog param, save it and load it starting\n");
     uint8_t i2c_address = 0x20;
     DWire wire = DWire();
     wire.setFastMode();
@@ -1676,7 +1689,7 @@ int mainC4() {
         Console::log("Test C4: FAIL - final get param command for watchdog failed\n");
         return 0; // Failure
     }
-    Console::log("Test C1: PASS - The parameter was successfully read,conf reset,saved,loaded and read\n");
+    Console::log("Test C4: PASS - The parameter was successfully read,conf reset,saved,loaded and read\n");
     return 1;
 }
 
@@ -1707,10 +1720,10 @@ int main40S() {
     print_config_reply(reply);
 
     if (!reply.error && reply.rc == 0x85 && reply.stat == 0x84) {
-        Console::log("Test 32S: PASS - SET_CONF_PARAM on RST_CNTR_PWRON was rejected because we cannot write on read-only data\n");
+        Console::log("Test 40S: PASS - SET_CONF_PARAM on RST_CNTR_PWRON was rejected because we cannot write on read-only data\n");
         //return 1; // Success
     } else {
-        Console::log("Test 32S: FAIL - SET_CONF_PARAM on RST_CNTR_PWRON either worked when it should not, or there is another error, %d\n", reply.stat);
+        Console::log("Test 40S: FAIL - SET_CONF_PARAM on RST_CNTR_PWRON either worked when it should not, or there is another error, %d\n", reply.stat);
         return 0; // Failure
     }
 }
@@ -1876,7 +1889,7 @@ int mainCP131(){
         uint8_t param_l = EPS::get_param_length(EPS::getConfigParameterType(configParamTable[i].value));
         EPS::config_reply reply = EPS::get_config_param(wire,i2c_address,configParamTable[i].value);
 
-        delay_ms(50);
+        delay_ms(60);
         EPS::get_EPS_buffer(wire, i2c_address, eps_buffer, param_l);
         print_array(eps_buffer, param_l);
 
@@ -1887,13 +1900,13 @@ int mainCP131(){
             Console::log("!!!!!!!!!!!!! Test CP131: FAIL - GET param %s, code: %d", configParamTable[i].name, configParamTable[i].value);
             // return 0; // Failure
         }
-        delay_ms(10);
+        delay_ms(15);
     }
     Console::log("\nending\n");
     return 1;
 }
 //Test all the last 11 config params
-int main(){
+int mainCP11(){
     DelfiPQcore::initMCU();
     delay_init();
     Console::init(9600);
@@ -1929,4 +1942,53 @@ int main(){
     }
     Console::log("\nending\n");
     return 1;
+}
+// Test 41S
+int main() {//main41S
+    DelfiPQcore::initMCU();
+    delay_init();
+    Console::init(9600);
+
+    delay_ms(1000);
+    Console::log("\nEPS Test 41 SET_CONF_PARAM on OB_STARTUP_ENA_USE_BF starting\n");
+
+    uint8_t i2c_address = 0x20;
+    DWire wire = DWire();
+    wire.setFastMode();
+    wire.begin();
+
+    ReturnType param_value{};
+    param_value.ui16 = 0x0111;
+    EPS::config_reply reply = EPS::set_config_param(wire,i2c_address,ConfigParameter::OB_STARTUP_ENA_USE_BF, param_value);
+
+    delay_ms(50);
+    uint8_t eps_buffer[10];
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
+    print_config_reply(reply);
+
+    if (!reply.error && reply.rc == 0x85 && reply.stat == 0x80 && reply.par_id==ConfigParameter::OB_STARTUP_ENA_USE_BF) {
+        Console::log("Test 41S: PASS - SET_CONF_PARAM on OB_STARTUP_ENA_USE_BF command works\n");
+        //return 1; // Success
+    } else {
+        Console::log("Test 41S: FAIL - SET_CONF_PARAM on OB_STARTUP_ENA_USE_BF command rejected\n");
+        return 0; // Failure
+    }
+
+    //try to get it:
+    EPS::config_reply reply2 = EPS::get_config_param(wire,i2c_address,ConfigParameter::OB_STARTUP_ENA_USE_BF);
+
+    delay_ms(50);
+    EPS::get_EPS_buffer(wire, i2c_address, eps_buffer,10);
+    print_array(eps_buffer, 10);
+
+    print_config_reply(reply2);
+    if (!reply2.error && reply2.rc == 0x83 && reply2.stat == 0x80 && reply2.par_id==ConfigParameter::OB_STARTUP_ENA_USE_BF && reply2.par_value.ui16==0x0111) {
+        Console::log("Test 41S: PASS - GET_CONF_PARAM correctly updated OB_STARTUP_ENA_USE_BF\n");
+        return 1; // Success
+    } else {
+        Console::log("Test 41S: FAIL - GET_CONF_PARAM (OB_STARTUP_ENA_USE_BF) was not updated/read command rejected\n");
+        return 0; // Failure
+    }
 }
