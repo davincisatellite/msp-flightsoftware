@@ -6,7 +6,6 @@
  */
 
 #include "receiver.h"
-#include "Console.h"
 
 Receiver::Receiver(DWire &dwire, uint8_t i2c_address_def) : wire(dwire) {
     i2c_address = i2c_address_def;
